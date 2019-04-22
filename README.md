@@ -1,6 +1,6 @@
 # Shin-Barliman
 
-Research project: Program synthesis using updated interface, template and types.
+Shin-Barliman is a prototype "smart" integrated development editor (IDE) that supports advanced program synthesis (templates, types, advanced search, etc.).
 
 Kanae Tsushima (対馬かなえ) and Will Byrd
 
