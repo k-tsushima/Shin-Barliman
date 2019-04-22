@@ -45,20 +45,19 @@
           (output (cdr (car ios))))
       (let ((arg-names (generate-pretty-arg-names inputs)))
         (let ((list-args (get-args-that-are-lists inputs arg-names)))
-          (cond
-            ((null? list-args)
+          (match list-args
+            ['()
              `(define ,fname
                 (lambda ,arg-names
-                  ,',A)))
-            ((null? (cdr list-args))
-             (let ((la (car list-args)))
-               `(define ,fname
-                  (lambda ,arg-names
-                    (if (null? ,la)
-                        ,',B
-                        ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
-                        (,',C (car ,la) (,fname (cdr ,la))))))))
-            (else (error 'const-pattern (format "more than one list argument in ~s" inputs)))))))))
+                  ,',A))]
+            [`(,la)
+             `(define ,fname
+                (lambda ,arg-names
+                  (if (null? ,la)
+                      ,',B
+                      ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
+                      (,',C (car ,la) (,fname (cdr ,la))))))]
+            [else (error 'const-pattern (format "more than one list argument in ~s" inputs))]))))))
 
 
 
