@@ -24,6 +24,24 @@
 ;;; Shin-Barliman will consider during synthesis, with the user able
 ;;; to select/deselect/prioritize the templates under consideration.
 ;;;
+;;; explore how precise we should be in generating type/arity
+;;; information from example programs; also, user should be able to
+;;; specify all or some of the type/arity information, which we should
+;;; unify with the information inferred from examples.  Perhaps a
+;;; typed version of Scheme (ML-like Scheme) would work best here.
+;;;
+;;; try restricting the allowed grammar for synthesis for each hole
+;;; in a generated template, based on context; may want to use types,
+;;; machine learning, heuristics, symbolic reasoning, etc., to
+;;; determine allowable grammars;  also need to update the synthesis
+;;; to efficiently handle restricted grammars.
+;;;
+;;; our "pretty argument name" generation isn't perfect, since we
+;;; aren't preventing possible collision with user-introduced names;
+;;; may want to actually use gensym (with the pretty names), or
+;;; generate guarenteed unique names, or do an alpha-renaming step
+;;; first, or whatever
+;;;
 ;;; handle multiple list args
 ;;;
 ;;; refactor generate-pretty-arg-names to avoid duplicate code, etc.
