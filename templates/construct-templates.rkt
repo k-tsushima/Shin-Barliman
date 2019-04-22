@@ -25,7 +25,23 @@
 ;;; add parameter for specifying which arguments are being recurred
 ;;; on, whether up/down for numbers, etc.
 ;;;
+;;; template for deep/tree recursion (when the car of a list is a list)
+;;;
 ;;; create templates using 'match' as well as 'cond'/'null?'/'car'/'cdr'
+
+
+;;; NOTES
+;;;
+;;; inputs as to the type of template/which arguments to recur
+;;; on/whether to use deep recursion/whether to count up/down for
+;;; numbers, etc., could come from at least three different sources
+;;; (or any combination of these sources):
+;;;
+;;; 1. from the user
+;;;
+;;; 2. from machine learning/pattern recognition
+;;;
+;;; 3. guessing/running in parallel
 
 (define get-args-that-are-lists
   (lambda (inputs arg-names)
