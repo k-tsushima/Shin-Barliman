@@ -1,0 +1,80 @@
+;;; TODO
+;;;
+;;; add test macro
+;;;
+;;; use pattern matcher
+
+(define get-args-that-are-lists
+  (lambda (inputs arg-names)
+    (cond
+      ((and (null? inputs) (null? arg-names)) '())
+      ((list? (car inputs))
+       (cons (car arg-names) (get-args-that-are-lists (cdr inputs) (cdr arg-names))))
+      (else (get-args-that-are-lists (cdr inputs) (cdr arg-names))))))
+
+(define generate-pretty-arg-names
+  (lambda (args)
+    (let loop ((args args)
+               (count 1))
+      (cond
+        ((null? args) '())
+        (else (cons (string->symbol (format "a~s" count))
+                    (loop (cdr args) (+ 1 count))))))))
+
+; 知りたい情報、なんばんめでリストにマッチングするか
+; ios = pairs of input and output
+(define const-pattern
+  (lambda (fname ios)
+    (let ((inputs (car (car ios)))
+          (output (cdr (car ios))))
+      (let ((arg-names (generate-pretty-arg-names inputs)))
+        (let ((list-args (get-args-that-are-lists inputs arg-names)))
+          (cond
+            ((null? list-args)
+             `(define ,fname
+                (lambda ,arg-names
+                  ,',A)))
+            ((null? (cdr list-args))
+             (let ((la (car list-args)))
+               `(define ,fname
+                  (lambda ,arg-names
+                    (if (null? ,la)
+                        ,',B
+                        ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
+                        (,',C (car ,la) (,fname (cdr ,la))))))))
+            (else (error 'const-pattern (format "more than one list argument in ~s" inputs)))))))))
+
+
+
+
+(const-pattern 'reverse (list (cons (list (list 1 2)) (list 2 1))))
+#|
+(define reverse
+  (lambda (a)
+    (if (null? a)
+        ,B
+        (,C (car a) (reverse (cdr a))))))
+|#
+(const-pattern 'reverse '((((1 2)) . (2 1))))
+
+(let ((input-list-1 '((1 2)))
+      (output-1 '(2 1)))
+  (let ((example-1 (cons input-list-1 output-1)))
+    (const-pattern 'reverse (list example-1))))
+
+(let ((input-list-1 '((1 2)))
+      (output-1 '(2 1)))
+  (let ((example-1 `(,input-list-1 . ,output-1)))
+    (const-pattern 'reverse `(,example-1))))
+
+
+;; (const-pattern 'reverse (list (cons (list 1 (list 4 5 6) 3) 4)))
+(const-pattern 'reverse '(((1 (4 5 6) 3) . 4)))
+
+#|
+(define reverse
+  (lambda (a1 a2 a3)
+    (if (null? a2)
+        ,B
+        (,C (car a2) (reverse (cdr a2))))))
+|#
