@@ -96,8 +96,7 @@
               `(define ,fname
                  (lambda ,arg-names
                    (if (null? ,la)
-                       ,',B
-                       ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
+                       ,',B                       
                        (,',C (car ,la) (,fname . ,(map (lambda (input arg-name)
                                                          (if (list? input)
                                                              `(cdr ,arg-name)
