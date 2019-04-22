@@ -12,6 +12,18 @@
 
 ;;; TODO
 ;;;
+;;; be able to unify template with user-provided function skeleton;
+;;; this probably means either making the arguments to a template
+;;; unbound logic variables, or using nominal unification (or de
+;;; Bruijn indices, HOAS, etc.)
+;;;
+;;; user in Shin-Barliman should be able to indicate whether the
+;;; function is deeply-recursive (yes/no/don't know), etc., and the
+;;; same for variadic vs. fixed-arity function; in the Shin-Barliman
+;;; GUI, may want to show a selection list of generated templates that
+;;; Shin-Barliman will consider during synthesis, with the user able
+;;; to select/deselect/prioritize the templates under consideration.
+;;;
 ;;; handle multiple list args
 ;;;
 ;;; refactor generate-pretty-arg-names to avoid duplicate code, etc.
