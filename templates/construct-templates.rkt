@@ -42,23 +42,23 @@
 ; ios = pairs of input and output
 (define const-pattern
   (lambda (fname ios)
-    (let ((inputs (car (car ios)))
-          (output (cdr (car ios))))
-      (let ((arg-names (generate-pretty-arg-names inputs)))
-        (let ((list-args (get-args-that-are-lists inputs arg-names)))
-          (match list-args
-            ['()
-             `(define ,fname
-                (lambda ,arg-names
-                  ,',A))]
-            [`(,la)
-             `(define ,fname
-                (lambda ,arg-names
-                  (if (null? ,la)
-                      ,',B
-                      ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
-                      (,',C (car ,la) (,fname (cdr ,la))))))]
-            [else (error 'const-pattern (format "more than one list argument in ~s" inputs))]))))))
+    (match ios
+      [`((,inputs . ,output) . ,ios-rest)
+       (let ((arg-names (generate-pretty-arg-names inputs)))
+         (let ((list-args (get-args-that-are-lists inputs arg-names)))
+           (match list-args
+             ['()
+              `(define ,fname
+                 (lambda ,arg-names
+                   ,',A))]
+             [`(,la)
+              `(define ,fname
+                 (lambda ,arg-names
+                   (if (null? ,la)
+                       ,',B
+                       ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
+                       (,',C (car ,la) (,fname (cdr ,la))))))]
+             [else (error 'const-pattern (format "more than one list argument in ~s" inputs))])))])))
 
 
 
