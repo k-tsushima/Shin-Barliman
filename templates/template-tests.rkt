@@ -29,3 +29,44 @@
       (if (null? l)
           ,B
           (,C (car l) (reverse n1 (cdr l) n2))))))
+
+(check-equal?
+ (const-pattern 'listthru '((((1 2 3 4)) . ((1) (2) (3) (4)))))
+ '(define listthru
+    (lambda (l)
+      (if (null? l)
+          ,B
+          (,C (car l) (listthru (cdr l)))))))
+
+(check-equal?
+ (const-pattern 'double '((((1 2 3 4)) . (1 1 2 2 3 3 4 4))))
+ '(define double
+    (lambda (l)
+      (if (null? l)
+          ,B
+          (,C (car l) (double (cdr l)))))))
+
+; This function needs an auxiliary function
+(check-equal?
+ (const-pattern 'listofcombs '((((1 2 3 4)) . ((1 2) (1 3) (1 4) (2 3) (2 4) (3 4)))))
+ '(define listofcombs
+    (lambda (l)
+      (if (null? l)
+          ,B
+          (,C (car l) (listofcombs (cdr l)))))))
+
+(check-equal?
+ (const-pattern 'telescope '((((1 2 3 4)) . ((1 2 3 4 2 3 4 3 4 4)))))
+ '(define telescope
+    (lambda (l)
+      (if (null? l)
+          ,B
+          (,C (car l) (telescope (cdr l)))))))
+
+(check-equal?
+ (const-pattern 'revdouble '((((1 2 3 4)) . ((4 4 3 3 2 2 1 1)))))
+ '(define revdouble
+    (lambda (l)
+      (if (null? l)
+          ,B
+          (,C (car l) (revdouble (cdr l)))))))
