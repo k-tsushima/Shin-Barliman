@@ -43,7 +43,7 @@
 (define const-pattern
   (lambda (fname ios)
     (match ios
-      [`((,inputs . ,output) . ,ios-rest)
+      [`((,inputs . ,output) . ,_)
        (let ((arg-names (generate-pretty-arg-names inputs)))
          (let ((list-args (get-args-that-are-lists inputs arg-names)))
            (match list-args
