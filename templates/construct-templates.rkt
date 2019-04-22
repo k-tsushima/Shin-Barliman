@@ -12,8 +12,6 @@
 
 ;;; TODO
 ;;;
-;;; add recursive parameters that aren't lists to the recursive call
-;;;
 ;;; handle multiple list args
 ;;;
 ;;; refactor generate-pretty-arg-names to avoid duplicate code, etc.
@@ -100,5 +98,9 @@
                    (if (null? ,la)
                        ,',B
                        ;; To do: fix fname (cdr first-list-arg) .. it might have other arguments.
-                       (,',C (car ,la) (,fname (cdr ,la))))))]
+                       (,',C (car ,la) (,fname . ,(map (lambda (input arg-name)
+                                                         (if (list? input)
+                                                             `(cdr ,arg-name)
+                                                             arg-name))
+                                                       inputs arg-names))))))]
              [else (error 'const-pattern (format "more than one list argument in ~s" inputs))])))])))
