@@ -22,11 +22,12 @@
 
 (define get-args-that-are-lists
   (lambda (inputs arg-names)
-    (cond
-      ((and (null? inputs) (null? arg-names)) '())
-      ((list? (car inputs))
-       (cons (car arg-names) (get-args-that-are-lists (cdr inputs) (cdr arg-names))))
-      (else (get-args-that-are-lists (cdr inputs) (cdr arg-names))))))
+    (match `(,inputs ,arg-names)
+      ['(() ()) '()]
+      [`((,in-a . ,in-d) (,arg-a . ,arg-d))
+       (if (list? in-a)
+           (cons arg-a (get-args-that-are-lists in-d arg-d))
+           (get-args-that-are-lists in-d arg-d))])))
 
 (define generate-pretty-arg-names
   (lambda (args)
