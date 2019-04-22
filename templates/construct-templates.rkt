@@ -1,8 +1,24 @@
+#lang racket
+
+(require
+ )
+
+(provide
+  (all-defined-out))
+
+
+;;; Construct quasiquoted template for functions that recur over
+;;; lists, with place holders for logic variables.
+
 ;;; TODO
 ;;;
 ;;; add test macro
 ;;;
 ;;; use pattern matcher
+;;;
+;;; add recursive parameters that aren't lists to the recursive call
+;;;
+;;; handle multiple list args
 
 (define get-args-that-are-lists
   (lambda (inputs arg-names)
