@@ -15,6 +15,17 @@
 ;;; handle multiple list args
 ;;;
 ;;; refactor generate-pretty-arg-names to avoid duplicate code, etc.
+;;;
+;;; more generally: identify and inplement the various types of
+;;; patterns/templates we want to handle (accumulator passing style,
+;;; CPS?, recursion on natural numbers (up/down), recursion on
+;;; multiple lists (including cdr'ing on two lists simultaneously, one
+;;; list getting bigger while another gets smaller, etc.))
+;;;
+;;; add parameter for specifying which arguments are being recurred
+;;; on, whether up/down for numbers, etc.
+;;;
+;;; create templates using 'match' as well as 'cond'/'null?'/'car'/'cdr'
 
 (define get-args-that-are-lists
   (lambda (inputs arg-names)
