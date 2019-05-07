@@ -7,4 +7,4 @@
 (provide
   construct-pattern)
 
-(include "construct-templates.scm")
+(include "../template-code/construct-templates.scm")

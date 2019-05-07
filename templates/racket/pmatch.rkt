@@ -6,5 +6,5 @@
 (provide
   pmatch)
 
-(include "pmatch.scm")
+(include "../scheme-helpers/pmatch.scm")
 

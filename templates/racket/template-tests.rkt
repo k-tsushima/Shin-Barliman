@@ -6,4 +6,4 @@
 (provide
   (all-defined-out))
 
-(include "template-tests.scm")
+(include "../template-code/template-tests.scm")

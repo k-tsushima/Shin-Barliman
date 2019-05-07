@@ -3,6 +3,6 @@
   (import (rnrs)
           (only (chezscheme) include printf))
 
-  (include "pmatch.scm")
+  (include "../scheme-helpers/pmatch.scm")
   
   )

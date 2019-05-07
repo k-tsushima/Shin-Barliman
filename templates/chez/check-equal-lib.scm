@@ -3,6 +3,6 @@
   (import (rnrs)
           (only (chezscheme) include printf))
 
-  (include "check-equal.scm")
+  (include "../scheme-helpers/check-equal.scm")
   
   )

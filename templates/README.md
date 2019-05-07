@@ -1,6 +1,6 @@
-# This template code runs under both Chez Scheme and Racket.
+# This template-generating code runs under both Chez Scheme and Racket.
 
-Below are simple transcipts showing how to load the libraries/modules in Chez Scheme and Racket.
+Below are simple transcipts showing how to load the libraries/modules in Chez Scheme and Racket, and assume you are running the commands from the 'chez' or 'racket' directories, respectively.
 
 
 ## Chez Scheme
@@ -60,7 +60,9 @@ from the terminal in this directory.
 
 
 
-## To run all tests under both Chez and Racket
+## To run all tests under both Chez Scheme and Racket
+
+To run the tests in both Chez Scheme and Racket, run this command from the terminal, from this 'template' directory:
 
 ```
 /bin/sh test.sh

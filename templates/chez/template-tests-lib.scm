@@ -7,6 +7,6 @@
 
   (define test-all
     (lambda ()
-      (include "template-tests.scm")))  
+      (include "../template-code/template-tests.scm")))  
   
   )
