@@ -8,8 +8,9 @@
 (require
   racket/gui/base
   framework
-  racket/engine
-  (except-in racket/match ==))
+  ;racket/engine
+  ;(except-in racket/match ==)
+  )
 
 (provide
   launch-gui)
@@ -28,6 +29,13 @@
 (define input-response-latency 50)
 
 (define MAX-CHAR-WIDTH 150)
+
+(define smart-text%
+ (class racket:text%
+   (super-new)
+   (define (after-insert start len)
+     (printf "Hello\n"))
+   (augment after-insert)))
 
 
 (define (launch-main-window)  
@@ -63,10 +71,13 @@
     
     (define definitions-editor-canvas (new editor-canvas%
                                            (parent left-top-panel)
-                                           (label "Definitions")))
-    (define definitions-text (new text%))
+                                           (label "Definitions")
+					   ))
+    (define definitions-text (new smart-text%))
     (send definitions-text insert "")
     (send definitions-editor-canvas set-editor definitions-text)
+
+
 
 
     (define best-guess-message (new message%
@@ -75,8 +86,9 @@
     
     (define best-guess-editor-canvas (new editor-canvas%
                                           (parent left-bottom-panel)
-                                          (label "Best Guess")))
-    (define best-guess-text (new text%))
+                                          (label "Best Guess")
+					  (enabled #f)))
+    (define best-guess-text (new smart-text%))
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
@@ -87,7 +99,9 @@
     (define test-expression-1-field (new text-field%
                                          (label "")
                                          (parent right-vert-draggable-panel)
-                                         (init-value "")))
+                                         (init-value "")
+					 (callback (lambda (self event)
+                                                         (printf "Hello\n")))))
 
     (define test-value-1-field (new text-field%
                                     (label "")
