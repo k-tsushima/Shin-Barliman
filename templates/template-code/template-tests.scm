@@ -63,6 +63,7 @@
           ,B
           (,C (car l) (telescope (cdr l)))))))
 
+
 (check-equal?
  (construct-pattern 'revdouble '((((1 2 3 4)) . ((4 4 3 3 2 2 1 1)))))
  '(define revdouble
@@ -70,3 +71,4 @@
       (if (null? l)
           ,B
           (,C (car l) (revdouble (cdr l)))))))
+
