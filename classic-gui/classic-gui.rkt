@@ -106,13 +106,15 @@
                                          (init-value "")
                                          (font TEXT-FIELD-FONT)
 					 (callback (lambda (self event)
-                                                         (printf "Yo!\n")))))
+                                                     (printf "expression 1!\n")))))
 
     (define test-value-1-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 1!\n")))))
 
     (define test-2-message (new message%
                                 (parent right-panel)
@@ -122,13 +124,17 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
-                                         (font TEXT-FIELD-FONT)))
+                                         (font TEXT-FIELD-FONT)
+                                         (callback (lambda (self event)
+                                                     (printf "expression 2!\n")))))
 
     (define test-value-2-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 2!\n")))))
 
     (define test-3-message (new message%
                                 (parent right-panel)
@@ -138,13 +144,17 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
-                                         (font TEXT-FIELD-FONT)))
+                                         (font TEXT-FIELD-FONT)
+                                         (callback (lambda (self event)
+                                                     (printf "expression 3!\n")))))
 
     (define test-value-3-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 3!\n")))))
 
     (define test-4-message (new message%
                                 (parent right-panel)
@@ -154,13 +164,17 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
-                                         (font TEXT-FIELD-FONT)))
+                                         (font TEXT-FIELD-FONT)
+                                         (callback (lambda (self event)
+                                                     (printf "expression 4!\n")))))
 
     (define test-value-4-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 4!\n")))))
 
     (define test-5-message (new message%
                                 (parent right-panel)
@@ -170,13 +184,17 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
-                                         (font TEXT-FIELD-FONT)))
+                                         (font TEXT-FIELD-FONT)
+                                         (callback (lambda (self event)
+                                                     (printf "expression 5!\n")))))
 
     (define test-value-5-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 5!\n")))))
 
     (define test-6-message (new message%
                                 (parent right-panel)
@@ -186,13 +204,17 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
-                                         (font TEXT-FIELD-FONT)))
+                                         (font TEXT-FIELD-FONT)
+                                         (callback (lambda (self event)
+                                                     (printf "expression 6!\n")))))
 
     (define test-value-6-field (new text-field%
                                     (label "")
                                     (parent right-panel)
                                     (init-value "")
-                                    (font TEXT-FIELD-FONT)))
+                                    (font TEXT-FIELD-FONT)
+                                    (callback (lambda (self event)
+                                                (printf "value 6!\n")))))
         
     
     ;; trigger reflowing of object sizes
