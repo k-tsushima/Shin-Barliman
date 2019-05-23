@@ -33,8 +33,8 @@
 (define TEXT-FIELD-FONT-SIZE 16)
 (define TEXT-FIELD-FONT (make-font #:size TEXT-FIELD-FONT-SIZE))
 
-(define current-focus-box (box #f))
-(define tab-focus*-box (box '()))
+(define *current-focus-box* (box #f))
+(define *tab-focus-order-box* (box '()))
 
 (define smart-top-level-window%
  (class frame%
@@ -44,9 +44,9 @@
      (printf "receiver?: ~s\n" receiver)
      (printf "on?: ~s\n" on?)
      (if on?
-         (set-box! current-focus-box receiver)
-         (set-box! current-focus-box #f))
-     (printf "current-focus-box value: ~s\n" (unbox current-focus-box))
+         (set-box! *current-focus-box* receiver)
+         (set-box! *current-focus-box* #f))
+     (printf "current-focus-box value: ~s\n" (unbox *current-focus-box*))
      (void))
    (define (on-traverse-char event)
      (printf "calling overridden on-traverse-char\n")
@@ -56,7 +56,18 @@
        (if (eqv? #\tab key-code)
            (begin
              (printf "tab was pressed\n")
-             #t)
+             (let ((current-focus (unbox *current-focus-box*)))
+               (printf "current focus: ~s\n" current-focus)
+               (if current-focus
+                   (let ((tfo (unbox *tab-focus-order-box*)))
+                     (let ((shift-down? (send event get-shift-down)))
+                       (printf "shift-down?: ~s\n" shift-down?)
+                       (let ((tfo (if shift-down? (reverse tfo) tfo)))
+                         (let ((o* (member current-focus tfo)))
+                           (if o*
+                               (send (cadr o*) focus)
+                               #f)))))   
+                   #f)))
            (begin
              (printf "tab was not pressed\n")
              #f))))
@@ -246,11 +257,36 @@
                                     (callback (lambda (self event)
                                                 (printf "value 6!\n")))))
         
-    
+
+    (set-box! *tab-focus-order-box*
+              (list
+               ;; wrap around (reverse)
+               test-value-6-field
+               ;; start
+               definitions-editor-canvas
+               ;;
+               test-expression-1-field
+               test-value-1-field
+               test-expression-2-field
+               test-value-2-field
+               test-expression-3-field
+               test-value-3-field
+               test-expression-4-field
+               test-value-4-field
+               test-expression-5-field
+               test-value-5-field
+               test-expression-6-field
+               test-value-6-field
+               ;; wrap around
+               definitions-editor-canvas
+               ))
+
     ;; trigger reflowing of object sizes
     (send top-window reflow-container)
     
-    (send top-window show #t)))
+    (send top-window show #t)
+    (send definitions-editor-canvas focus)
+    ))
 
 
 (define (launch-gui)
