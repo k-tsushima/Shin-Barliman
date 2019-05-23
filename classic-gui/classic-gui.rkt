@@ -71,6 +71,8 @@
    (define (after-edit-sequence)
      (printf "after-edit-sequence called\n")
      (printf "text: ~s\n" (send this get-text))
+     (printf "expr: ~s\n" (read (open-input-string (send this get-text))))
+     (printf "syn expr: ~s\n" (read-syntax #f (open-input-string (send this get-text))))
      (void))
    (augment after-insert)
    (augment after-edit-sequence)))
