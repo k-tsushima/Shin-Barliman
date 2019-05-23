@@ -53,9 +53,10 @@
                                            (parent outermost-hor-draggable-panel)
                                            (alignment '(left center))))
 
-    (define right-vert-draggable-panel (new panel:vertical-dragable%
-                                            (parent outermost-hor-draggable-panel)
-                                            (alignment '(left center))))
+    (define right-panel (new vertical-pane%
+                             (parent outermost-hor-draggable-panel)
+                             (alignment '(left top))
+                             (stretchable-height #f)))
 
     (define left-top-panel (new panel%
                                 (parent left-vert-draggable-panel)
@@ -93,89 +94,89 @@
     (send best-guess-editor-canvas set-editor best-guess-text)
 
     (define test-1-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 1")))
 
     (define test-expression-1-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")
 					 (callback (lambda (self event)
                                                          (printf "Hello\n")))))
 
     (define test-value-1-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
 
     (define test-2-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 2")))
     
     (define test-expression-2-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")))
 
     (define test-value-2-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
 
     (define test-3-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 3")))
     
     (define test-expression-3-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")))
 
     (define test-value-3-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
 
     (define test-4-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 4")))
     
     (define test-expression-4-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")))
 
     (define test-value-4-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
 
     (define test-5-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 5")))
     
     (define test-expression-5-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")))
 
     (define test-value-5-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
 
     (define test-6-message (new message%
-                                (parent right-vert-draggable-panel)
+                                (parent right-panel)
                                 (label "Test 6")))
 
     (define test-expression-6-field (new text-field%
                                          (label "")
-                                         (parent right-vert-draggable-panel)
+                                         (parent right-panel)
                                          (init-value "")))
 
     (define test-value-6-field (new text-field%
                                     (label "")
-                                    (parent right-vert-draggable-panel)
+                                    (parent right-panel)
                                     (init-value "")))
         
     
