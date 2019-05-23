@@ -58,11 +58,11 @@
                              (alignment '(left top))
                              (stretchable-height #f)))
 
-    (define left-top-panel (new panel%
+    (define left-top-panel (new vertical-pane%
                                 (parent left-vert-draggable-panel)
                                 (alignment '(left center))))
 
-    (define left-bottom-panel (new panel%
+    (define left-bottom-panel (new vertical-pane%
                                    (parent left-vert-draggable-panel)
                                    (alignment '(left center))))
     
