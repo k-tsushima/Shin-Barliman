@@ -61,14 +61,19 @@
                  #f))
            #f)))
    (override on-traverse-char)
-   (override on-subwindow-focus	)))
+   (override on-subwindow-focus)))
 
 (define smart-text%
  (class racket:text%
    (super-new)
    (define (after-insert start len)
      (printf "Hello\n"))
-   (augment after-insert)))
+   (define (after-edit-sequence)
+     (printf "after-edit-sequence called\n")
+     (printf "text: ~s\n" (send this get-text))
+     (void))
+   (augment after-insert)
+   (augment after-edit-sequence)))
 
 
 (define (launch-main-window)
