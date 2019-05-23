@@ -41,7 +41,7 @@
    (augment after-insert)))
 
 
-(define (launch-main-window)  
+(define (launch-main-window)
   (let ((frame (new frame%
                     (label CLASSIC_GUI_VERSION_STRING)
                     (width HORIZ-SIZE)
@@ -75,11 +75,11 @@
     
     (define definitions-editor-canvas (new editor-canvas%
                                            (parent left-top-panel)
-                                           (label "Definitions")
-					   ))
+                                           (label "Definitions")))
     (define definitions-text (new smart-text%))
     (send definitions-text insert "")
     (send definitions-editor-canvas set-editor definitions-text)
+    (send definitions-text set-max-undo-history 1000)
 
 
 
