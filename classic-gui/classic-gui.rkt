@@ -30,6 +30,9 @@
 
 (define MAX-CHAR-WIDTH 150)
 
+(define TEXT-FIELD-FONT-SIZE 16)
+(define TEXT-FIELD-FONT (make-font #:size TEXT-FIELD-FONT-SIZE))
+
 (define smart-text%
  (class racket:text%
    (super-new)
@@ -101,13 +104,15 @@
                                          (label "")
                                          (parent right-panel)
                                          (init-value "")
+                                         (font TEXT-FIELD-FONT)
 					 (callback (lambda (self event)
-                                                         (printf "Hello\n")))))
+                                                         (printf "Yo!\n")))))
 
     (define test-value-1-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
 
     (define test-2-message (new message%
                                 (parent right-panel)
@@ -116,12 +121,14 @@
     (define test-expression-2-field (new text-field%
                                          (label "")
                                          (parent right-panel)
-                                         (init-value "")))
+                                         (init-value "")
+                                         (font TEXT-FIELD-FONT)))
 
     (define test-value-2-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
 
     (define test-3-message (new message%
                                 (parent right-panel)
@@ -130,12 +137,14 @@
     (define test-expression-3-field (new text-field%
                                          (label "")
                                          (parent right-panel)
-                                         (init-value "")))
+                                         (init-value "")
+                                         (font TEXT-FIELD-FONT)))
 
     (define test-value-3-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
 
     (define test-4-message (new message%
                                 (parent right-panel)
@@ -144,12 +153,14 @@
     (define test-expression-4-field (new text-field%
                                          (label "")
                                          (parent right-panel)
-                                         (init-value "")))
+                                         (init-value "")
+                                         (font TEXT-FIELD-FONT)))
 
     (define test-value-4-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
 
     (define test-5-message (new message%
                                 (parent right-panel)
@@ -158,12 +169,14 @@
     (define test-expression-5-field (new text-field%
                                          (label "")
                                          (parent right-panel)
-                                         (init-value "")))
+                                         (init-value "")
+                                         (font TEXT-FIELD-FONT)))
 
     (define test-value-5-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
 
     (define test-6-message (new message%
                                 (parent right-panel)
@@ -172,12 +185,14 @@
     (define test-expression-6-field (new text-field%
                                          (label "")
                                          (parent right-panel)
-                                         (init-value "")))
+                                         (init-value "")
+                                         (font TEXT-FIELD-FONT)))
 
     (define test-value-6-field (new text-field%
                                     (label "")
                                     (parent right-panel)
-                                    (init-value "")))
+                                    (init-value "")
+                                    (font TEXT-FIELD-FONT)))
         
     
     ;; trigger reflowing of object sizes
