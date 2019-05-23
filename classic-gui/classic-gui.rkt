@@ -33,6 +33,36 @@
 (define TEXT-FIELD-FONT-SIZE 16)
 (define TEXT-FIELD-FONT (make-font #:size TEXT-FIELD-FONT-SIZE))
 
+(define current-focus-box (box #f))
+(define tab-focus*-box (box '()))
+
+(define smart-top-level-window%
+ (class frame%
+   (super-new)
+   (define (on-subwindow-focus receiver on?)
+     (printf "calling overridden on-subwindow-focus\n")
+     (printf "receiver?: ~s\n" receiver)
+     (printf "on?: ~s\n" on?)
+     (if on?
+         (set-box! current-focus-box receiver)
+         (set-box! current-focus-box #f))
+     (printf "current-focus-box value: ~s\n" (unbox current-focus-box))
+     (void))
+   (define (on-traverse-char event)
+     (printf "calling overridden on-traverse-char\n")
+     (printf "event: ~s\n" event)
+     (let ((key-code (send event get-key-code)))
+       (printf "key-code: ~s\n" key-code)
+       (if (eqv? #\tab key-code)
+           (begin
+             (printf "tab was pressed\n")
+             #t)
+           (begin
+             (printf "tab was not pressed\n")
+             #f))))
+   (override on-traverse-char)
+   (override on-subwindow-focus	)))
+
 (define smart-text%
  (class racket:text%
    (super-new)
@@ -42,13 +72,13 @@
 
 
 (define (launch-main-window)
-  (let ((frame (new frame%
-                    (label CLASSIC_GUI_VERSION_STRING)
-                    (width HORIZ-SIZE)
-                    (height VERT-SIZE))))
+  (let ((top-window (new smart-top-level-window%
+                         (label CLASSIC_GUI_VERSION_STRING)
+                         (width HORIZ-SIZE)
+                         (height VERT-SIZE))))
 
     (define outermost-hor-draggable-panel (new panel:horizontal-dragable%
-                                               (parent frame)
+                                               (parent top-window)
                                                (alignment '(left center))
                                                (stretchable-height #t)))
 
@@ -218,9 +248,9 @@
         
     
     ;; trigger reflowing of object sizes
-    (send frame reflow-container)        
+    (send top-window reflow-container)
     
-    (send frame show #t)))
+    (send top-window show #t)))
 
 
 (define (launch-gui)
