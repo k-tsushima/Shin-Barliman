@@ -40,37 +40,24 @@
  (class frame%
    (super-new)
    (define (on-subwindow-focus receiver on?)
-     (printf "calling overridden on-subwindow-focus\n")
-     (printf "receiver?: ~s\n" receiver)
-     (printf "on?: ~s\n" on?)
      (if on?
          (set-box! *current-focus-box* receiver)
          (set-box! *current-focus-box* #f))
-     (printf "current-focus-box value: ~s\n" (unbox *current-focus-box*))
      (void))
    (define (on-traverse-char event)
-     (printf "calling overridden on-traverse-char\n")
-     (printf "event: ~s\n" event)
      (let ((key-code (send event get-key-code)))
-       (printf "key-code: ~s\n" key-code)
        (if (eqv? #\tab key-code)
-           (begin
-             (printf "tab was pressed\n")
-             (let ((current-focus (unbox *current-focus-box*)))
-               (printf "current focus: ~s\n" current-focus)
-               (if current-focus
-                   (let ((tfo (unbox *tab-focus-order-box*)))
-                     (let ((shift-down? (send event get-shift-down)))
-                       (printf "shift-down?: ~s\n" shift-down?)
-                       (let ((tfo (if shift-down? (reverse tfo) tfo)))
-                         (let ((o* (member current-focus tfo)))
-                           (if o*
-                               (send (cadr o*) focus)
-                               #f)))))   
-                   #f)))
-           (begin
-             (printf "tab was not pressed\n")
-             #f))))
+           (let ((current-focus (unbox *current-focus-box*)))             
+             (if current-focus
+                 (let* ((tfo (unbox *tab-focus-order-box*))
+                        (shift-down? (send event get-shift-down))
+                        (tfo (if shift-down? (reverse tfo) tfo))
+                        (o* (member current-focus tfo)))
+                   (if o*
+                       (send (cadr o*) focus)
+                       #f))   
+                 #f))
+           #f)))
    (override on-traverse-char)
    (override on-subwindow-focus	)))
 
