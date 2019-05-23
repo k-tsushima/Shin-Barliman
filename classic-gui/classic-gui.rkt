@@ -33,6 +33,8 @@
 (define TEXT-FIELD-FONT-SIZE 16)
 (define TEXT-FIELD-FONT (make-font #:size TEXT-FIELD-FONT-SIZE))
 
+(define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
@@ -105,7 +107,7 @@
                                            (parent left-top-panel)
                                            (label "Definitions")))
     (define definitions-text (new smart-text%))
-    (send definitions-text insert "")
+    (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history 1000)
 
