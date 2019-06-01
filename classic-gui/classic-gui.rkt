@@ -21,12 +21,14 @@
 (displayln CLASSIC_GUI_VERSION_STRING)
 
 ;;; Initial window size
-(define HORIZ-SIZE 800)
-(define VERT-SIZE 400)
+(define HORIZ-SIZE 1200)
+(define VERT-SIZE 800)
 
 (define *verbose* #t)
 
 (define input-response-latency 50)
+
+(define MAX_UNDO_DEPTH 1000)
 
 (define MAX-CHAR-WIDTH 150)
 
@@ -122,7 +124,7 @@
     (define definitions-text (new smart-text%))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
-    (send definitions-text set-max-undo-history 1000)
+    (send definitions-text set-max-undo-history MAX_UNDO_DEPTH)
 
 
 
@@ -139,156 +141,136 @@
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
+    
     (define test-1-message (new message%
                                 (parent right-panel)
                                 (label "Test 1")))
-
-    (define test-expression-1-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-					 (callback (lambda (self event)
-                                                     (define str (send self get-value))
-                                                     (printf "expression 1 text: ~s\n" str)
-                                                     (define expr-in-list
-                                                       (with-handlers ([exn:fail? (lambda (exn)
-                                                                                    (printf "exn: ~s\n" exn)
-                                                                                    'invalid-expression)])
-                                                         (list (read (open-input-string str)))))
-                                                     (printf "expression 1 expr-in-list: ~s\n" expr-in-list)
-                                                     (when (pair? expr-in-list)
-                                                       (printf "expression 1 raw expr: ~s\n" (car expr-in-list)))
-                                                     (void)))))
-
-    (define test-value-1-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 1!\n")))))
     
+    (define test-expression-1-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-1-text (new smart-text%))
+    (send test-expression-1-editor-canvas set-editor test-expression-1-text)
+    (send test-expression-1-text set-max-undo-history MAX_UNDO_DEPTH)
+
+    
+    (define test-value-1-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-1-text (new smart-text%))
+    (send test-value-1-editor-canvas set-editor test-value-1-text)
+    (send test-value-1-text set-max-undo-history MAX_UNDO_DEPTH)
+
+
     (define test-2-message (new message%
                                 (parent right-panel)
                                 (label "Test 2")))
     
-    (define test-expression-2-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-                                         (callback (lambda (self event)
-                                                     (printf "expression 2!\n")))))
+    (define test-expression-2-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-2-text (new smart-text%))
+    (send test-expression-2-editor-canvas set-editor test-expression-2-text)
+    (send test-expression-2-text set-max-undo-history MAX_UNDO_DEPTH)
 
-    (define test-value-2-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 2!\n")))))
+    
+    (define test-value-2-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-2-text (new smart-text%))
+    (send test-value-2-editor-canvas set-editor test-value-2-text)
+    (send test-value-2-text set-max-undo-history MAX_UNDO_DEPTH)
+
 
     (define test-3-message (new message%
                                 (parent right-panel)
                                 (label "Test 3")))
     
-    (define test-expression-3-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-                                         (callback (lambda (self event)
-                                                     (printf "expression 3!\n")))))
+    (define test-expression-3-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-3-text (new smart-text%))
+    (send test-expression-3-editor-canvas set-editor test-expression-3-text)
+    (send test-expression-3-text set-max-undo-history MAX_UNDO_DEPTH)
 
-    (define test-value-3-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 3!\n")))))
+    
+    (define test-value-3-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-3-text (new smart-text%))
+    (send test-value-3-editor-canvas set-editor test-value-3-text)
+    (send test-value-3-text set-max-undo-history MAX_UNDO_DEPTH)
+
+
 
     (define test-4-message (new message%
                                 (parent right-panel)
                                 (label "Test 4")))
     
-    (define test-expression-4-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-                                         (callback (lambda (self event)
-                                                     (printf "expression 4!\n")))))
+    (define test-expression-4-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-4-text (new smart-text%))
+    (send test-expression-4-editor-canvas set-editor test-expression-4-text)
+    (send test-expression-4-text set-max-undo-history MAX_UNDO_DEPTH)
 
-    (define test-value-4-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 4!\n")))))
-
+    
+    (define test-value-4-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-4-text (new smart-text%))
+    (send test-value-4-editor-canvas set-editor test-value-4-text)
+    (send test-value-4-text set-max-undo-history MAX_UNDO_DEPTH)
+    
+    
     (define test-5-message (new message%
                                 (parent right-panel)
                                 (label "Test 5")))
     
-    (define test-expression-5-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-                                         (callback (lambda (self event)
-                                                     (printf "expression 5!\n")))))
+    (define test-expression-5-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-5-text (new smart-text%))
+    (send test-expression-5-editor-canvas set-editor test-expression-5-text)
+    (send test-expression-5-text set-max-undo-history MAX_UNDO_DEPTH)
 
-    (define test-value-5-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 5!\n")))))
+    
+    (define test-value-5-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-5-text (new smart-text%))
+    (send test-value-5-editor-canvas set-editor test-value-5-text)
+    (send test-value-5-text set-max-undo-history MAX_UNDO_DEPTH)
+
 
     (define test-6-message (new message%
                                 (parent right-panel)
                                 (label "Test 6")))
+    
+    (define test-expression-6-editor-canvas (new editor-canvas%
+                                                 (parent right-panel)))
+    (define test-expression-6-text (new smart-text%))
+    (send test-expression-6-editor-canvas set-editor test-expression-6-text)
+    (send test-expression-6-text set-max-undo-history MAX_UNDO_DEPTH)
 
-    (define test-expression-6-field (new text-field%
-                                         (label "")
-                                         (parent right-panel)
-                                         (init-value "")
-                                         (font TEXT-FIELD-FONT)
-                                         (callback (lambda (self event)
-                                                     (printf "expression 6!\n")))))
-
-    (define test-value-6-field (new text-field%
-                                    (label "")
-                                    (parent right-panel)
-                                    (init-value "")
-                                    (font TEXT-FIELD-FONT)
-                                    (callback (lambda (self event)
-                                                (printf "value 6!\n")))))
-        
+    
+    (define test-value-6-editor-canvas (new editor-canvas%
+                                            (parent right-panel)))
+    (define test-value-6-text (new smart-text%))
+    (send test-value-6-editor-canvas set-editor test-value-6-text)
+    (send test-value-6-text set-max-undo-history MAX_UNDO_DEPTH)
+    
+    
 
     (set-box! *tab-focus-order-box*
               (list
                ;; wrap around (reverse)
-               test-value-6-field
+               test-value-6-editor-canvas
                ;; start
                definitions-editor-canvas
                ;;
-               test-expression-1-field
-               test-value-1-field
-               test-expression-2-field
-               test-value-2-field
-               test-expression-3-field
-               test-value-3-field
-               test-expression-4-field
-               test-value-4-field
-               test-expression-5-field
-               test-value-5-field
-               test-expression-6-field
-               test-value-6-field
+               test-expression-1-editor-canvas
+               test-value-1-editor-canvas
+               test-expression-2-editor-canvas
+               test-value-2-editor-canvas
+               test-expression-3-editor-canvas
+               test-value-3-editor-canvas
+               test-expression-4-editor-canvas
+               test-value-4-editor-canvas
+               test-expression-5-editor-canvas
+               test-value-5-editor-canvas              
+               test-expression-6-editor-canvas
+               test-value-6-editor-canvas
                ;; wrap around
                definitions-editor-canvas
                ))
