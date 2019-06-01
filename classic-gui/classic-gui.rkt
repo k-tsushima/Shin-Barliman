@@ -15,10 +15,10 @@
 (provide
   launch-gui)
 
-(define CLASSIC_GUI_VERSION_STRING "Shin-Barliman Classic 4.3")
+(define CLASSIC-GUI-VERSION-STRING "Shin-Barliman Classic 4.3")
 
 (displayln "Starting Shin-Barliman Classic...")
-(displayln CLASSIC_GUI_VERSION_STRING)
+(displayln CLASSIC-GUI-VERSION-STRING)
 
 ;;; Initial window size
 (define HORIZ-SIZE 1200)
@@ -26,17 +26,48 @@
 
 (define *verbose* #t)
 
-(define MAX_UNDO_DEPTH 1000)
-
-(define MAX-CHAR-WIDTH 150)
-
-(define TEXT-FIELD-FONT-SIZE 16)
-(define TEXT-FIELD-FONT (make-font #:size TEXT-FIELD-FONT-SIZE))
+(define MAX-UNDO-DEPTH 1000)
 
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
+(define INVALID-EXPRESSION-VALUE 'invalid-expression)
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
+
+;; Current expression(s) for each editor canvas
+;;
+;; Valid expressions are contained in a list.
+;;
+;; There may be multiple expressions for definitions
+;; and best guess.
+;;
+;; Test expression and value canvases can contain at most
+;; one valid expression.
+;;
+;; Invalid expression(s) are represented by the non-list value
+;; INVALID-EXPRESSION-VALUE.
+(define *definitions-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *best-guess-expr*-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-1-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-1-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-2-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-2-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-3-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-3-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-4-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-4-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-5-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-5-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+;;
+(define *test-6-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-6-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+
 
 (define smart-top-level-window%
  (class frame%
@@ -74,7 +105,7 @@
       (printf "text for ~s: ~s\n" name str)
       (define expr-in-list (with-handlers ([exn:fail? (lambda (exn)
                                                         (printf "exn for ~s: ~s\n" name exn)
-                                                        'invalid-expression)])
+                                                        INVALID-EXPRESSION-VALUE)])
                              (list (read (open-input-string str)))))
       (printf "~s expr-in-list: ~s\n" name expr-in-list)
       (when (pair? expr-in-list)
@@ -87,7 +118,7 @@
 
 (define (launch-main-window)
   (let ((top-window (new smart-top-level-window%
-                         (label CLASSIC_GUI_VERSION_STRING)
+                         (label CLASSIC-GUI-VERSION-STRING)
                          (width HORIZ-SIZE)
                          (height VERT-SIZE))))
 
@@ -123,7 +154,7 @@
     (define definitions-text (new (make-smart-text% 'definitions)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
-    (send definitions-text set-max-undo-history MAX_UNDO_DEPTH)
+    (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
 
 
 
@@ -151,7 +182,7 @@
                                  (string->symbol
                                    (format format-str n)))))
         (send test-editor-canvas set-editor test-text)
-        (send test-text set-max-undo-history MAX_UNDO_DEPTH)
+        (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
         test-editor-canvas)
       
