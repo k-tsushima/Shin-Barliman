@@ -143,25 +143,26 @@
 
     
     (define (make-test-message/expression/value n parent-panel)
+
+      (define (make-test-editor-canvas n parent-panel format-str)
+        (define test-editor-canvas (new editor-canvas%
+                                        (parent parent-panel)))
+        (define test-text (new (make-smart-text%
+                                 (string->symbol
+                                   (format format-str n)))))
+        (send test-editor-canvas set-editor test-text)
+        (send test-text set-max-undo-history MAX_UNDO_DEPTH)
+
+        test-editor-canvas)
+      
       (define test-message (new message%
                                 (parent parent-panel)
                                 (label (format "Test ~s" n))))
-      
-      (define test-expression-editor-canvas (new editor-canvas%
-                                                 (parent parent-panel)))
-      (define test-expression-text (new (make-smart-text%
-                                          (string->symbol
-                                            (format "test-expression-~s" n)))))
-      (send test-expression-editor-canvas set-editor test-expression-text)
-      (send test-expression-text set-max-undo-history MAX_UNDO_DEPTH)
-      
-      (define test-value-editor-canvas (new editor-canvas%
-                                              (parent parent-panel)))
-      (define test-value-text (new (make-smart-text%
-                                       (string->symbol
-                                         (format "test-value-~s" n)))))
-      (send test-value-editor-canvas set-editor test-value-text)
-      (send test-value-text set-max-undo-history MAX_UNDO_DEPTH)
+
+      (define test-expression-editor-canvas
+        (make-test-editor-canvas n parent-panel "test-expression-~s"))
+      (define test-value-editor-canvas
+        (make-test-editor-canvas n parent-panel "test-value-~s"))
       
       (list test-message test-expression-editor-canvas test-value-editor-canvas))
 
