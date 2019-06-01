@@ -140,113 +140,62 @@
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
-    
-    (define test-1-message (new message%
-                                (parent right-panel)
-                                (label "Test 1")))
-    
-    (define test-expression-1-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-1-text (new (make-smart-text% 'test-expression-1)))
-    (send test-expression-1-editor-canvas set-editor test-expression-1-text)
-    (send test-expression-1-text set-max-undo-history MAX_UNDO_DEPTH)
 
     
-    (define test-value-1-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-1-text (new (make-smart-text% 'test-value-1)))
-    (send test-value-1-editor-canvas set-editor test-value-1-text)
-    (send test-value-1-text set-max-undo-history MAX_UNDO_DEPTH)
+    (define (make-test-message/expression/value n parent-panel)
+      (define test-message (new message%
+                                (parent parent-panel)
+                                (label (format "Test ~s" n))))
+      
+      (define test-expression-editor-canvas (new editor-canvas%
+                                                 (parent parent-panel)))
+      (define test-expression-text (new (make-smart-text%
+                                          (string->symbol
+                                            (format "test-expression-~s" n)))))
+      (send test-expression-editor-canvas set-editor test-expression-text)
+      (send test-expression-text set-max-undo-history MAX_UNDO_DEPTH)
+      
+      (define test-value-editor-canvas (new editor-canvas%
+                                              (parent parent-panel)))
+      (define test-value-text (new (make-smart-text%
+                                       (string->symbol
+                                         (format "test-value-~s" n)))))
+      (send test-value-editor-canvas set-editor test-value-text)
+      (send test-value-text set-max-undo-history MAX_UNDO_DEPTH)
+      
+      (list test-message test-expression-editor-canvas test-value-editor-canvas))
 
 
-    (define test-2-message (new message%
-                                (parent right-panel)
-                                (label "Test 2")))
-    
-    (define test-expression-2-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-2-text (new (make-smart-text% 'test-expression-2)))
-    (send test-expression-2-editor-canvas set-editor test-expression-2-text)
-    (send test-expression-2-text set-max-undo-history MAX_UNDO_DEPTH)
+    (define test-1-message/expression/value (make-test-message/expression/value 1 right-panel))
+    (define test-1-message (car test-1-message/expression/value))
+    (define test-expression-1-editor-canvas (cadr test-1-message/expression/value))
+    (define test-value-1-editor-canvas (caddr test-1-message/expression/value))
 
-    
-    (define test-value-2-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-2-text (new (make-smart-text% 'test-value-2)))
-    (send test-value-2-editor-canvas set-editor test-value-2-text)
-    (send test-value-2-text set-max-undo-history MAX_UNDO_DEPTH)
+    (define test-2-message/expression/value (make-test-message/expression/value 2 right-panel))
+    (define test-2-message (car test-2-message/expression/value))
+    (define test-expression-2-editor-canvas (cadr test-2-message/expression/value))
+    (define test-value-2-editor-canvas (caddr test-2-message/expression/value))
 
+    (define test-3-message/expression/value (make-test-message/expression/value 3 right-panel))
+    (define test-3-message (car test-3-message/expression/value))
+    (define test-expression-3-editor-canvas (cadr test-3-message/expression/value))
+    (define test-value-3-editor-canvas (caddr test-3-message/expression/value))
 
-    (define test-3-message (new message%
-                                (parent right-panel)
-                                (label "Test 3")))
-    
-    (define test-expression-3-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-3-text (new (make-smart-text% 'test-expression-3)))
-    (send test-expression-3-editor-canvas set-editor test-expression-3-text)
-    (send test-expression-3-text set-max-undo-history MAX_UNDO_DEPTH)
+    (define test-4-message/expression/value (make-test-message/expression/value 4 right-panel))
+    (define test-4-message (car test-4-message/expression/value))
+    (define test-expression-4-editor-canvas (cadr test-4-message/expression/value))
+    (define test-value-4-editor-canvas (caddr test-4-message/expression/value))
 
-    
-    (define test-value-3-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-3-text (new (make-smart-text% 'test-value-3)))
-    (send test-value-3-editor-canvas set-editor test-value-3-text)
-    (send test-value-3-text set-max-undo-history MAX_UNDO_DEPTH)
+    (define test-5-message/expression/value (make-test-message/expression/value 5 right-panel))
+    (define test-5-message (car test-5-message/expression/value))
+    (define test-expression-5-editor-canvas (cadr test-5-message/expression/value))
+    (define test-value-5-editor-canvas (caddr test-5-message/expression/value))
 
+    (define test-6-message/expression/value (make-test-message/expression/value 6 right-panel))
+    (define test-6-message (car test-6-message/expression/value))
+    (define test-expression-6-editor-canvas (cadr test-6-message/expression/value))
+    (define test-value-6-editor-canvas (caddr test-6-message/expression/value))
 
-    (define test-4-message (new message%
-                                (parent right-panel)
-                                (label "Test 4")))
-    
-    (define test-expression-4-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-4-text (new (make-smart-text% 'test-expression-4)))
-    (send test-expression-4-editor-canvas set-editor test-expression-4-text)
-    (send test-expression-4-text set-max-undo-history MAX_UNDO_DEPTH)
-
-    
-    (define test-value-4-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-4-text (new (make-smart-text% 'test-value-4)))
-    (send test-value-4-editor-canvas set-editor test-value-4-text)
-    (send test-value-4-text set-max-undo-history MAX_UNDO_DEPTH)
-    
-    
-    (define test-5-message (new message%
-                                (parent right-panel)
-                                (label "Test 5")))
-    
-    (define test-expression-5-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-5-text (new (make-smart-text% 'test-expression-5)))
-    (send test-expression-5-editor-canvas set-editor test-expression-5-text)
-    (send test-expression-5-text set-max-undo-history MAX_UNDO_DEPTH)
-
-    
-    (define test-value-5-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-5-text (new (make-smart-text% 'test-value-5)))
-    (send test-value-5-editor-canvas set-editor test-value-5-text)
-    (send test-value-5-text set-max-undo-history MAX_UNDO_DEPTH)
-
-
-    (define test-6-message (new message%
-                                (parent right-panel)
-                                (label "Test 6")))
-    
-    (define test-expression-6-editor-canvas (new editor-canvas%
-                                                 (parent right-panel)))
-    (define test-expression-6-text (new (make-smart-text% 'test-expression-6)))
-    (send test-expression-6-editor-canvas set-editor test-expression-6-text)
-    (send test-expression-6-text set-max-undo-history MAX_UNDO_DEPTH)
-
-    
-    (define test-value-6-editor-canvas (new editor-canvas%
-                                            (parent right-panel)))
-    (define test-value-6-text (new (make-smart-text% 'test-value-6)))
-    (send test-value-6-editor-canvas set-editor test-value-6-text)
-    (send test-value-6-text set-max-undo-history MAX_UNDO_DEPTH)
     
     (define tabbable-items
       (list
