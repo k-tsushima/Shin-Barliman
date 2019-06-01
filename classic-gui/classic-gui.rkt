@@ -71,19 +71,14 @@
    (define (after-edit-sequence)
      (printf "after-edit-sequence called\n")
      (define str (send this get-text))
-     (printf "text: ~s\n" str)
-     (define expr (with-handlers ([exn:fail? (lambda (exn)
-                                               (printf "exn: ~s\n" exn)
-                                               'invalid-expression)])
-                    (read (open-input-string str))))
-     (printf "expr: ~s\n" expr)
-     #|
-     (printf "syntaxexpr: ~s\n"
-             (with-handlers ([exn:fail? (lambda (exn)
-                                          (printf "exn: ~s\n" exn)
-                                          'invalid-syntax-expression)])
-               (read-syntax #f str)))
-     |#
+     (printf "definitions text: ~s\n" str)
+     (define expr-in-list (with-handlers ([exn:fail? (lambda (exn)
+                                                       (printf "exn: ~s\n" exn)
+                                                       'invalid-expression)])
+                            (list (read (open-input-string str)))))
+     (printf "definitions expr-in-list: ~s\n" expr-in-list)
+     (when (pair? expr-in-list)
+       (printf "definitions raw expr: ~s\n" (car expr-in-list)))
      (void))
    (augment after-insert)
    (augment after-edit-sequence)))
@@ -154,7 +149,17 @@
                                          (init-value "")
                                          (font TEXT-FIELD-FONT)
 					 (callback (lambda (self event)
-                                                     (printf "expression 1!\n")))))
+                                                     (define str (send self get-value))
+                                                     (printf "expression 1 text: ~s\n" str)
+                                                     (define expr-in-list
+                                                       (with-handlers ([exn:fail? (lambda (exn)
+                                                                                    (printf "exn: ~s\n" exn)
+                                                                                    'invalid-expression)])
+                                                         (list (read (open-input-string str)))))
+                                                     (printf "expression 1 expr-in-list: ~s\n" expr-in-list)
+                                                     (when (pair? expr-in-list)
+                                                       (printf "expression 1 raw expr: ~s\n" (car expr-in-list)))
+                                                     (void)))))
 
     (define test-value-1-field (new text-field%
                                     (label "")
@@ -163,7 +168,7 @@
                                     (font TEXT-FIELD-FONT)
                                     (callback (lambda (self event)
                                                 (printf "value 1!\n")))))
-
+    
     (define test-2-message (new message%
                                 (parent right-panel)
                                 (label "Test 2")))
