@@ -39,34 +39,34 @@
 ;;
 ;; Valid expressions are contained in a list.
 ;;
-;; There may be multiple expressions for definitions
-;; and best guess.
-;;
-;; Test expression and value canvases can contain at most
-;; one valid expression.
+;; A list may contain multiple valid expressions.
+;; This certainly makes sense for definitions and
+;; the best guess.  Multiple expressions for other
+;; canvases may not make sense, and should perhaps
+;; be treated as an error.
 ;;
 ;; Invalid expression(s) are represented by the non-list value
 ;; INVALID-EXPRESSION-VALUE.
 (define *definitions-expr*-box* (box INVALID-EXPRESSION-VALUE))
 (define *best-guess-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-1-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-1-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-1-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-1-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-2-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-2-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-2-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-2-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-3-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-3-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-3-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-3-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-4-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-4-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-4-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-4-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-5-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-5-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-5-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-5-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-6-expression-expr-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-6-value-expr-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-6-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-6-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
 
 
 (define smart-top-level-window%
@@ -103,13 +103,24 @@
       (printf "after-edit-sequence called for ~s\n" name)
       (define str (send this get-text))
       (printf "text for ~s: ~s\n" name str)
-      (define expr-in-list (with-handlers ([exn:fail? (lambda (exn)
-                                                        (printf "exn for ~s: ~s\n" name exn)
-                                                        INVALID-EXPRESSION-VALUE)])
-                             (list (read (open-input-string str)))))
-      (printf "~s expr-in-list: ~s\n" name expr-in-list)
-      (when (pair? expr-in-list)
-        (printf "~s raw expr: ~s\n" name (car expr-in-list)))
+      (define expr*-in-list (with-handlers ([exn:fail? (lambda (exn)
+                                                         (printf "exn for ~s: ~s\n" name exn)
+                                                         INVALID-EXPRESSION-VALUE)])
+                              (let ((ip (open-input-string str)))
+                                (let loop ([x (read ip)])
+                                  (cond
+                                    [(eof-object? x) '()]
+                                    [else (cons x (loop (read ip)))])))))
+      (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
+      (when (list? expr*-in-list)
+        (if (= (length expr*-in-list) 1)
+            (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
+            (begin
+              (printf "~s multiple raw exprs:\n" name)
+              (for-each
+                (lambda (expr)
+                  (printf "~s\n" expr))
+                expr*-in-list))))
       (void))
     (augment after-insert)
     (augment after-edit-sequence)))
