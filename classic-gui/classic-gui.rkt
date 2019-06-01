@@ -74,14 +74,16 @@
      (printf "text: ~s\n" str)
      (define expr (with-handlers ([exn:fail? (lambda (exn)
                                                (printf "exn: ~s\n" exn)
-                                               "invalid expression!")])
+                                               'invalid-expression)])
                     (read (open-input-string str))))
      (printf "expr: ~s\n" expr)
+     #|
      (printf "syntaxexpr: ~s\n"
              (with-handlers ([exn:fail? (lambda (exn)
                                           (printf "exn: ~s\n" exn)
-                                          "invalid syntax expression!")])
+                                          'invalid-syntax-expression)])
                (read-syntax #f str)))
+     |#
      (void))
    (augment after-insert)
    (augment after-edit-sequence)))
