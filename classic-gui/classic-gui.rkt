@@ -248,30 +248,38 @@
     (send test-value-6-editor-canvas set-editor test-value-6-text)
     (send test-value-6-text set-max-undo-history MAX_UNDO_DEPTH)
     
-    
+    (define tabbable-items
+      (list
+        definitions-editor-canvas
+        ;;
+        test-expression-1-editor-canvas
+        test-value-1-editor-canvas
+        ;;
+        test-expression-2-editor-canvas
+        test-value-2-editor-canvas
+        ;;
+        test-expression-3-editor-canvas
+        test-value-3-editor-canvas
+        ;;
+        test-expression-4-editor-canvas
+        test-value-4-editor-canvas
+        ;;
+        test-expression-5-editor-canvas
+        test-value-5-editor-canvas
+        ;;
+        test-expression-6-editor-canvas
+        test-value-6-editor-canvas
+        ))
 
-    (set-box! *tab-focus-order-box*
-              (list
-               ;; wrap around (reverse)
-               test-value-6-editor-canvas
-               ;; start
-               definitions-editor-canvas
-               ;;
-               test-expression-1-editor-canvas
-               test-value-1-editor-canvas
-               test-expression-2-editor-canvas
-               test-value-2-editor-canvas
-               test-expression-3-editor-canvas
-               test-value-3-editor-canvas
-               test-expression-4-editor-canvas
-               test-value-4-editor-canvas
-               test-expression-5-editor-canvas
-               test-value-5-editor-canvas              
-               test-expression-6-editor-canvas
-               test-value-6-editor-canvas
-               ;; wrap around
-               definitions-editor-canvas
-               ))
+    (define wrappable-tabbable-items
+      (append
+        ;; wrap around (reverse)
+       (list (car (reverse tabbable-items)))
+       tabbable-items
+       ;; wrap around (forward)
+       (list (car tabbable-items))))
+    
+    (set-box! *tab-focus-order-box* wrappable-tabbable-items)
 
     ;; trigger reflowing of object sizes
     (send top-window reflow-container)
