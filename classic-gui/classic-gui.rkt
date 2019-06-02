@@ -103,6 +103,17 @@
     (list *test-6-value-expr*-box* VALUE 6)
     ))
 
+(define (print-all-user-editable-canvases-boxes-values)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() (void)]
+      [`((,b ,type ,n) . ,rest)
+       (printf "~s ~s: ~s\n" type n (unbox b))
+       (loop rest)]
+      [`((,b ,type) . ,rest)
+       (printf "~s: ~s\n" type (unbox b))
+       (loop rest)])))
+
 (define smart-top-level-window%
  (class frame%
    (super-new)
@@ -128,7 +139,7 @@
    (override on-traverse-char)
    (override on-subwindow-focus)))
 
-(define (make-smart-text% type . args)
+(define (make-smart-text% canvas type . args)
   (let ((n (if (= (length args) 1)
                (car args)
                #f)))
@@ -145,6 +156,26 @@
           (printf "text for ~s: ~s\n" name str)
           (define expr*-in-list (read-expr*-from-string str name))
           (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
+          ;;
+          (define (get-user-canvas-box type n)
+             (let loop ([b* *user-editable-canvases-boxes*])
+               (match b*
+                 ['() (error 'get-user-canvas-box
+                             (format "box not found: ~s ~s" type n))]
+                 [`((,b ,t ,m) . ,rest)
+                  (if (and (equal? t type) (= n m))
+                      b
+                      (loop rest))]
+                 [`((,b ,t) . ,rest)
+                  (if (equal? t type)
+                      b
+                      (loop rest))])))
+          (define (update-user-canvas-box! type n new-expr)
+            (let ((b (get-user-canvas-box type n)))
+              (set-box! b new-expr)))
+          (when (send canvas is-enabled?)
+            (update-user-canvas-box! type n expr*-in-list))
+          ;;
           (when (list? expr*-in-list)
             (if (= (length expr*-in-list) 1)
                 (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
@@ -154,6 +185,9 @@
                     (lambda (expr)
                       (printf "~s\n" expr))
                     expr*-in-list))))
+          (printf "======================================\n")
+          (print-all-user-editable-canvases-boxes-values)
+          (printf "======================================\n\n")
           (void))
         (augment after-insert)
         (augment after-edit-sequence)))))
@@ -203,7 +237,7 @@
            (parent left-top-panel)
            (label "Definitions")))
     (define definitions-text
-      (new (make-smart-text% DEFINITIONS)))
+      (new (make-smart-text% definitions-editor-canvas DEFINITIONS)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -222,7 +256,7 @@
            (label "Best Guess")
            (enabled #f)))
     (define best-guess-text
-      (new (make-smart-text% BEST-GUESS)))
+      (new (make-smart-text% best-guess-editor-canvas BEST-GUESS)))
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
@@ -235,7 +269,7 @@
           (new editor-canvas%
                (parent parent-panel)))
         (define test-text
-          (new (make-smart-text% type n)))
+          (new (make-smart-text% test-editor-canvas type n)))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
