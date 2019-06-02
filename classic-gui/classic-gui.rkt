@@ -255,11 +255,37 @@
       (new vertical-pane%
            (parent left-vert-draggable-panel)
            (alignment '(left center))))
+
+    
+    (define definitions-messages-panel
+      (new horizontal-pane%
+           (parent left-top-panel)
+           (alignment '(center center))
+           (stretchable-height #f)))
+
+    (define definitions-messages-panel-left
+      (new horizontal-pane%
+           (parent definitions-messages-panel)
+           (alignment '(left center))
+           (stretchable-height #f)))
+
+    (define definitions-messages-panel-right
+      (new horizontal-pane%
+           (parent definitions-messages-panel)
+           (alignment '(right center))
+           (stretchable-height #f)))
+
     
     (define definitions-message
       (new message%
-           (parent left-top-panel)
+           (parent definitions-messages-panel-left)
            (label "Definitions")))
+
+    (define definitions-status-message
+      (new message%
+           (parent definitions-messages-panel-right)
+           (label "Definitions status")))
+
     
     (define definitions-editor-canvas
       (new editor-canvas%
@@ -274,10 +300,37 @@
 
 
 
+    (define best-guess-messages-panel
+      (new horizontal-pane%
+           (parent left-top-panel)
+           (alignment '(center center))
+           (stretchable-height #f)))
+
+    (define best-guess-messages-panel-left
+      (new horizontal-pane%
+           (parent best-guess-messages-panel)
+           (alignment '(left center))
+           (stretchable-height #f)))
+
+    (define best-guess-messages-panel-right
+      (new horizontal-pane%
+           (parent best-guess-messages-panel)
+           (alignment '(right center))
+           (stretchable-height #f)))
+
+
+    
+
     (define best-guess-message
       (new message%
-           (parent left-bottom-panel)
+           (parent best-guess-messages-panel-left)
            (label "Best Guess")))
+
+    (define best-guess-status-message
+      (new message%
+           (parent best-guess-messages-panel-right)
+           (label "Best Guess status")))
+
     
     (define best-guess-editor-canvas
       (new editor-canvas%
