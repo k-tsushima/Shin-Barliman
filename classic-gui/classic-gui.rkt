@@ -32,7 +32,7 @@
 
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
-(define INITIAL-STATUS-MESSAGE-STRING (make-string 30 #\ ))
+(define INITIAL-STATUS-MESSAGE-STRING (make-string 50 #\ ))
 
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
 
@@ -153,33 +153,35 @@
     (set-box! b new-expr)))
 
 (define (all-user-canvas-boxes-have-legal-exprs?)
-  (let loop ([b* *user-editable-canvases-boxes*])
+  (let loop ([b* *user-editable-canvases-boxes*])    
     (match b*
       ['() #t]
       [`((,b ,t) . ,rest)
-       (and (user-canvas-box-has-legal-exprs? b t)
+       (and (not (user-canvas-box-error b t))
             (loop rest))])))
 
-(define (user-canvas-box-has-legal-exprs? expr*-box type)
-  (match type
-    [`(,t ,m)
-     (unless (or (equal? t EXPRESSION)
-                 (equal? t VALUE))
-       (error 'user-canvas-box-has-legal-exprs?
-              (format "unknown type: ~s\n" t)))
-     (let ((expr* (unbox expr*-box)))
-       (and (list? expr*)
-            ;; for test expression and value canvases,
-            ;; make sure the list of expressions is either
-            ;; empty or of length 1 (disallow multiple
-            ;; expressions)
-            (<= (length expr*) 1)))]
-    [else       
-     (unless (equal? type DEFINITIONS)
-       (error 'user-canvas-box-has-legal-exprs?
-              (format "unknown type: ~s\n" type)))
-     (let ((expr* (unbox expr*-box)))
-       (list? expr*))]))
+(define (user-canvas-box-error expr*-box type)
+  (let ((expr* (unbox expr*-box)))
+    (cond
+      [(equal? INVALID-EXPRESSION-VALUE expr*)
+       "Illegal expression!"]
+      [(list? expr*)
+       (match type
+         [`(,t ,m)
+          (unless (or (equal? t EXPRESSION)
+                      (equal? t VALUE))
+            (error 'user-canvas-box-has-legal-exprs?
+                   (format "unknown type: ~s\n" t)))
+          ;; for test expression and value canvases,
+          ;; make sure the list of expressions is either
+          ;; empty or of length 1 (disallow multiple
+          ;; expressions)
+          (if (> (length expr*) 1)
+              "Too many expressions!"
+              #f)]
+         [else #f])]
+      [else (error 'user-canvas-box-error
+                   (format "unexpected expr*: ~s" expr*))])))
 
 (define (make-smart-text% type canvas status-message . args)
   (let ((expr*-box (if (= (length args) 1)
@@ -213,10 +215,10 @@
                         (printf "~s\n" expr))
                       expr*-in-list))))
 
-            (if (user-canvas-box-has-legal-exprs? expr*-box type)
-                (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)
-                (send status-message set-label "Illegal expression!"))
-            (send status-message refresh) 
+            (let ((e (user-canvas-box-error expr*-box type)))
+              (if e
+                  (send status-message set-label e)
+                  (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
             
             (printf "======================================\n")
             (print-all-user-editable-canvases-boxes-values)
