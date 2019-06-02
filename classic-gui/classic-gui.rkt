@@ -158,36 +158,60 @@
           (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
           ;;
           (define (get-user-canvas-box type n)
-             (let loop ([b* *user-editable-canvases-boxes*])
-               (match b*
-                 ['() (error 'get-user-canvas-box
-                             (format "box not found: ~s ~s" type n))]
-                 [`((,b ,t ,m) . ,rest)
-                  (if (and (equal? t type) (= n m))
-                      b
-                      (loop rest))]
-                 [`((,b ,t) . ,rest)
-                  (if (equal? t type)
-                      b
-                      (loop rest))])))
+            (let loop ([b* *user-editable-canvases-boxes*])
+              (match b*
+                ['() (error 'get-user-canvas-box
+                            (format "box not found: ~s ~s" type n))]
+                [`((,b ,t ,m) . ,rest)
+                 (if (and (equal? t type) (= n m))
+                     b
+                     (loop rest))]
+                [`((,b ,t) . ,rest)
+                 (if (equal? t type)
+                     b
+                     (loop rest))])))
           (define (update-user-canvas-box! type n new-expr)
             (let ((b (get-user-canvas-box type n)))
               (set-box! b new-expr)))
+          (define (all-user-canvas-boxes-have-legal-exprs?)
+            (let loop ([b* *user-editable-canvases-boxes*])
+              (match b*
+                ['() #t]
+                [`((,b ,t ,m) . ,rest)
+                 (let ((expr* (unbox b)))
+                   (and (list? expr*)
+                        ;; for test expression and value canvases,
+                        ;; make sure the list of expressions is either
+                        ;; empty or of length 1 (disallow multiple
+                        ;; expressions)
+                        (<= (length expr*) 1)
+                        (loop rest)))]
+                [`((,b ,t) . ,rest)
+                 (unless (equal? t DEFINITIONS)
+                   (error 'all-user-canvas-boxes-have-legal-exprs?
+                          (format "unknown type: ~s\n" t)))
+                 (let ((expr* (unbox b)))
+                   (and (list? expr*)
+                        (loop rest)))])))
+          ;; best-guess canvas isn't enabled/user editable
           (when (send canvas is-enabled?)
-            (update-user-canvas-box! type n expr*-in-list))
-          ;;
-          (when (list? expr*-in-list)
-            (if (= (length expr*-in-list) 1)
-                (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
-                (begin
-                  (printf "~s multiple raw exprs:\n" name)
-                  (for-each
-                    (lambda (expr)
-                      (printf "~s\n" expr))
-                    expr*-in-list))))
-          (printf "======================================\n")
-          (print-all-user-editable-canvases-boxes-values)
-          (printf "======================================\n\n")
+            (update-user-canvas-box! type n expr*-in-list)
+            (when (list? expr*-in-list)
+              (if (= (length expr*-in-list) 1)
+                  (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
+                  (begin
+                    (printf "~s multiple raw exprs:\n" name)
+                    (for-each
+                      (lambda (expr)
+                        (printf "~s\n" expr))
+                      expr*-in-list))))
+            (printf "======================================\n")
+            (print-all-user-editable-canvases-boxes-values)
+            (printf "======================================\n\n")
+            (when (send canvas is-enabled?)
+              (if (all-user-canvas-boxes-have-legal-exprs?)
+                  (printf "all user canvas boxes have legal exprs!\n")
+                  (printf "at least one canvas box contains an illegal expr!\n"))))
           (void))
         (augment after-insert)
         (augment after-edit-sequence)))))
