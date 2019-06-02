@@ -35,6 +35,7 @@
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
 
 (define DEFINITIONS 'definitions)
+(define BEST-GUESS 'best-guess)
 (define EXPRESSION 'expression)
 (define VALUE 'value)
 
@@ -127,29 +128,35 @@
    (override on-traverse-char)
    (override on-subwindow-focus)))
 
-(define (make-smart-text% name)
-  (class racket:text%
-    (super-new)
-    (define (after-insert start len)
-      (printf "Hello from ~s\n" name))
-    (define (after-edit-sequence)
-      (printf "after-edit-sequence called for ~s\n" name)
-      (define str (send this get-text))
-      (printf "text for ~s: ~s\n" name str)
-      (define expr*-in-list (read-expr*-from-string str name))
-      (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
-      (when (list? expr*-in-list)
-        (if (= (length expr*-in-list) 1)
-            (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
-            (begin
-              (printf "~s multiple raw exprs:\n" name)
-              (for-each
-                (lambda (expr)
-                  (printf "~s\n" expr))
-                expr*-in-list))))
-      (void))
-    (augment after-insert)
-    (augment after-edit-sequence)))
+(define (make-smart-text% type . args)
+  (let ((n (if (= (length args) 1)
+               (car args)
+               #f)))
+    (let ((name (if n
+                    (format "~s ~s" type n)
+                    (format "~s" type))))
+      (class racket:text%
+        (super-new)
+        (define (after-insert start len)
+          (printf "Hello from ~s\n" name))
+        (define (after-edit-sequence)
+          (printf "after-edit-sequence called for ~s\n" name)
+          (define str (send this get-text))
+          (printf "text for ~s: ~s\n" name str)
+          (define expr*-in-list (read-expr*-from-string str name))
+          (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
+          (when (list? expr*-in-list)
+            (if (= (length expr*-in-list) 1)
+                (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
+                (begin
+                  (printf "~s multiple raw exprs:\n" name)
+                  (for-each
+                    (lambda (expr)
+                      (printf "~s\n" expr))
+                    expr*-in-list))))
+          (void))
+        (augment after-insert)
+        (augment after-edit-sequence)))))
 
 
 
@@ -196,7 +203,7 @@
            (parent left-top-panel)
            (label "Definitions")))
     (define definitions-text
-      (new (make-smart-text% 'definitions)))
+      (new (make-smart-text% DEFINITIONS)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -215,7 +222,7 @@
            (label "Best Guess")
            (enabled #f)))
     (define best-guess-text
-      (new (make-smart-text% 'best-guess)))
+      (new (make-smart-text% BEST-GUESS)))
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
@@ -223,14 +230,12 @@
     
     (define (make-test-message/expression/value n parent-panel)
 
-      (define (make-test-editor-canvas n parent-panel format-str)
+      (define (make-test-editor-canvas type n parent-panel)
         (define test-editor-canvas
           (new editor-canvas%
                (parent parent-panel)))
         (define test-text
-          (new (make-smart-text%
-                (string->symbol
-                 (format format-str n)))))
+          (new (make-smart-text% type n)))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
@@ -242,9 +247,9 @@
              (label (format "Test ~s" n))))
 
       (define test-expression-editor-canvas
-        (make-test-editor-canvas n parent-panel "test-expression-~s"))
+        (make-test-editor-canvas EXPRESSION n parent-panel))
       (define test-value-editor-canvas
-        (make-test-editor-canvas n parent-panel "test-value-~s"))
+        (make-test-editor-canvas VALUE n parent-panel))
       
       (list test-message
             test-expression-editor-canvas
