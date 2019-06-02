@@ -193,7 +193,8 @@
                  (let ((expr* (unbox b)))
                    (and (list? expr*)
                         (loop rest)))])))
-          ;; best-guess canvas isn't enabled/user editable
+          ;; Ignore any canvas that isn't enabled/user editable
+          ;; ('best-guess')
           (when (send canvas is-enabled?)
             (update-user-canvas-box! type n expr*-in-list)
             (when (list? expr*-in-list)
