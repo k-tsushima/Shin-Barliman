@@ -154,26 +154,30 @@
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
       ['() #t]
-      [`((,b (,t ,m)) . ,rest)
-       (unless (or (equal? t EXPRESSION)
-                   (equal? t VALUE))
-         (error 'all-user-canvas-boxes-have-legal-exprs?
-                (format "unknown type: ~s\n" t)))
-       (let ((expr* (unbox b)))
-         (and (list? expr*)
-              ;; for test expression and value canvases,
-              ;; make sure the list of expressions is either
-              ;; empty or of length 1 (disallow multiple
-              ;; expressions)
-              (<= (length expr*) 1)
-              (loop rest)))]
-      [`((,b ,t) . ,rest)       
-       (unless (equal? t DEFINITIONS)
-         (error 'all-user-canvas-boxes-have-legal-exprs?
-                (format "unknown type: ~s\n" t)))
-       (let ((expr* (unbox b)))
-         (and (list? expr*)
-              (loop rest)))])))
+      [`((,b ,t) . ,rest)
+       (and (user-canvas-box-has-legal-exprs? b t)
+            (loop rest))])))
+
+(define (user-canvas-box-has-legal-exprs? expr*-box type)
+  (match type
+    [`(,t ,m)
+     (unless (or (equal? t EXPRESSION)
+                 (equal? t VALUE))
+       (error 'user-canvas-box-has-legal-exprs?
+              (format "unknown type: ~s\n" t)))
+     (let ((expr* (unbox expr*-box)))
+       (and (list? expr*)
+            ;; for test expression and value canvases,
+            ;; make sure the list of expressions is either
+            ;; empty or of length 1 (disallow multiple
+            ;; expressions)
+            (<= (length expr*) 1)))]
+    [else       
+     (unless (equal? type DEFINITIONS)
+       (error 'user-canvas-box-has-legal-exprs?
+              (format "unknown type: ~s\n" type)))
+     (let ((expr* (unbox expr*-box)))
+       (list? expr*))]))
 
 (define (make-smart-text% type canvas status-message . args)
   (let ((expr*-box (if (= (length args) 1)
