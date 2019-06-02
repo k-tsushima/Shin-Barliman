@@ -284,7 +284,7 @@
     (define definitions-status-message
       (new message%
            (parent definitions-messages-panel-right)
-           (label "Definitions status")))
+           (label "")))
 
     
     (define definitions-editor-canvas
@@ -329,7 +329,7 @@
     (define best-guess-status-message
       (new message%
            (parent best-guess-messages-panel-right)
-           (label "Best Guess status")))
+           (label "")))
 
     
     (define best-guess-editor-canvas
@@ -384,7 +384,7 @@
       (define test-status-message
         (new message%
              (parent messages-panel-right)
-             (label (format "Test ~s status" n))))
+             (label "")))
 
       (define test-expression-editor-canvas
         (make-test-editor-canvas EXPRESSION n parent-panel))
