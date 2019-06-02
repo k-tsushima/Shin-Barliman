@@ -232,7 +232,8 @@
       (car test-1-message/expression/value))
     (define test-expression-1-editor-canvas
       (cadr test-1-message/expression/value))
-    (define test-value-1-editor-canvas (caddr test-1-message/expression/value))
+    (define test-value-1-editor-canvas
+      (caddr test-1-message/expression/value))
 
     (define test-2-message/expression/value
       (make-test-message/expression/value 2 right-panel))
