@@ -101,14 +101,15 @@
       (printf "after-edit-sequence called for ~s\n" name)
       (define str (send this get-text))
       (printf "text for ~s: ~s\n" name str)
-      (define expr*-in-list (with-handlers ([exn:fail? (lambda (exn)
-                                                         (printf "exn for ~s: ~s\n" name exn)
-                                                         INVALID-EXPRESSION-VALUE)])
-                              (let ((ip (open-input-string str)))
-                                (let loop ([x (read ip)])
-                                  (cond
-                                    [(eof-object? x) '()]
-                                    [else (cons x (loop (read ip)))])))))
+      (define expr*-in-list
+        (with-handlers ([exn:fail? (lambda (exn)
+                                     (printf "exn for ~s: ~s\n" name exn)
+                                     INVALID-EXPRESSION-VALUE)])
+          (let ((ip (open-input-string str)))
+            (let loop ([x (read ip)])
+              (cond
+                [(eof-object? x) '()]
+                [else (cons x (loop (read ip)))])))))
       (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
       (when (list? expr*-in-list)
         (if (= (length expr*-in-list) 1)
@@ -131,36 +132,44 @@
                          (width HORIZ-SIZE)
                          (height VERT-SIZE))))
 
-    (define outermost-hor-draggable-panel (new panel:horizontal-dragable%
-                                               (parent top-window)
-                                               (alignment '(left center))
-                                               (stretchable-height #t)))
+    (define outermost-hor-draggable-panel
+      (new panel:horizontal-dragable%
+           (parent top-window)
+           (alignment '(left center))
+           (stretchable-height #t)))
 
-    (define left-vert-draggable-panel (new panel:vertical-dragable%
-                                           (parent outermost-hor-draggable-panel)
-                                           (alignment '(left center))))
+    (define left-vert-draggable-panel
+      (new panel:vertical-dragable%
+           (parent outermost-hor-draggable-panel)
+           (alignment '(left center))))
 
-    (define right-panel (new vertical-pane%
-                             (parent outermost-hor-draggable-panel)
-                             (alignment '(left top))
-                             (stretchable-height #f)))
+    (define right-panel
+      (new vertical-pane%
+           (parent outermost-hor-draggable-panel)
+           (alignment '(left top))
+           (stretchable-height #f)))
 
-    (define left-top-panel (new vertical-pane%
-                                (parent left-vert-draggable-panel)
-                                (alignment '(left center))))
+    (define left-top-panel
+      (new vertical-pane%
+           (parent left-vert-draggable-panel)
+           (alignment '(left center))))
 
-    (define left-bottom-panel (new vertical-pane%
-                                   (parent left-vert-draggable-panel)
-                                   (alignment '(left center))))
+    (define left-bottom-panel
+      (new vertical-pane%
+           (parent left-vert-draggable-panel)
+           (alignment '(left center))))
     
-    (define definitions-message (new message%
-                                     (parent left-top-panel)
-                                     (label "Definitions")))
+    (define definitions-message
+      (new message%
+           (parent left-top-panel)
+           (label "Definitions")))
     
-    (define definitions-editor-canvas (new editor-canvas%
-                                           (parent left-top-panel)
-                                           (label "Definitions")))
-    (define definitions-text (new (make-smart-text% 'definitions)))
+    (define definitions-editor-canvas
+      (new editor-canvas%
+           (parent left-top-panel)
+           (label "Definitions")))
+    (define definitions-text
+      (new (make-smart-text% 'definitions)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -168,15 +177,18 @@
 
 
 
-    (define best-guess-message (new message%
-                                    (parent left-bottom-panel)
-                                    (label "Best Guess")))
+    (define best-guess-message
+      (new message%
+           (parent left-bottom-panel)
+           (label "Best Guess")))
     
-    (define best-guess-editor-canvas (new editor-canvas%
-                                          (parent left-bottom-panel)
-                                          (label "Best Guess")
-					  (enabled #f)))
-    (define best-guess-text (new (make-smart-text% 'best-guess)))
+    (define best-guess-editor-canvas
+      (new editor-canvas%
+           (parent left-bottom-panel)
+           (label "Best Guess")
+           (enabled #f)))
+    (define best-guess-text
+      (new (make-smart-text% 'best-guess)))
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
@@ -185,57 +197,85 @@
     (define (make-test-message/expression/value n parent-panel)
 
       (define (make-test-editor-canvas n parent-panel format-str)
-        (define test-editor-canvas (new editor-canvas%
-                                        (parent parent-panel)))
-        (define test-text (new (make-smart-text%
-                                 (string->symbol
-                                   (format format-str n)))))
+        (define test-editor-canvas
+          (new editor-canvas%
+               (parent parent-panel)))
+        (define test-text
+          (new (make-smart-text%
+                (string->symbol
+                 (format format-str n)))))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
         test-editor-canvas)
       
-      (define test-message (new message%
-                                (parent parent-panel)
-                                (label (format "Test ~s" n))))
+      (define test-message
+        (new message%
+             (parent parent-panel)
+             (label (format "Test ~s" n))))
 
       (define test-expression-editor-canvas
         (make-test-editor-canvas n parent-panel "test-expression-~s"))
       (define test-value-editor-canvas
         (make-test-editor-canvas n parent-panel "test-value-~s"))
       
-      (list test-message test-expression-editor-canvas test-value-editor-canvas))
+      (list test-message
+            test-expression-editor-canvas
+            test-value-editor-canvas))
 
 
-    (define test-1-message/expression/value (make-test-message/expression/value 1 right-panel))
-    (define test-1-message (car test-1-message/expression/value))
-    (define test-expression-1-editor-canvas (cadr test-1-message/expression/value))
+    (define test-1-message/expression/value
+      (make-test-message/expression/value 1 right-panel))
+    (define test-1-message
+      (car test-1-message/expression/value))
+    (define test-expression-1-editor-canvas
+      (cadr test-1-message/expression/value))
     (define test-value-1-editor-canvas (caddr test-1-message/expression/value))
 
-    (define test-2-message/expression/value (make-test-message/expression/value 2 right-panel))
-    (define test-2-message (car test-2-message/expression/value))
-    (define test-expression-2-editor-canvas (cadr test-2-message/expression/value))
-    (define test-value-2-editor-canvas (caddr test-2-message/expression/value))
+    (define test-2-message/expression/value
+      (make-test-message/expression/value 2 right-panel))
+    (define test-2-message
+      (car test-2-message/expression/value))
+    (define test-expression-2-editor-canvas
+      (cadr test-2-message/expression/value))
+    (define test-value-2-editor-canvas
+      (caddr test-2-message/expression/value))
 
-    (define test-3-message/expression/value (make-test-message/expression/value 3 right-panel))
-    (define test-3-message (car test-3-message/expression/value))
-    (define test-expression-3-editor-canvas (cadr test-3-message/expression/value))
-    (define test-value-3-editor-canvas (caddr test-3-message/expression/value))
+    (define test-3-message/expression/value
+      (make-test-message/expression/value 3 right-panel))
+    (define test-3-message
+      (car test-3-message/expression/value))
+    (define test-expression-3-editor-canvas
+      (cadr test-3-message/expression/value))
+    (define test-value-3-editor-canvas
+      (caddr test-3-message/expression/value))
 
-    (define test-4-message/expression/value (make-test-message/expression/value 4 right-panel))
-    (define test-4-message (car test-4-message/expression/value))
-    (define test-expression-4-editor-canvas (cadr test-4-message/expression/value))
-    (define test-value-4-editor-canvas (caddr test-4-message/expression/value))
+    (define test-4-message/expression/value
+      (make-test-message/expression/value 4 right-panel))
+    (define test-4-message
+      (car test-4-message/expression/value))
+    (define test-expression-4-editor-canvas
+      (cadr test-4-message/expression/value))
+    (define test-value-4-editor-canvas
+      (caddr test-4-message/expression/value))
 
-    (define test-5-message/expression/value (make-test-message/expression/value 5 right-panel))
-    (define test-5-message (car test-5-message/expression/value))
-    (define test-expression-5-editor-canvas (cadr test-5-message/expression/value))
-    (define test-value-5-editor-canvas (caddr test-5-message/expression/value))
+    (define test-5-message/expression/value
+      (make-test-message/expression/value 5 right-panel))
+    (define test-5-message
+      (car test-5-message/expression/value))
+    (define test-expression-5-editor-canvas
+      (cadr test-5-message/expression/value))
+    (define test-value-5-editor-canvas
+      (caddr test-5-message/expression/value))
 
-    (define test-6-message/expression/value (make-test-message/expression/value 6 right-panel))
-    (define test-6-message (car test-6-message/expression/value))
-    (define test-expression-6-editor-canvas (cadr test-6-message/expression/value))
-    (define test-value-6-editor-canvas (caddr test-6-message/expression/value))
+    (define test-6-message/expression/value
+      (make-test-message/expression/value 6 right-panel))
+    (define test-6-message
+      (car test-6-message/expression/value))
+    (define test-expression-6-editor-canvas
+      (cadr test-6-message/expression/value))
+    (define test-value-6-editor-canvas
+      (caddr test-6-message/expression/value))
 
     
     (define tabbable-items
