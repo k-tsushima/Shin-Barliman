@@ -196,7 +196,7 @@
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('best-guess')
           (when (send canvas is-enabled?)
-            (update-user-canvas-box! type expr*-in-list)
+            (set-box! expr*-box expr*-in-list)            
             (when (list? expr*-in-list)
               (if (= (length expr*-in-list) 1)
                   (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
