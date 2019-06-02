@@ -79,6 +79,22 @@
 (define *test-6-expression-expr*-box* (box '()))
 (define *test-6-value-expr*-box* (box '()))
 
+(define *user-editable-canvases-boxes*
+  `(
+    (*definitions-expr*-box* DEFINITIONS)
+    (*test-1-expression-expr*-box* EXPRESSION 1)
+    (*test-1-value-expr*-box* VALUE 1)
+    (*test-2-expression-expr*-box* EXPRESSION 2)
+    (*test-2-value-expr*-box* VALUE 2)
+    (*test-3-expression-expr*-box* EXPRESSION 3)
+    (*test-3-value-expr*-box* VALUE 3)
+    (*test-4-expression-expr*-box* EXPRESSION 4)
+    (*test-4-value-expr*-box* VALUE 4)
+    (*test-5-expression-expr*-box* EXPRESSION 5)
+    (*test-5-value-expr*-box* VALUE 5)
+    (*test-6-expression-expr*-box* EXPRESSION 6)
+    (*test-6-value-expr*-box* VALUE 6)
+    ))
 
 (define smart-top-level-window%
  (class frame%
