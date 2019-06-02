@@ -89,27 +89,24 @@
 (define *user-editable-canvases-boxes*
   (list
     (list *definitions-expr*-box* DEFINITIONS)
-    (list *test-1-expression-expr*-box* EXPRESSION 1)
-    (list *test-1-value-expr*-box* VALUE 1)
-    (list *test-2-expression-expr*-box* EXPRESSION 2)
-    (list *test-2-value-expr*-box* VALUE 2)
-    (list *test-3-expression-expr*-box* EXPRESSION 3)
-    (list *test-3-value-expr*-box* VALUE 3)
-    (list *test-4-expression-expr*-box* EXPRESSION 4)
-    (list *test-4-value-expr*-box* VALUE 4)
-    (list *test-5-expression-expr*-box* EXPRESSION 5)
-    (list *test-5-value-expr*-box* VALUE 5)
-    (list *test-6-expression-expr*-box* EXPRESSION 6)
-    (list *test-6-value-expr*-box* VALUE 6)
+    (list *test-1-expression-expr*-box* (list EXPRESSION 1))
+    (list *test-1-value-expr*-box* (list VALUE 1))
+    (list *test-2-expression-expr*-box* (list EXPRESSION 2))
+    (list *test-2-value-expr*-box* (list VALUE 2))
+    (list *test-3-expression-expr*-box* (list EXPRESSION 3))
+    (list *test-3-value-expr*-box* (list VALUE 3))
+    (list *test-4-expression-expr*-box* (list EXPRESSION 4))
+    (list *test-4-value-expr*-box* (list VALUE 4))
+    (list *test-5-expression-expr*-box* (list EXPRESSION 5))
+    (list *test-5-value-expr*-box* (list VALUE 5))
+    (list *test-6-expression-expr*-box* (list EXPRESSION 6))
+    (list *test-6-value-expr*-box* (list VALUE 6))
     ))
 
 (define (print-all-user-editable-canvases-boxes-values)
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
       ['() (void)]
-      [`((,b ,type ,n) . ,rest)
-       (printf "~s ~s: ~s\n" type n (unbox b))
-       (loop rest)]
       [`((,b ,type) . ,rest)
        (printf "~s: ~s\n" type (unbox b))
        (loop rest)])))
@@ -139,29 +136,29 @@
    (override on-traverse-char)
    (override on-subwindow-focus)))
 
-(define (get-user-canvas-box type n)
+(define (get-user-canvas-box type)
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
       ['() (error 'get-user-canvas-box
-                  (format "box not found: ~s ~s" type n))]
-      [`((,b ,t ,m) . ,rest)
-       (if (and (equal? t type) (= n m))
-           b
-           (loop rest))]
+                  (format "box not found: ~s" type))]
       [`((,b ,t) . ,rest)
        (if (equal? t type)
            b
            (loop rest))])))
 
-(define (update-user-canvas-box! type n new-expr)
-  (let ((b (get-user-canvas-box type n)))
+(define (update-user-canvas-box! type new-expr)
+  (let ((b (get-user-canvas-box type)))
     (set-box! b new-expr)))
 
 (define (all-user-canvas-boxes-have-legal-exprs?)
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
       ['() #t]
-      [`((,b ,t ,m) . ,rest)
+      [`((,b (,t ,m)) . ,rest)
+       (unless (or (equal? t EXPRESSION)
+                   (equal? t VALUE))
+         (error 'all-user-canvas-boxes-have-legal-exprs?
+                (format "unknown type: ~s\n" t)))
        (let ((expr* (unbox b)))
          (and (list? expr*)
               ;; for test expression and value canvases,
@@ -170,7 +167,7 @@
               ;; expressions)
               (<= (length expr*) 1)
               (loop rest)))]
-      [`((,b ,t) . ,rest)
+      [`((,b ,t) . ,rest)       
        (unless (equal? t DEFINITIONS)
          (error 'all-user-canvas-boxes-have-legal-exprs?
                 (format "unknown type: ~s\n" t)))
@@ -178,13 +175,13 @@
          (and (list? expr*)
               (loop rest)))])))
 
-(define (make-smart-text% canvas type . args)
-  (let ((n (if (= (length args) 1)
-               (car args)
-               #f)))
-    (let ((name (if n
-                    (format "~s ~s" type n)
-                    (format "~s" type))))
+(define (make-smart-text% type canvas status-message . args)
+  (let ((expr*-box (if (= (length args) 1)
+                       (car args)
+                       #f)))
+    (let ((name (match type
+                  [`(,t ,n) (format "~s ~s" t n)]
+                  [else (format "~s" type)])))
       (class racket:text%
         (super-new)
         (define (after-insert start len)
@@ -199,7 +196,7 @@
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('best-guess')
           (when (send canvas is-enabled?)
-            (update-user-canvas-box! type n expr*-in-list)
+            (update-user-canvas-box! type expr*-in-list)
             (when (list? expr*-in-list)
               (if (= (length expr*-in-list) 1)
                   (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
@@ -292,7 +289,11 @@
            (parent left-top-panel)
            (label "Definitions")))
     (define definitions-text
-      (new (make-smart-text% definitions-editor-canvas DEFINITIONS)))
+      (new (make-smart-text%
+            DEFINITIONS
+            definitions-editor-canvas
+            definitions-status-message
+            *definitions-expr*-box*)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -338,20 +339,36 @@
            (label "Best Guess")
            (enabled #f)))
     (define best-guess-text
-      (new (make-smart-text% best-guess-editor-canvas BEST-GUESS)))
+      (new (make-smart-text%
+            BEST-GUESS
+            best-guess-editor-canvas
+            best-guess-status-message)))
     (send best-guess-text insert "")
     (send best-guess-editor-canvas set-editor best-guess-text)
 
 
     
-    (define (make-test-message/status/expression/value n parent-panel)
+    (define (make-test-message/status/expression/value
+             n
+             parent-panel
+             expression-expr*-box
+             value-expr*-box)
 
-      (define (make-test-editor-canvas type n parent-panel)
+      (define (make-test-editor-canvas
+               type-name
+               n
+               parent-panel
+               status-message
+               expr*-box)
         (define test-editor-canvas
           (new editor-canvas%
                (parent parent-panel)))
         (define test-text
-          (new (make-smart-text% test-editor-canvas type n)))
+          (new (make-smart-text%
+                (list type-name n)
+                test-editor-canvas
+                status-message
+                expr*-box)))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
@@ -387,18 +404,31 @@
              (label "")))
 
       (define test-expression-editor-canvas
-        (make-test-editor-canvas EXPRESSION n parent-panel))
+        (make-test-editor-canvas
+         EXPRESSION
+         n
+         parent-panel
+         test-status-message
+         expression-expr*-box))
       (define test-value-editor-canvas
-        (make-test-editor-canvas VALUE n parent-panel))
+        (make-test-editor-canvas
+         VALUE
+         n
+         parent-panel
+         test-status-message
+         value-expr*-box))
       
       (list test-message
             test-status-message
             test-expression-editor-canvas
             test-value-editor-canvas))
 
-
     (define test-1-message/status/expression/value
-      (make-test-message/status/expression/value 1 right-panel))
+      (make-test-message/status/expression/value
+       1
+       right-panel
+       *test-1-expression-expr*-box*
+       *test-1-value-expr*-box*))
     (define test-1-message
       (car test-1-message/status/expression/value))
     (define test-1-status-message
@@ -409,7 +439,11 @@
       (cadddr test-1-message/status/expression/value))
 
     (define test-2-message/status/expression/value
-      (make-test-message/status/expression/value 2 right-panel))
+      (make-test-message/status/expression/value
+       2
+       right-panel
+       *test-2-expression-expr*-box*
+       *test-2-value-expr*-box*))
     (define test-2-message
       (car test-2-message/status/expression/value))
     (define test-2-status-message
@@ -418,9 +452,13 @@
       (caddr test-2-message/status/expression/value))
     (define test-value-2-editor-canvas
       (cadddr test-2-message/status/expression/value))
-    
+
     (define test-3-message/status/expression/value
-      (make-test-message/status/expression/value 3 right-panel))
+      (make-test-message/status/expression/value
+       3
+       right-panel
+       *test-3-expression-expr*-box*
+       *test-3-value-expr*-box*))
     (define test-3-message
       (car test-3-message/status/expression/value))
     (define test-3-status-message
@@ -429,9 +467,13 @@
       (caddr test-3-message/status/expression/value))
     (define test-value-3-editor-canvas
       (cadddr test-3-message/status/expression/value))
-    
+
     (define test-4-message/status/expression/value
-      (make-test-message/status/expression/value 4 right-panel))
+      (make-test-message/status/expression/value
+       4
+       right-panel
+       *test-4-expression-expr*-box*
+       *test-4-value-expr*-box*))
     (define test-4-message
       (car test-4-message/status/expression/value))
     (define test-4-status-message
@@ -440,9 +482,13 @@
       (caddr test-4-message/status/expression/value))
     (define test-value-4-editor-canvas
       (cadddr test-4-message/status/expression/value))
-    
+
     (define test-5-message/status/expression/value
-      (make-test-message/status/expression/value 5 right-panel))
+      (make-test-message/status/expression/value
+       5
+       right-panel
+       *test-5-expression-expr*-box*
+       *test-5-value-expr*-box*))
     (define test-5-message
       (car test-5-message/status/expression/value))
     (define test-5-status-message
@@ -451,9 +497,13 @@
       (caddr test-5-message/status/expression/value))
     (define test-value-5-editor-canvas
       (cadddr test-5-message/status/expression/value))
-    
+
     (define test-6-message/status/expression/value
-      (make-test-message/status/expression/value 6 right-panel))
+      (make-test-message/status/expression/value
+       6
+       right-panel
+       *test-6-expression-expr*-box*
+       *test-6-value-expr*-box*))
     (define test-6-message
       (car test-6-message/status/expression/value))
     (define test-6-status-message
@@ -462,7 +512,6 @@
       (caddr test-6-message/status/expression/value))
     (define test-value-6-editor-canvas
       (cadddr test-6-message/status/expression/value))
-    
 
     
     (define tabbable-items
