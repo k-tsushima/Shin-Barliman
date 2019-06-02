@@ -37,6 +37,16 @@
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
+(define (read-expr*-from-string str name)
+  (with-handlers ([exn:fail? (lambda (exn)
+                               (printf "exn for ~s: ~s\n" name exn)
+                               INVALID-EXPRESSION-VALUE)])
+    (let ((ip (open-input-string str)))
+      (let loop ([x (read ip)])
+        (cond
+          [(eof-object? x) '()]
+          [else (cons x (loop (read ip)))])))))
+
 ;; Current expression(s) for each user-editable editor canvas.
 ;;
 ;; Valid expressions are contained in a list.
@@ -48,7 +58,8 @@
 ;;
 ;; Invalid expression(s) are represented by the non-list value
 ;; INVALID-EXPRESSION-VALUE.
-(define *definitions-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *definitions-expr*-box*
+  (box (read-expr*-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
 ;;
 (define *test-1-expression-expr*-box* (box '()))
 (define *test-1-value-expr*-box* (box '()))
@@ -103,15 +114,7 @@
       (printf "after-edit-sequence called for ~s\n" name)
       (define str (send this get-text))
       (printf "text for ~s: ~s\n" name str)
-      (define expr*-in-list
-        (with-handlers ([exn:fail? (lambda (exn)
-                                     (printf "exn for ~s: ~s\n" name exn)
-                                     INVALID-EXPRESSION-VALUE)])
-          (let ((ip (open-input-string str)))
-            (let loop ([x (read ip)])
-              (cond
-                [(eof-object? x) '()]
-                [else (cons x (loop (read ip)))])))))
+      (define expr*-in-list (read-expr*-from-string str name))
       (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
       (when (list? expr*-in-list)
         (if (= (length expr*-in-list) 1)
