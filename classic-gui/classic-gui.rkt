@@ -24,7 +24,7 @@
 
 ;;; Initial window size
 (define HORIZ-SIZE 1200)
-(define VERT-SIZE 800)
+(define VERT-SIZE 900)
 
 (define *verbose* #t)
 
@@ -360,7 +360,7 @@
 
 
     
-    (define (make-test-message/status/expression/value
+    (define (make-test-message/status/status/expression/value
              n
              parent-panel
              expression-expr*-box
@@ -386,33 +386,33 @@
 
         test-editor-canvas)
 
-      (define messages-panel
+      (define expression-messages-panel
         (new horizontal-pane%
              (parent parent-panel)
              (alignment '(center center))
              (stretchable-height #f)))
 
-      (define messages-panel-left
+      (define expression-messages-panel-left
         (new horizontal-pane%
-             (parent messages-panel)
+             (parent expression-messages-panel)
              (alignment '(left center))
              (stretchable-height #f)))
 
-      (define messages-panel-right
+      (define expression-messages-panel-right
         (new horizontal-pane%
-             (parent messages-panel)
+             (parent expression-messages-panel)
              (alignment '(right center))
              (stretchable-height #f)))
 
       
-      (define test-message
+      (define test-expression-message
         (new message%
-             (parent messages-panel-left)
+             (parent expression-messages-panel-left)
              (label (format "Test ~s" n))))
 
-      (define test-status-message
+      (define test-expression-status-message
         (new message%
-             (parent messages-panel-right)
+             (parent expression-messages-panel-right)
              (label INITIAL-STATUS-MESSAGE-STRING)))
 
       (define test-expression-editor-canvas
@@ -420,151 +420,148 @@
          EXPRESSION
          n
          parent-panel
-         test-status-message
+         test-expression-status-message
          expression-expr*-box))
+
+      (define value-messages-panel
+        (new horizontal-pane%
+             (parent parent-panel)
+             (alignment '(center center))
+             (stretchable-height #f)))
+
+      (define value-messages-panel-left
+        (new horizontal-pane%
+             (parent value-messages-panel)
+             (alignment '(left center))
+             (stretchable-height #f)))
+
+      (define value-messages-panel-right
+        (new horizontal-pane%
+             (parent value-messages-panel)
+             (alignment '(right center))
+             (stretchable-height #f)))
+      
+      (define test-value-status-message
+        (new message%
+             (parent value-messages-panel-right)
+             (label INITIAL-STATUS-MESSAGE-STRING)))
+      
       (define test-value-editor-canvas
         (make-test-editor-canvas
          VALUE
          n
          parent-panel
-         test-status-message
+         test-value-status-message
          value-expr*-box))
       
-      (list test-message
-            test-status-message
-            test-expression-editor-canvas
-            test-value-editor-canvas))
+      (values test-expression-message
+              test-expression-status-message
+              test-value-status-message
+              test-expression-editor-canvas
+              test-value-editor-canvas))
 
-    (define test-1-message/status/expression/value
-      (make-test-message/status/expression/value
-       1
-       right-panel
-       *test-1-expression-expr*-box*
-       *test-1-value-expr*-box*))
-    (define test-1-message
-      (car test-1-message/status/expression/value))
-    (define test-1-status-message
-      (cadr test-1-message/status/expression/value))
-    (define test-expression-1-editor-canvas
-      (caddr test-1-message/status/expression/value))
-    (define test-value-1-editor-canvas
-      (cadddr test-1-message/status/expression/value))
-
-    (define test-2-message/status/expression/value
-      (make-test-message/status/expression/value
-       2
-       right-panel
-       *test-2-expression-expr*-box*
-       *test-2-value-expr*-box*))
-    (define test-2-message
-      (car test-2-message/status/expression/value))
-    (define test-2-status-message
-      (cadr test-2-message/status/expression/value))
-    (define test-expression-2-editor-canvas
-      (caddr test-2-message/status/expression/value))
-    (define test-value-2-editor-canvas
-      (cadddr test-2-message/status/expression/value))
-
-    (define test-3-message/status/expression/value
-      (make-test-message/status/expression/value
-       3
-       right-panel
-       *test-3-expression-expr*-box*
-       *test-3-value-expr*-box*))
-    (define test-3-message
-      (car test-3-message/status/expression/value))
-    (define test-3-status-message
-      (cadr test-3-message/status/expression/value))
-    (define test-expression-3-editor-canvas
-      (caddr test-3-message/status/expression/value))
-    (define test-value-3-editor-canvas
-      (cadddr test-3-message/status/expression/value))
-
-    (define test-4-message/status/expression/value
-      (make-test-message/status/expression/value
-       4
-       right-panel
-       *test-4-expression-expr*-box*
-       *test-4-value-expr*-box*))
-    (define test-4-message
-      (car test-4-message/status/expression/value))
-    (define test-4-status-message
-      (cadr test-4-message/status/expression/value))
-    (define test-expression-4-editor-canvas
-      (caddr test-4-message/status/expression/value))
-    (define test-value-4-editor-canvas
-      (cadddr test-4-message/status/expression/value))
-
-    (define test-5-message/status/expression/value
-      (make-test-message/status/expression/value
-       5
-       right-panel
-       *test-5-expression-expr*-box*
-       *test-5-value-expr*-box*))
-    (define test-5-message
-      (car test-5-message/status/expression/value))
-    (define test-5-status-message
-      (cadr test-5-message/status/expression/value))
-    (define test-expression-5-editor-canvas
-      (caddr test-5-message/status/expression/value))
-    (define test-value-5-editor-canvas
-      (cadddr test-5-message/status/expression/value))
-
-    (define test-6-message/status/expression/value
-      (make-test-message/status/expression/value
-       6
-       right-panel
-       *test-6-expression-expr*-box*
-       *test-6-value-expr*-box*))
-    (define test-6-message
-      (car test-6-message/status/expression/value))
-    (define test-6-status-message
-      (cadr test-6-message/status/expression/value))
-    (define test-expression-6-editor-canvas
-      (caddr test-6-message/status/expression/value))
-    (define test-value-6-editor-canvas
-      (cadddr test-6-message/status/expression/value))
+    (let*-values ([(test-1-message
+                    test-1-expression-status-message
+                    test-1-value-status-message
+                    test-expression-1-editor-canvas
+                    test-value-1-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    1
+                    right-panel
+                    *test-1-expression-expr*-box*
+                    *test-1-value-expr*-box*)]
+                  [(test-2-message
+                    test-2-expression-status-message
+                    test-2-value-status-message
+                    test-expression-2-editor-canvas
+                    test-value-2-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    2
+                    right-panel
+                    *test-2-expression-expr*-box*
+                    *test-2-value-expr*-box*)]
+                  [(test-3-message
+                    test-3-expression-status-message
+                    test-3-value-status-message
+                    test-expression-3-editor-canvas
+                    test-value-3-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    3
+                    right-panel
+                    *test-3-expression-expr*-box*
+                    *test-3-value-expr*-box*)]
+                  [(test-4-message
+                    test-4-expression-status-message
+                    test-4-value-status-message
+                    test-expression-4-editor-canvas
+                    test-value-4-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    4
+                    right-panel
+                    *test-4-expression-expr*-box*
+                    *test-4-value-expr*-box*)]
+                  [(test-5-message
+                    test-5-expression-status-message
+                    test-5-value-status-message
+                    test-expression-5-editor-canvas
+                    test-value-5-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    5
+                    right-panel
+                    *test-5-expression-expr*-box*
+                    *test-5-value-expr*-box*)]
+                  [(test-6-message
+                    test-6-expression-status-message
+                    test-6-value-status-message
+                    test-expression-6-editor-canvas
+                    test-value-6-editor-canvas)
+                   (make-test-message/status/status/expression/value
+                    6
+                    right-panel
+                    *test-6-expression-expr*-box*
+                    *test-6-value-expr*-box*)])
 
     
-    (define tabbable-items
-      (list
-        definitions-editor-canvas
-        ;;
-        test-expression-1-editor-canvas
-        test-value-1-editor-canvas
-        ;;
-        test-expression-2-editor-canvas
-        test-value-2-editor-canvas
-        ;;
-        test-expression-3-editor-canvas
-        test-value-3-editor-canvas
-        ;;
-        test-expression-4-editor-canvas
-        test-value-4-editor-canvas
-        ;;
-        test-expression-5-editor-canvas
-        test-value-5-editor-canvas
-        ;;
-        test-expression-6-editor-canvas
-        test-value-6-editor-canvas
-        ))
+      (define tabbable-items
+        (list
+         definitions-editor-canvas
+         ;;
+         test-expression-1-editor-canvas
+         test-value-1-editor-canvas
+         ;;
+         test-expression-2-editor-canvas
+         test-value-2-editor-canvas
+         ;;
+         test-expression-3-editor-canvas
+         test-value-3-editor-canvas
+         ;;
+         test-expression-4-editor-canvas
+         test-value-4-editor-canvas
+         ;;
+         test-expression-5-editor-canvas
+         test-value-5-editor-canvas
+         ;;
+         test-expression-6-editor-canvas
+         test-value-6-editor-canvas
+         ))
 
-    (define wrappable-tabbable-items
-      (append
-        ;; wrap around (reverse)
-       (list (car (reverse tabbable-items)))
-       tabbable-items
-       ;; wrap around (forward)
-       (list (car tabbable-items))))
+      (define wrappable-tabbable-items
+        (append
+         ;; wrap around (reverse)
+         (list (car (reverse tabbable-items)))
+         tabbable-items
+         ;; wrap around (forward)
+         (list (car tabbable-items))))
     
-    (set-box! *tab-focus-order-box* wrappable-tabbable-items)
+      (set-box! *tab-focus-order-box* wrappable-tabbable-items)
 
-    ;; trigger reflowing of object sizes
-    (send top-window reflow-container)
+      ;; trigger reflowing of object sizes
+      (send top-window reflow-container)
     
-    (send top-window show #t)
-    (send definitions-editor-canvas focus)
-    ))
+      (send top-window show #t)
+      (send definitions-editor-canvas focus)
+      
+      )))
 
 
 (define (launch-gui)
