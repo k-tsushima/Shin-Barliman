@@ -32,6 +32,8 @@
 
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
+(define INITIAL-STATUS-MESSAGE-STRING (make-string 30 #\ ))
+
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
 
 (define DEFINITIONS 'definitions)
@@ -210,6 +212,12 @@
                       (lambda (expr)
                         (printf "~s\n" expr))
                       expr*-in-list))))
+
+            (if (user-canvas-box-has-legal-exprs? expr*-box type)
+                (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)
+                (send status-message set-label "Illegal expression!"))
+            (send status-message refresh) 
+            
             (printf "======================================\n")
             (print-all-user-editable-canvases-boxes-values)
             (printf "======================================\n")
@@ -284,7 +292,8 @@
     (define definitions-status-message
       (new message%
            (parent definitions-messages-panel-right)
-           (label "")))
+           (label INITIAL-STATUS-MESSAGE-STRING)
+           (auto-resize #f)))
 
     
     (define definitions-editor-canvas
@@ -333,7 +342,7 @@
     (define best-guess-status-message
       (new message%
            (parent best-guess-messages-panel-right)
-           (label "")))
+           (label INITIAL-STATUS-MESSAGE-STRING)))
 
     
     (define best-guess-editor-canvas
@@ -404,7 +413,7 @@
       (define test-status-message
         (new message%
              (parent messages-panel-right)
-             (label "")))
+             (label INITIAL-STATUS-MESSAGE-STRING)))
 
       (define test-expression-editor-canvas
         (make-test-editor-canvas
