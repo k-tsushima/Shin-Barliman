@@ -139,6 +139,45 @@
    (override on-traverse-char)
    (override on-subwindow-focus)))
 
+(define (get-user-canvas-box type n)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() (error 'get-user-canvas-box
+                  (format "box not found: ~s ~s" type n))]
+      [`((,b ,t ,m) . ,rest)
+       (if (and (equal? t type) (= n m))
+           b
+           (loop rest))]
+      [`((,b ,t) . ,rest)
+       (if (equal? t type)
+           b
+           (loop rest))])))
+
+(define (update-user-canvas-box! type n new-expr)
+  (let ((b (get-user-canvas-box type n)))
+    (set-box! b new-expr)))
+
+(define (all-user-canvas-boxes-have-legal-exprs?)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() #t]
+      [`((,b ,t ,m) . ,rest)
+       (let ((expr* (unbox b)))
+         (and (list? expr*)
+              ;; for test expression and value canvases,
+              ;; make sure the list of expressions is either
+              ;; empty or of length 1 (disallow multiple
+              ;; expressions)
+              (<= (length expr*) 1)
+              (loop rest)))]
+      [`((,b ,t) . ,rest)
+       (unless (equal? t DEFINITIONS)
+         (error 'all-user-canvas-boxes-have-legal-exprs?
+                (format "unknown type: ~s\n" t)))
+       (let ((expr* (unbox b)))
+         (and (list? expr*)
+              (loop rest)))])))
+
 (define (make-smart-text% canvas type . args)
   (let ((n (if (= (length args) 1)
                (car args)
@@ -156,43 +195,7 @@
           (printf "text for ~s: ~s\n" name str)
           (define expr*-in-list (read-expr*-from-string str name))
           (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
-          ;;
-          (define (get-user-canvas-box type n)
-            (let loop ([b* *user-editable-canvases-boxes*])
-              (match b*
-                ['() (error 'get-user-canvas-box
-                            (format "box not found: ~s ~s" type n))]
-                [`((,b ,t ,m) . ,rest)
-                 (if (and (equal? t type) (= n m))
-                     b
-                     (loop rest))]
-                [`((,b ,t) . ,rest)
-                 (if (equal? t type)
-                     b
-                     (loop rest))])))
-          (define (update-user-canvas-box! type n new-expr)
-            (let ((b (get-user-canvas-box type n)))
-              (set-box! b new-expr)))
-          (define (all-user-canvas-boxes-have-legal-exprs?)
-            (let loop ([b* *user-editable-canvases-boxes*])
-              (match b*
-                ['() #t]
-                [`((,b ,t ,m) . ,rest)
-                 (let ((expr* (unbox b)))
-                   (and (list? expr*)
-                        ;; for test expression and value canvases,
-                        ;; make sure the list of expressions is either
-                        ;; empty or of length 1 (disallow multiple
-                        ;; expressions)
-                        (<= (length expr*) 1)
-                        (loop rest)))]
-                [`((,b ,t) . ,rest)
-                 (unless (equal? t DEFINITIONS)
-                   (error 'all-user-canvas-boxes-have-legal-exprs?
-                          (format "unknown type: ~s\n" t)))
-                 (let ((expr* (unbox b)))
-                   (and (list? expr*)
-                        (loop rest)))])))
+          
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('best-guess')
           (when (send canvas is-enabled?)
