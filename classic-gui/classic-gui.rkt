@@ -15,7 +15,9 @@
 (provide
   launch-gui)
 
-(define CLASSIC-GUI-VERSION-STRING "Shin-Barliman Classic 4.3")
+;; 新 = しん = shin = "new"
+;; https://jisho.org/search/%E6%96%B0
+(define CLASSIC-GUI-VERSION-STRING "新-Barliman Classic 4.3")
 
 (displayln "Starting Shin-Barliman Classic...")
 (displayln CLASSIC-GUI-VERSION-STRING)
