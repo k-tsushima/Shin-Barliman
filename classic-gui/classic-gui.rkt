@@ -35,38 +35,36 @@
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
-;; Current expression(s) for each editor canvas
+;; Current expression(s) for each user-editable editor canvas.
 ;;
 ;; Valid expressions are contained in a list.
 ;;
-;; A list may contain multiple valid expressions.
-;; This certainly makes sense for definitions and
-;; the best guess.  Multiple expressions for other
-;; canvases may not make sense, and should perhaps
-;; be treated as an error.
+;; A list may contain multiple valid expressions.  This certainly
+;; makes sense for definitions.  Multiple expressions for other
+;; canvases may not make sense, and should perhaps be treated as an
+;; error.
 ;;
 ;; Invalid expression(s) are represented by the non-list value
 ;; INVALID-EXPRESSION-VALUE.
 (define *definitions-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *best-guess-expr*-box* (box INVALID-EXPRESSION-VALUE))
 ;;
-(define *test-1-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-1-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-1-expression-expr*-box* (box '()))
+(define *test-1-value-expr*-box* (box '()))
 ;;
-(define *test-2-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-2-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-2-expression-expr*-box* (box '()))
+(define *test-2-value-expr*-box* (box '()))
 ;;
-(define *test-3-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-3-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-3-expression-expr*-box* (box '()))
+(define *test-3-value-expr*-box* (box '()))
 ;;
-(define *test-4-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-4-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-4-expression-expr*-box* (box '()))
+(define *test-4-value-expr*-box* (box '()))
 ;;
-(define *test-5-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-5-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-5-expression-expr*-box* (box '()))
+(define *test-5-value-expr*-box* (box '()))
 ;;
-(define *test-6-expression-expr*-box* (box INVALID-EXPRESSION-VALUE))
-(define *test-6-value-expr*-box* (box INVALID-EXPRESSION-VALUE))
+(define *test-6-expression-expr*-box* (box '()))
+(define *test-6-value-expr*-box* (box '()))
 
 
 (define smart-top-level-window%
