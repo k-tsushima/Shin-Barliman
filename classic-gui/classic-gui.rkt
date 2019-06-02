@@ -34,6 +34,10 @@
 
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
 
+(define DEFINITIONS 'definitions)
+(define EXPRESSION 'expression)
+(define VALUE 'value)
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
@@ -79,21 +83,23 @@
 (define *test-6-expression-expr*-box* (box '()))
 (define *test-6-value-expr*-box* (box '()))
 
+;; List of *box*/canvas-type/[optional-canvas-number] for the
+;; user-editable canvas boxes containing exprs.
 (define *user-editable-canvases-boxes*
-  `(
-    (*definitions-expr*-box* DEFINITIONS)
-    (*test-1-expression-expr*-box* EXPRESSION 1)
-    (*test-1-value-expr*-box* VALUE 1)
-    (*test-2-expression-expr*-box* EXPRESSION 2)
-    (*test-2-value-expr*-box* VALUE 2)
-    (*test-3-expression-expr*-box* EXPRESSION 3)
-    (*test-3-value-expr*-box* VALUE 3)
-    (*test-4-expression-expr*-box* EXPRESSION 4)
-    (*test-4-value-expr*-box* VALUE 4)
-    (*test-5-expression-expr*-box* EXPRESSION 5)
-    (*test-5-value-expr*-box* VALUE 5)
-    (*test-6-expression-expr*-box* EXPRESSION 6)
-    (*test-6-value-expr*-box* VALUE 6)
+  (list
+    (list *definitions-expr*-box* DEFINITIONS)
+    (list *test-1-expression-expr*-box* EXPRESSION 1)
+    (list *test-1-value-expr*-box* VALUE 1)
+    (list *test-2-expression-expr*-box* EXPRESSION 2)
+    (list *test-2-value-expr*-box* VALUE 2)
+    (list *test-3-expression-expr*-box* EXPRESSION 3)
+    (list *test-3-value-expr*-box* VALUE 3)
+    (list *test-4-expression-expr*-box* EXPRESSION 4)
+    (list *test-4-value-expr*-box* VALUE 4)
+    (list *test-5-expression-expr*-box* EXPRESSION 5)
+    (list *test-5-value-expr*-box* VALUE 5)
+    (list *test-6-expression-expr*-box* EXPRESSION 6)
+    (list *test-6-value-expr*-box* VALUE 6)
     ))
 
 (define smart-top-level-window%
