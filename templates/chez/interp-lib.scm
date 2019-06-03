@@ -35,7 +35,7 @@
                   (g18 (gensym "g18"))
                   (g19 (gensym "g19"))
                   (g20 (gensym "g20")))
-              (fresh (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z begin-body)
+              (fresh (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z begin-body )
                 (fresh (defn-list)
 
                   (== defns defn-list)
@@ -115,23 +115,88 @@
                                          (W . ,W)
                                          (X . ,X)
                                          (Y . ,Y)
-                                         (Z . ,Z)))))))
+                                         (Z . ,Z))))))
+			 (replace-G-vars-in-inputs/outputs
+                          (lambda (in/outputs)
+                            (cond
+                              [(null? in/outputs)
+                               in/outputs]
+                              [(symbol? in/outputs)
+                               (let ((sym (get-raw-G-symbol in/outputs)))
+                                 (if sym
+                                     (raw-G-symbol->logic-var sym)
+                                     in/outputs))]
+                              [(pair? in/outputs)
+                               (cons (replace-G-vars-in-inputs/outputs (car in/outputs))
+                                     (replace-G-vars-in-inputs/outputs (cdr in/outputs)))]
+                              [else in/outputs])))
+			 (get-raw-G-symbol
+                          (lambda (sym)
+                            (let ((str (symbol->string sym)))
+			      (cond
+			       [(and (= (string-length str) 2)
+				     (equal? (string-ref str 0) #\G))
+				(let ((c (string-ref str 1)))
+				  (and (>= (char->integer c) (char->integer #\1))
+				       (<= (char->integer c) (char->integer #\9))
+				       (string->symbol (string-append "g" (list->string (list c))))))]
+			       [(and (= (string-length str) 1)
+				     (equal? (string-ref str 0) #\G))
+				(let ((c (string (string-ref str 1) (string-ref str 2))))
+				  (and (>= (string->number c) 10)
+				       (<= (string->number c) 20)
+				       (string->symbol (string-append "g" c))))]
+			       [else #f]))))
+			 (raw-G-symbol->logic-var
+                          (lambda (raw-sym)
+                            (cdr (assq raw-sym
+                                       `((g1 . ,g1)
+                                         (g2 . ,g2)
+                                         (g3 . ,g3)
+                                         (g4 . ,g4)
+                                         (g5 . ,g5)
+                                         (g6 . ,g6)
+                                         (g7 . ,g7)
+                                         (g8 . ,g8)
+                                         (g9 . ,g9)
+                                         (g10 . ,g10)
+                                         (g11 . ,g11)
+                                         (g12 . ,g12)
+                                         (g13 . ,g13)
+                                         (g14 . ,g14)
+                                         (g15 . ,g15)
+                                         (g16 . ,g16)
+                                         (g17 . ,g17)
+                                         (g18 . ,g18)
+                                         (g19 . ,g19)
+                                         (g20 . ,g20)
+                                         )))))
+			      
+                             
+			 )
 
                   (fresh ()
 
 
-                    (let ((t (replace-?-vars-in-template template)))
+			 (let ((t (replace-?-vars-in-template template))
+			       (output* (map replace-G-vars-in-inputs/outputs output*))
+			       (input* (map replace-G-vars-in-inputs/outputs input*)))
                       (printf "*** original template:\n ~s\n\n" template)
                       (printf "*** updated template:\n ~s\n\n" t)
+		      
+		      (printf "*** updated outputs:\n ~s\n\n" output*)
+		      (printf "*** updated inputs:\n ~s\n\n" input*)
+		      
                               
                       (fresh ()
                         (== t defns)))
-                                                   
+                                                
                     (appendo defns
                              `(((lambda x x) . ,input*))
                              begin-body)
                     (evalo `(begin . ,begin-body)
-                           output*)
+			   output*
+                           )
                           
                     )
 

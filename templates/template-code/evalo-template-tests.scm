@@ -26,6 +26,33 @@
             (cons (list a a) (double d))))))))))
 
 (check-equal?
+ (synthesize-from-template/input*/output*
+  '((define double
+      (lambda (l)
+        (match l
+          (`() '())
+          (`(,a . ,d)
+           (cons ?C (double d)))))))
+  `(
+    (double '())
+    (double '(G1))
+    (double '(G2 G1))
+    (double '(G2 G3 G4 G1))
+    )
+  `(
+    ()
+    ((G1 G1))
+    ((G2 G2) (G1 G1))
+    ((G2 G2) (G3 G3) (G4 G4) (G1 G1))
+    ))
+ '((((define double
+       (lambda (l)
+         (match l
+           (`() '())
+           (`(,a unquote d)
+            (cons (list a a) (double d))))))))))
+
+(check-equal?
  (let ((template '((define double
                      (lambda (l)
                        (match l
