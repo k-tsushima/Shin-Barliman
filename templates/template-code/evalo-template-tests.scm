@@ -1,4 +1,31 @@
 (check-equal?
+ (synthesize-from-template/input*/output*
+  '((define double
+      (lambda (l)
+        (match l
+          (`() '())
+          (`(,a . ,d)
+           (cons ?C (double d)))))))
+  `(
+    (double '())
+    (double '(1))
+    (double '(2 1))
+    (double '(2 3 4 1))
+    )
+  `(
+    ()
+    ((1 1))
+    ((2 2) (1 1))
+    ((2 2) (3 3) (4 4) (1 1))
+    ))
+ '((((define double
+       (lambda (l)
+         (match l
+           (`() '())
+           (`(,a unquote d)
+            (cons (list a a) (double d))))))))))
+
+(check-equal?
  (let ((template '((define double
                      (lambda (l)
                        (match l
