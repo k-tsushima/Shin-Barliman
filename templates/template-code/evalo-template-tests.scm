@@ -1,3 +1,20 @@
+(check-equal? (get-raw-?-symbol '?A) 'A)
+(check-equal? (get-raw-?-symbol '?C) 'C)
+(check-equal? (get-raw-?-symbol '?Z) 'Z)
+(check-equal? (get-raw-?-symbol '?1) #f)
+(check-equal? (get-raw-?-symbol '?ZZ) #f)
+(check-equal? (get-raw-?-symbol '?AAA) #f)
+(check-equal? (get-raw-?-symbol 'A) #f)
+(check-equal? (get-raw-?-symbol '?) #f)
+
+(check-equal? (get-raw-G-symbol 'G1) 'g1)
+(check-equal? (get-raw-G-symbol 'G9) 'g9)
+(check-equal? (get-raw-G-symbol 'G10) 'g10)
+(check-equal? (get-raw-G-symbol 'G20) 'g20)
+(check-equal? (get-raw-G-symbol 'G21) #f)
+(check-equal? (get-raw-G-symbol 'G) #f)
+
+
 (check-equal?
  (synthesize-from-template/input*/output*
   '((define double
