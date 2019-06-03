@@ -575,8 +575,6 @@
         (eval-begino
           (cons `(,name (lambda ,args ,body)) rec-defs) begin-rest env val)))))
 
-(define empty-env '())
-
 (define (lookup-reco k renv x b* t)
     (conde
       ((== '() b*) (k))
