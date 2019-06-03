@@ -232,6 +232,13 @@
         (augment after-edit-sequence)))))
 
 
+(define smart-text%
+ (class racket:text%
+   (super-new)
+   (define (after-insert start len)
+     (printf "Hello\n"))
+   (augment after-insert)))
+
 
 (define (launch-main-window)
   (let ((top-window (new smart-top-level-window%
@@ -312,8 +319,6 @@
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
-
-
 
 
     (define best-guess-messages-panel
