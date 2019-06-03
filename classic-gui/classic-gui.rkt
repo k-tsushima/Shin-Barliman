@@ -301,7 +301,8 @@
     (define definitions-editor-canvas
       (new editor-canvas%
            (parent left-top-panel)
-           (label "Definitions")))
+           (label "Definitions")
+           (style '(hide-hscroll hide-vscroll))))
     (define definitions-text
       (new (make-smart-text%
             DEFINITIONS
@@ -351,6 +352,7 @@
       (new editor-canvas%
            (parent left-bottom-panel)
            (label "Best Guess")
+           (style '(hide-hscroll hide-vscroll))
            (enabled #f)))
     (define best-guess-text
       (new (make-smart-text%
@@ -376,7 +378,8 @@
                expr*-box)
         (define test-editor-canvas
           (new editor-canvas%
-               (parent parent-panel)))
+               (parent parent-panel)
+               (style '(hide-hscroll hide-vscroll))))
         (define test-text
           (new (make-smart-text%
                 (list type-name n)
