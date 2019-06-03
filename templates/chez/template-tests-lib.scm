@@ -8,7 +8,8 @@
           (only (chezscheme)
                 include
                 load
-                gensym))
+                gensym
+                printf))
   
   (define test-all
     (lambda ()
