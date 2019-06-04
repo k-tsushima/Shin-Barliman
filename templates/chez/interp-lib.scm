@@ -32,7 +32,7 @@
              (and (>= (char->integer c) (char->integer #\1))
                   (<= (char->integer c) (char->integer #\9))
                   (string->symbol (string-append "g" (list->string (list c))))))]
-          [(and (= (string-length str) 1)
+          [(and (= (string-length str) 3)
                 (equal? (string-ref str 0) #\G))
            (let ((c (string (string-ref str 1) (string-ref str 2))))
              (and (>= (string->number c) 10)
