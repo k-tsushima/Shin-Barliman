@@ -1,0 +1,12 @@
+Figure out what to do with this code:
+
+(let ((results-fast (begin (set! allow-incomplete-search?#t) (results))))
+  (if (null? results-fast)
+      (begin (set! allow-incomplete-search? #f) (results))
+      results-fast)))
+
+that we had to change to:
+
+(results)
+
+in 'evalo-template-tests.scm', since 'allow-incomplete-search?' is exported as read-only.

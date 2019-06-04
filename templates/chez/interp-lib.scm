@@ -3,13 +3,43 @@
           evalo
           extract-nameso
           appendo
-          synthesize-from-template/input*/output*)
+          synthesize-from-template/input*/output*
+          get-raw-?-symbol
+          get-raw-G-symbol)
   (import (except (rnrs) condition)
           (mk-lib)
           (only (chezscheme) include printf gensym))
 
   (include "interp.scm")
 
+  (define get-raw-?-symbol
+    (lambda (sym)
+      (let ((str (symbol->string sym)))
+        (and (= (string-length str) 2)
+             (equal? (string-ref str 0) #\?)
+             (let ((c (string-ref str 1)))
+               (and (>= (char->integer c) (char->integer #\A))
+                    (<= (char->integer c) (char->integer #\Z))
+                    (string->symbol (list->string (list c)))))))))
+  
+  (define get-raw-G-symbol
+    (lambda (sym)
+      (let ((str (symbol->string sym)))
+        (cond
+          [(and (= (string-length str) 2)
+                (equal? (string-ref str 0) #\G))
+           (let ((c (string-ref str 1)))
+             (and (>= (char->integer c) (char->integer #\1))
+                  (<= (char->integer c) (char->integer #\9))
+                  (string->symbol (string-append "g" (list->string (list c))))))]
+          [(and (= (string-length str) 1)
+                (equal? (string-ref str 0) #\G))
+           (let ((c (string (string-ref str 1) (string-ref str 2))))
+             (and (>= (string->number c) 10)
+                  (<= (string->number c) 20)
+                  (string->symbol (string-append "g" c))))]
+          [else #f]))))
+  
   (define synthesize-from-template/input*/output*
     (lambda (template input* output*)
       (define (ans-allTests)
@@ -76,17 +106,7 @@
                               [(pair? template)
                                (cons (replace-?-vars-in-template (car template))
                                      (replace-?-vars-in-template (cdr template)))]
-                              [else template])))
-                         (get-raw-?-symbol
-                          (lambda (sym)
-                            (let ((str (symbol->string sym)))
-                              (and
-                               (= (string-length str) 2)
-                               (equal? (string-ref str 0) #\?)
-                               (let ((c (string-ref str 1)))
-                                 (and (>= (char->integer c) (char->integer #\A))
-                                      (<= (char->integer c) (char->integer #\Z))
-                                      (string->symbol (list->string (list c)))))))))
+                              [else template])))                         
                          (raw-?-symbol->logic-var
                           (lambda (raw-sym)
                             (cdr (assq raw-sym
@@ -130,23 +150,6 @@
                                (cons (replace-G-vars-in-inputs/outputs (car in/outputs))
                                      (replace-G-vars-in-inputs/outputs (cdr in/outputs)))]
                               [else in/outputs])))
-			 (get-raw-G-symbol
-                          (lambda (sym)
-                            (let ((str (symbol->string sym)))
-			      (cond
-			       [(and (= (string-length str) 2)
-				     (equal? (string-ref str 0) #\G))
-				(let ((c (string-ref str 1)))
-				  (and (>= (char->integer c) (char->integer #\1))
-				       (<= (char->integer c) (char->integer #\9))
-				       (string->symbol (string-append "g" (list->string (list c))))))]
-			       [(and (= (string-length str) 1)
-				     (equal? (string-ref str 0) #\G))
-				(let ((c (string (string-ref str 1) (string-ref str 2))))
-				  (and (>= (string->number c) 10)
-				       (<= (string->number c) 20)
-				       (string->symbol (string-append "g" c))))]
-			       [else #f]))))
 			 (raw-G-symbol->logic-var
                           (lambda (raw-sym)
                             (cdr (assq raw-sym
