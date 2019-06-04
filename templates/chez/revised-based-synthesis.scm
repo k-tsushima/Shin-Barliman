@@ -1,6 +1,6 @@
-(load "../scheme-helpers/pmatch.scm")
-;(load "../chez/interp-lib.scm")
-(import (template-tests-lib))
+(import (pmatch-lib)
+        (interp-lib)
+        (template-tests-lib))
 
 (define tag-exp
   (lambda (e c)
