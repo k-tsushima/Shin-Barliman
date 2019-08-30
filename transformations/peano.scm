@@ -1,5 +1,5 @@
 ;;; Peano Arithmetic helpers for use in Shin-Barliman/Barliman, until
-;;; we add addition to the relational interpreter.
+;;; we add arithmetic to the relational interpreter.
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 
