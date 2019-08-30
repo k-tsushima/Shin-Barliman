@@ -1,4 +1,12 @@
+;;; Peano Arithmetic helpers for use in Shin-Barliman/Barliman, until
+;;; we add addition to the relational interpreter.
 
+;;;;;;;;;;;;;;;;;;;;;;;
+
+;; 'build-num' is a convenience helper to be used in Scheme to generate
+;; Peano numerals that are inconveniently large to calculate by hand.
+;; 'build-num' shouldn't be used in Shin-Barliman/Barliman directly,
+;; since it uses Arabic numerals and Scheme's 'sub1' and 'zero?'.
 ;; Peano arithmetic
 ;; n ::= z
 ;;     | (s n)
@@ -55,6 +63,9 @@
         (+ (* (sub1 n) m) m))))
 
 
+;;; may not want to include these definitions
+;;; when running in Shin-Barliman/Barliman,
+;;; to reduce the branching factor in synthesis.
 (define zero
   (lambda ()
     'z))
@@ -87,6 +98,7 @@
             (+ (fib (- n (one))) (fib (- n (two))))))))
 
 #|
+;;; less efficient version of 'fib-aps'
 (define fib-aps
   (lambda (n a1 a2)
     (if (= n 'z)
@@ -96,6 +108,7 @@
             (fib-aps (- n '(s . z)) a2 (+ a1 a2))))))
 |#
 
+;;; more efficient version of 'fib-aps'
 (define fib-aps
   (lambda (n a1 a2)
     (if (zero? n)
