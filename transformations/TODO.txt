@@ -9,3 +9,5 @@
 * Find examples for dynamic programming transformation
 
 * Generate templates for APS and dynamic programming
+
+* Set up infrastructure so it is faster, easier, more reliable to test synthesis problems and timings.
