@@ -89,6 +89,8 @@
         a
         (!-aps (sub1 n) (* n a)))))
 
+;; less efficient version of fib
+;; (uses =, zero, one)
 (define fib
   (lambda (n)
     (if (= (zero) n)
