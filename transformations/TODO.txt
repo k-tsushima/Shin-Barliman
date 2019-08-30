@@ -1,0 +1,11 @@
+* Add arithmetic to relational interpreter
+
+* Add ability to restrict grammar for holes (on a per-whole basis).  Would tree automata help?  How is this done in Sketch?
+
+* Add constraints to ensure an accumulator argument/operator actually appear in a certain hole.  presento constraints?
+
+* More examples of accumulator passing style
+
+* Find examples for dynamic programming transformation
+
+* Generate templates for APS and dynamic programming
