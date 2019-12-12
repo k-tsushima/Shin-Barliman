@@ -318,16 +318,28 @@
            (parent left-top-panel)
            (alignment '(center center))
            (stretchable-height #f)))
+
+    (define gui-language-choice
+      (new choice%
+           (label "Language")
+           (parent server-info-panel)
+           (choices (list "English" "日本語"))))
+
+    (define server-info-hor-draggable-panel
+      (new panel:horizontal-dragable%
+           (parent server-info-panel)
+           (alignment '(left center))
+           (stretchable-height #f)))
     
     (define server-ip-address-field
       (new text-field%
-           (parent server-info-panel)
+           (parent server-info-hor-draggable-panel)
            (label "Server")
            (init-value "localhost")))
 
     (define server-port-field
       (new text-field%
-           (parent server-info-panel)
+           (parent server-info-hor-draggable-panel)
            (label "Port")
            (init-value "8080")))
 
