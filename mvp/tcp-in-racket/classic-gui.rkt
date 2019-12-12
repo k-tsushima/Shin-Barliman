@@ -48,11 +48,18 @@
 (define LANG_ENGLISH "English")
 (define LANG_JAPANESE "日本語")
 
+(define ENGLISH_TEST_STRING "Test")
+(define JAPANESE_TEST_STRING "テスト")
+
+(define *test-messages-box* (box #f))
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
 (define *input-port-from-server* (box #f))
 (define *output-port-to-server* (box #f))
+
+(define *GUI-language* (box LANG_ENGLISH))
 
 (define (read-expr*-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
@@ -113,6 +120,36 @@
     (list *test-5-value-expr*-box* (list VALUE 5))
     (list *test-6-expression-expr*-box* (list EXPRESSION 6))
     (list *test-6-value-expr*-box* (list VALUE 6))
+    ))
+
+(define update-GUI-text-for-language
+  (lambda ()
+
+    (define lang (unbox *GUI-language*))
+
+    (define test-string #f)
+    
+    (cond
+      ((equal? lang LANG_ENGLISH)
+       (set! test-string ENGLISH_TEST_STRING))
+      ((equal? lang LANG_JAPANESE)
+       (set! test-string JAPANESE_TEST_STRING))
+      (else (error 'gui-language-choice
+                   (format "unknown language ~s" lang))))
+
+    (define test-messages (unbox *test-messages-box*))
+
+    (when test-messages
+      (let loop ((test-messages test-messages)
+                 (n 1))
+        (cond
+          ((null? test-messages) (void))
+          (else (let ((test-message (car test-messages)))
+                  (send test-message set-label
+                        (format "~a ~a" test-string n)))
+                (loop (cdr test-messages)
+                      (add1 n))))))
+    
     ))
 
 (define (print-all-user-editable-canvases-boxes-values)
@@ -328,21 +365,11 @@
            (parent server-info-panel)
            (choices (list LANG_ENGLISH LANG_JAPANESE))
            (callback (lambda (self event)
-                       
                        (define lang (send self get-string-selection))
-                       
                        (printf "User selected language ~s\n" lang)
-
-                       (cond
-                         ((equal? lang LANG_ENGLISH)
-                          (printf "Eigo\n"))
-                         ((equal? lang LANG_JAPANESE)
-                          (printf "Nihongo\n"))
-                         (else (error 'gui-language-choice
-                                      (format "unknown language ~s" lang))))
-                       
-                       ))))
-
+                       (set-box! *GUI-language* lang)
+                       (update-GUI-text-for-language)))))
+    
     (define server-info-hor-draggable-panel
       (new panel:horizontal-dragable%
            (parent server-info-panel)
@@ -628,7 +655,7 @@
       (define test-expression-message
         (new message%
              (parent expression-messages-panel-left)
-             (label (format "Test ~s" n))))
+             (label (format "~a ~a      " ENGLISH_TEST_STRING n))))
 
       (define test-expression-status-message
         (new message%
@@ -741,7 +768,17 @@
                     *test-6-expression-expr*-box*
                     *test-6-value-expr*-box*)])
 
-    
+      (define test-messages
+        (list
+         test-1-message
+         test-2-message
+         test-3-message
+         test-4-message
+         test-5-message
+         test-6-message))
+
+      (set-box! *test-messages-box* test-messages)
+      
       (define tabbable-items
         (list
          definitions-editor-canvas
