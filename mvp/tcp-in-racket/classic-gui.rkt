@@ -41,6 +41,9 @@
 (define EXPRESSION 'expression)
 (define VALUE 'value)
 
+(define CONNECTED 'connected)
+(define DISCONNECTED 'disconnected)
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
@@ -292,25 +295,69 @@
            (init-value "8080")))
 
     (define server-connect-button
-      (new button%
-           (parent server-info-panel)
-           (label "Connect")
-           (callback (lambda (self event)
-                       (define address
-                         (send server-ip-address-field
-                               get-value))
-                       (define port
-                         (send server-port-field
-                               get-value))
-                       (define full-address
-                         (string-append address ":" port))
-                       (send server-messages-text insert
-                             (format "\nConnecting to ~a..."
-                                     full-address))
-                       (printf "Connecting to ~a...\n"
-                               full-address)))))
+      (let ((state DISCONNECTED))
+        (new button%
+             (parent server-info-panel)
+             (label "Connect")
+             (callback (lambda (self event)
 
+                         (define address
+                           (send server-ip-address-field
+                                 get-value))
+                         (define port
+                           (send server-port-field
+                                 get-value))
+                         (define full-address
+                           (string-append address ":" port))
+                         
+                         (cond
+                           ((equal? state DISCONNECTED)
+                                                       
+                            (send server-messages-text insert
+                                  (format "\nConnecting to ~a..."
+                                          full-address))
+                            (printf "Connecting to ~a...\n"
+                                    full-address)
 
+                            ;; if connection succeeded...
+                            ;;
+                            (set! state CONNECTED)
+                            ;;
+                            (send self set-label "Disconnect")
+                            ;;
+                            (send server-ip-address-field enable #f)
+                            (send server-port-field enable #f)
+                            ;;
+                            ;; send message with definitions and examples
+                            ;; to server                                     
+                         
+                            )
+
+                           ((equal? state CONNECTED)
+
+                            (send server-messages-text insert
+                                  (format "\nDisconnecting from ~a..."
+                                          full-address))
+                            (printf "Disconnecting from ~a...\n"
+                                    full-address)
+                            
+                            ;; if disconnection succeeded...
+                            ;;
+                            (set! state DISCONNECTED)
+                            ;;
+                            (send self set-label "Connect")
+                            ;;
+                            (send server-ip-address-field enable #t)
+                            (send server-port-field enable #t)
+
+                            )
+
+                           (else
+                            (error 'server-connect-button
+                                   (format "unexpected state ~s" state))))
+                         
+                                                       
+                         )))))          
 
     (define server-messages-editor-canvas
       (new editor-canvas%
@@ -323,8 +370,6 @@
     (send server-messages-text insert "Not connected")
     (send server-messages-editor-canvas
           set-editor server-messages-text)
-
-
     
     (define definitions-messages-panel
       (new horizontal-pane%
