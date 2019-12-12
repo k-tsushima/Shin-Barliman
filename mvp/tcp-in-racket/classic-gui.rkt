@@ -120,6 +120,15 @@
        (printf "~s: ~s\n" type (unbox b))
        (loop rest)])))
 
+(define (all-user-editable-canvases-boxes-values)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() '()]
+      [`((,b ,type) . ,rest)
+       (cons
+        (list type (unbox b))
+        (loop rest))])))
+
 (define smart-top-level-window%
  (class frame%
    (super-new)
@@ -353,7 +362,22 @@
                                           full-address-str)
                                   
                                   ;; send message with definitions and
-                                  ;; examples to server                                                 
+                                  ;; examples to server
+
+                                  (when (all-user-canvas-boxes-have-legal-exprs?)
+                                    (define vals
+                                      (all-user-editable-canvases-boxes-values))
+                                    (define synthesize-msg
+                                      `(synthesize-kudasai
+                                        (from gui)
+                                        (vals ,vals)))
+
+                                    (printf "sending message ~s\n"
+                                            synthesize-msg)
+
+                                    (write synthesize-msg out)
+                                    (flush-output out)
+                                    )
                                   )
                                 (begin
 
