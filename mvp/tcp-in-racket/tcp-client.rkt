@@ -21,4 +21,5 @@
   )
 
 ;; > (require "tcp-client.rkt")
-;; > (connect "localhost" 8081)
+;; > (connect "localhost" 8080)
+

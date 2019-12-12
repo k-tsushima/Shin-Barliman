@@ -45,11 +45,14 @@
 
 (define (handle in out)
   (printf "handle called\n")
-  (define msg (read in))
-  (printf "server received message ~s\n" msg)
-  (write '(goodbye) out)
-  (printf "server sent goodbye message\n")
-  )
+  (let loop ((msg (read in)))
+    (printf "server received message ~s\n" msg)
+    (cond
+      ((eof-object? msg)
+       (write '(goodbye) out)
+       (printf "server sent goodbye message\n"))
+      (else
+       (loop (read in))))))
 
 ;; > (require "tcp-server.rkt")
 ;; > (define stop (serve 8081))

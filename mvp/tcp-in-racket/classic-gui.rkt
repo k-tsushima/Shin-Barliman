@@ -129,6 +129,29 @@
         (list type (unbox b))
         (loop rest))])))
 
+(define (send-synthesize-message)
+
+  (define in (unbox *input-port-from-server*))
+  (define out (unbox *output-port-to-server*))
+  
+  (when (and in
+             out
+             (all-user-canvas-boxes-have-legal-exprs?))
+    (define vals
+      (all-user-editable-canvases-boxes-values))
+    (define synthesize-msg
+      `(synthesize-kudasai
+        (from gui)
+        (vals ,vals)))
+
+    (printf "sending message ~s\n"
+            synthesize-msg)
+
+    (write synthesize-msg out)
+    (flush-output out)
+    )
+  )
+
 (define smart-top-level-window%
  (class frame%
    (super-new)
@@ -238,6 +261,7 @@
             
             (printf "======================================\n")
             (print-all-user-editable-canvases-boxes-values)
+            (send-synthesize-message)
             (printf "======================================\n")
             (if (all-user-canvas-boxes-have-legal-exprs?)
                 (printf "all user canvas boxes have legal exprs!\n")
@@ -363,21 +387,8 @@
                                   
                                   ;; send message with definitions and
                                   ;; examples to server
-
-                                  (when (all-user-canvas-boxes-have-legal-exprs?)
-                                    (define vals
-                                      (all-user-editable-canvases-boxes-values))
-                                    (define synthesize-msg
-                                      `(synthesize-kudasai
-                                        (from gui)
-                                        (vals ,vals)))
-
-                                    (printf "sending message ~s\n"
-                                            synthesize-msg)
-
-                                    (write synthesize-msg out)
-                                    (flush-output out)
-                                    )
+                                  (send-synthesize-message)
+                                  
                                   )
                                 (begin
 
