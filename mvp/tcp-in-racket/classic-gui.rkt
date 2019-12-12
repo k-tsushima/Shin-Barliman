@@ -7,6 +7,7 @@
 
 (require
   racket/gui/base
+  racket/tcp
   framework
   ;racket/engine
   ;(except-in racket/match ==)
@@ -46,6 +47,9 @@
 
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
+
+(define *input-port-from-server* (box #f))
+(define *output-port-to-server* (box #f))
 
 (define (read-expr*-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
@@ -286,7 +290,7 @@
       (new text-field%
            (parent server-info-panel)
            (label "Server")
-           (init-value "http://localhost")))
+           (init-value "localhost")))
 
     (define server-port-field
       (new text-field%
@@ -298,58 +302,103 @@
       (let ((state DISCONNECTED))
         (new button%
              (parent server-info-panel)
-             (label "Connect")
+             (label " Connect ")
              (callback (lambda (self event)
 
-                         (define address
+                         (define address-str
                            (send server-ip-address-field
                                  get-value))
-                         (define port
+                         (define port-str
                            (send server-port-field
                                  get-value))
-                         (define full-address
-                           (string-append address ":" port))
+                         (define full-address-str
+                           (string-append address-str ":" port-str))
+
+                         ;; TODO -- this may not be a legal port number,
+                         ;; or a number at all!
+                         (define port (string->number port-str))
                          
                          (cond
                            ((equal? state DISCONNECTED)
-                                                       
+
+                            ;; TODO Implement timeout for connecting
+                            ;; (for example, server may not be running)
+                            
                             (send server-messages-text insert
                                   (format "\nConnecting to ~a..."
-                                          full-address))
+                                          full-address-str))
                             (printf "Connecting to ~a...\n"
-                                    full-address)
+                                    full-address-str)
 
-                            ;; if connection succeeded...
-                            ;;
-                            (set! state CONNECTED)
-                            ;;
-                            (send self set-label "Disconnect")
-                            ;;
-                            (send server-ip-address-field enable #f)
-                            (send server-port-field enable #f)
-                            ;;
-                            ;; send message with definitions and examples
-                            ;; to server                                     
-                         
+                            (define-values (in out)
+                              (tcp-connect address-str port))
+
+                            (if (and in out)
+                                (begin
+                                  ;; connection succeeded...
+                                  (set-box! *input-port-from-server* in)
+                                  (set-box! *output-port-to-server* out)
+                                  
+                                  (set! state CONNECTED)
+                                  
+                                  (send self set-label "Disconnect")
+                                  
+                                  (send server-ip-address-field enable #f)
+                                  (send server-port-field enable #f)
+                                  
+                                  (send server-messages-text insert
+                                        (format "\nConnected to ~a"
+                                                full-address-str))
+                                  (printf "Connected to ~a\n"
+                                          full-address-str)
+                                  
+                                  ;; send message with definitions and
+                                  ;; examples to server                                                 
+                                  )
+                                (begin
+
+                                  (send server-messages-text insert
+                                        (format "\nUnable to connect to ~a"
+                                                full-address-str))
+                                  (printf "Unable to connect to ~a\n"
+                                          full-address-str)
+                                  
+                                  ))
                             )
 
                            ((equal? state CONNECTED)
 
                             (send server-messages-text insert
                                   (format "\nDisconnecting from ~a..."
-                                          full-address))
+                                          full-address-str))
                             (printf "Disconnecting from ~a...\n"
-                                    full-address)
-                            
-                            ;; if disconnection succeeded...
+                                    full-address-str)
+
+                            (define in (unbox *input-port-from-server*))
+                            (define out (unbox *output-port-to-server*))
+                           
+                            (when in
+                              (close-input-port in)
+                              (set-box! *input-port-from-server* #f))
+                            (when out
+                              (close-output-port out)
+                              (set-box! *output-port-to-server* #f))
+
+                            ;; disconnection succeeded
                             ;;
                             (set! state DISCONNECTED)
                             ;;
-                            (send self set-label "Connect")
+                            (send self set-label " Connect ")
                             ;;
                             (send server-ip-address-field enable #t)
                             (send server-port-field enable #t)
-
+                            
+                            (send server-messages-text insert
+                                  (format "\nDisconnected from ~a"
+                                          full-address-str))
+                            (printf "Disconnected from ~a\n"
+                                    full-address-str)
+                            
                             )
 
                            (else
