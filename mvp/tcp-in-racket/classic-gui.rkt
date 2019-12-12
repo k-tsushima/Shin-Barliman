@@ -45,6 +45,9 @@
 (define CONNECTED 'connected)
 (define DISCONNECTED 'disconnected)
 
+(define LANG_ENGLISH "English")
+(define LANG_JAPANESE "日本語")
+
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
@@ -323,7 +326,22 @@
       (new choice%
            (label "Language")
            (parent server-info-panel)
-           (choices (list "English" "日本語"))))
+           (choices (list LANG_ENGLISH LANG_JAPANESE))
+           (callback (lambda (self event)
+                       
+                       (define lang (send self get-string-selection))
+                       
+                       (printf "User selected language ~s\n" lang)
+
+                       (cond
+                         ((equal? lang LANG_ENGLISH)
+                          (printf "Eigo\n"))
+                         ((equal? lang LANG_JAPANESE)
+                          (printf "Nihongo\n"))
+                         (else (error 'gui-language-choice
+                                      (format "unknown language ~s" lang))))
+                       
+                       ))))
 
     (define server-info-hor-draggable-panel
       (new panel:horizontal-dragable%
