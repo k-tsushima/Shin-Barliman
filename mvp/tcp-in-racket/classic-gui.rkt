@@ -16,12 +16,15 @@
 (provide
   launch-gui)
 
+(define MAJOR-VERSION-NUMBER 0)
+(define MINOR-VERSION-NUMBER 1)
+
 ;; 新 = しん = shin = "new"
 ;; https://jisho.org/search/%E6%96%B0
-(define CLASSIC-GUI-VERSION-STRING "新-Barliman Classic 4.3")
+(define GUI-VERSION-STRING
+  (format "新-Barliman ~a.~a" MAJOR-VERSION-NUMBER MINOR-VERSION-NUMBER))
 
-(displayln "Starting Shin-Barliman Classic...")
-(displayln CLASSIC-GUI-VERSION-STRING)
+(printf "Starting ~a\n..." GUI-VERSION-STRING)
 
 ;;; Initial window size
 (define HORIZ-SIZE 1200)
@@ -299,7 +302,7 @@
 
 (define (launch-main-window)
   (let ((top-window (new smart-top-level-window%
-                         (label CLASSIC-GUI-VERSION-STRING)
+                         (label GUI-VERSION-STRING)
                          (width HORIZ-SIZE)
                          (height VERT-SIZE))))
 
