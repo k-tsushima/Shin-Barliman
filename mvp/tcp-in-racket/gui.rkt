@@ -48,21 +48,38 @@
 (define CONNECTED 'connected)
 (define DISCONNECTED 'disconnected)
 
+(define ENGLISH_LANGUAGE_STRING "Language")
+(define JAPANESE_LANGUAGE_STRING "言語")
+(define SIMPLIFIED_CHINESE_LANGUAGE_STRING "语言")
+
 (define LANG_ENGLISH "English")
 (define LANG_JAPANESE "日本語")
 (define LANG_SIMPLIFIED_CHINESE "中文")
 
-(define ENGLISH_DEFINITIONS_STRING "Definitions")
-(define JAPANESE_DEFINITIONS_STRING "日本語 Definitions")
-(define SIMPLIFIED_CHINESE_DEFINITIONS_STRING "中文 Definitions")
+(define ENGLISH_SERVER_STRING "Server")
+(define JAPANESE_SERVER_STRING "サーバー")
+(define SIMPLIFIED_CHINESE_SERVER_STRING "服务器")
 
-(define ENGLISH_BEST_GUESS_STRING "Best Guess")
-(define JAPANESE_BEST_GUESS_STRING "日本語 Best Guess")
-(define SIMPLIFIED_CHINESE_BEST_GUESS_STRING "中文 Best Guess")
+(define ENGLISH_PORT_STRING "Port")
+(define JAPANESE_PORT_STRING "ポート番号")
+(define SIMPLIFIED_CHINESE_PORT_STRING "端口")
+
+(define ENGLISH_CONNECT_STRING "Connect")
+(define JAPANESE_CONNECT_STRING "接続")
+(define SIMPLIFIED_CHINESE_CONNECT_STRING "链接")
+
+(define ENGLISH_DEFINITIONS_STRING "Definitions")
+(define JAPANESE_DEFINITIONS_STRING "定義")
+(define SIMPLIFIED_CHINESE_DEFINITIONS_STRING "定义")
+
+(define ENGLISH_BEST_GUESS_STRING "Synthesized Result")
+(define JAPANESE_BEST_GUESS_STRING "プログラム合成結果")
+(define SIMPLIFIED_CHINESE_BEST_GUESS_STRING "合成结果")
 
 (define ENGLISH_TEST_STRING "Test")
 (define JAPANESE_TEST_STRING "テスト")
-(define SIMPLIFIED_CHINESE_TEST_STRING "中文 Test")
+(define SIMPLIFIED_CHINESE_TEST_STRING "测试")
+
 
 
 (define *test-messages-box* (box #f))
