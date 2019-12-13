@@ -37,50 +37,22 @@
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
 (define INITIAL-STATUS-MESSAGE-STRING (make-string 50 #\ ))
+(define INITIAL-PLACEHOLDER-LABEL-STRING (make-string 40 #\ ))
 
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
 
 (define DEFINITIONS 'definitions)
-(define BEST-GUESS 'best-guess)
+(define SYNTHESIZED-RESULT 'synthesized-result)
 (define EXPRESSION 'expression)
 (define VALUE 'value)
 
 (define CONNECTED 'connected)
 (define DISCONNECTED 'disconnected)
 
-(define ENGLISH_LANGUAGE_STRING "Language")
-(define JAPANESE_LANGUAGE_STRING "言語")
-(define SIMPLIFIED_CHINESE_LANGUAGE_STRING "语言")
-
-(define LANG_ENGLISH "English")
-(define LANG_JAPANESE "日本語")
-(define LANG_SIMPLIFIED_CHINESE "中文")
-
-(define ENGLISH_SERVER_STRING "Server")
-(define JAPANESE_SERVER_STRING "サーバー")
-(define SIMPLIFIED_CHINESE_SERVER_STRING "服务器")
-
-(define ENGLISH_PORT_STRING "Port")
-(define JAPANESE_PORT_STRING "ポート番号")
-(define SIMPLIFIED_CHINESE_PORT_STRING "端口")
-
-(define ENGLISH_CONNECT_STRING "Connect")
-(define JAPANESE_CONNECT_STRING "接続")
-(define SIMPLIFIED_CHINESE_CONNECT_STRING "链接")
-
-(define ENGLISH_DEFINITIONS_STRING "Definitions")
-(define JAPANESE_DEFINITIONS_STRING "定義")
-(define SIMPLIFIED_CHINESE_DEFINITIONS_STRING "定义")
-
-(define ENGLISH_BEST_GUESS_STRING "Synthesized Result")
-(define JAPANESE_BEST_GUESS_STRING "プログラム合成結果")
-(define SIMPLIFIED_CHINESE_BEST_GUESS_STRING "合成结果")
-
-(define ENGLISH_TEST_STRING "Test")
-(define JAPANESE_TEST_STRING "テスト")
-(define SIMPLIFIED_CHINESE_TEST_STRING "测试")
-
-
+(define I18N-STRINGS
+  '(("English" . ("Language" "Server"  "Port"     "Connect" "Definitions" "Synthesized Result" "Test"))
+    ("日本語"   . ("言語"      "サーバー" "ポート番号" "接続"     "定義"        "プログラム合成結果"    "テスト"))
+    ("中文"     . ("语言"      "服务器"  "端口"       "链接"    "定义"        "合成结果"             "测试"))))
 
 (define *test-messages-box* (box #f))
 
@@ -90,7 +62,7 @@
 (define *input-port-from-server* (box #f))
 (define *output-port-to-server* (box #f))
 
-(define *GUI-language* (box LANG_ENGLISH))
+(define *GUI-language* (box (caar I18N-STRINGS)))
 
 (define (read-expr*-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
@@ -282,7 +254,7 @@
           (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
           
           ;; Ignore any canvas that isn't enabled/user editable
-          ;; ('best-guess')
+          ;; ('synthesized-result')
           (when (send canvas is-enabled?)
             (set-box! expr*-box expr*-in-list)            
             (when (list? expr*-in-list)
@@ -367,9 +339,7 @@
       (new choice%
            (label "Language")
            (parent server-info-panel)
-           (choices (list LANG_ENGLISH
-                          LANG_JAPANESE
-                          LANG_SIMPLIFIED_CHINESE))
+           (choices (map car I18N-STRINGS))
            (callback (lambda (self event)
                        (define lang (send self get-string-selection))
                        (printf "User selected language ~s\n" lang)
@@ -539,8 +509,7 @@
     (define definitions-message
       (new message%
            (parent definitions-messages-panel-left)
-           (label (string-append ENGLISH_DEFINITIONS_STRING
-                                 "             "))))
+           (label INITIAL-PLACEHOLDER-LABEL-STRING)))
 
     (define definitions-status-message
       (new message%
@@ -551,7 +520,7 @@
     (define definitions-editor-canvas
       (new editor-canvas%
            (parent left-top-panel)
-           (label ENGLISH_DEFINITIONS_STRING)
+           (label INITIAL-PLACEHOLDER-LABEL-STRING)
            (style '(hide-hscroll hide-vscroll))))
     (define definitions-text
       (new (make-smart-text%
@@ -564,52 +533,51 @@
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
 
 
-    (define best-guess-messages-panel
+    (define synthesized-result-messages-panel
       (new horizontal-pane%
            (parent left-top-panel)
            (alignment '(center center))
            (stretchable-height #f)))
 
-    (define best-guess-messages-panel-left
+    (define synthesized-result-messages-panel-left
       (new horizontal-pane%
-           (parent best-guess-messages-panel)
+           (parent synthesized-result-messages-panel)
            (alignment '(left center))
            (stretchable-height #f)))
 
-    (define best-guess-messages-panel-right
+    (define synthesized-result-messages-panel-right
       (new horizontal-pane%
-           (parent best-guess-messages-panel)
+           (parent synthesized-result-messages-panel)
            (alignment '(right center))
            (stretchable-height #f)))
 
 
     
 
-    (define best-guess-message
+    (define synthesized-result-message
       (new message%
-           (parent best-guess-messages-panel-left)
-           (label (string-append ENGLISH_BEST_GUESS_STRING
-                                 "             "))))
+           (parent synthesized-result-messages-panel-left)
+           (label INITIAL-PLACEHOLDER-LABEL-STRING)))
 
-    (define best-guess-status-message
+    (define synthesized-result-status-message
       (new message%
-           (parent best-guess-messages-panel-right)
+           (parent synthesized-result-messages-panel-right)
            (label INITIAL-STATUS-MESSAGE-STRING)))
 
     
-    (define best-guess-editor-canvas
+    (define synthesized-result-editor-canvas
       (new editor-canvas%
            (parent left-bottom-panel)
-           (label ENGLISH_BEST_GUESS_STRING)
+           (label INITIAL-PLACEHOLDER-LABEL-STRING)
            (style '(hide-hscroll hide-vscroll))
            (enabled #f)))
-    (define best-guess-text
+    (define synthesized-result-text
       (new (make-smart-text%
-            BEST-GUESS
-            best-guess-editor-canvas
-            best-guess-status-message)))
-    (send best-guess-text insert "")
-    (send best-guess-editor-canvas set-editor best-guess-text)
+            SYNTHESIZED-RESULT
+            synthesized-result-editor-canvas
+            synthesized-result-status-message)))
+    (send synthesized-result-text insert "")
+    (send synthesized-result-editor-canvas set-editor synthesized-result-text)
 
 
     
@@ -662,7 +630,7 @@
       (define test-expression-message
         (new message%
              (parent expression-messages-panel-left)
-             (label (format "~a ~a      " ENGLISH_TEST_STRING n))))
+             (label (format "~a ~a      " INITIAL-PLACEHOLDER-LABEL-STRING n))))
 
       (define test-expression-status-message
         (new message%
@@ -822,66 +790,44 @@
 
           (define lang (unbox *GUI-language*))
 
-          (define language-string #f)
-          (define server-string #f)
-          (define port-string #f)
-          (define connect-string #f)
-          (define definitions-string #f)
-          (define best-guess-string #f)
-          (define test-string #f)
-    
-          (cond
-            ((equal? lang LANG_ENGLISH)
-             (set! language-string ENGLISH_LANGUAGE_STRING)
-             (set! server-string ENGLISH_SERVER_STRING)
-             (set! port-string ENGLISH_PORT_STRING)
-             (set! connect-string ENGLISH_CONNECT_STRING)
-             (set! definitions-string ENGLISH_DEFINITIONS_STRING)
-             (set! best-guess-string ENGLISH_BEST_GUESS_STRING)
-             (set! test-string ENGLISH_TEST_STRING))
-            ((equal? lang LANG_JAPANESE)
-             (set! language-string JAPANESE_LANGUAGE_STRING)
-             (set! server-string JAPANESE_SERVER_STRING)
-             (set! port-string JAPANESE_PORT_STRING)
-             (set! connect-string JAPANESE_CONNECT_STRING)
-             (set! definitions-string JAPANESE_DEFINITIONS_STRING)
-             (set! best-guess-string JAPANESE_BEST_GUESS_STRING)
-             (set! test-string JAPANESE_TEST_STRING))
-            ((equal? lang LANG_SIMPLIFIED_CHINESE)
-             (set! language-string SIMPLIFIED_CHINESE_LANGUAGE_STRING)             
-             (set! server-string SIMPLIFIED_CHINESE_SERVER_STRING)
-             (set! port-string SIMPLIFIED_CHINESE_PORT_STRING)
-             (set! connect-string SIMPLIFIED_CHINESE_CONNECT_STRING)
-             (set! definitions-string SIMPLIFIED_CHINESE_DEFINITIONS_STRING)
-             (set! best-guess-string SIMPLIFIED_CHINESE_BEST_GUESS_STRING)
-             (set! test-string SIMPLIFIED_CHINESE_TEST_STRING))
-            (else (error 'gui-language-choice
-                         (format "unknown language ~s" lang))))
-
+          (define current-lang-strings (assoc lang I18N-STRINGS))
           
-          (send gui-language-choice set-label language-string)
-          (send server-ip-address-field set-label server-string)
-          (send server-port-field set-label port-string)
-          (send server-connect-button set-label connect-string)
-          (send definitions-message set-label definitions-string)
-          (send best-guess-message set-label best-guess-string)
-          
-          (define test-messages (unbox *test-messages-box*))
-          (when test-messages
-            (let loop ((test-messages test-messages)
-                       (n 1))
-              (cond
-                ((null? test-messages) (void))
-                (else (let ((test-message (car test-messages)))
-                        (send test-message set-label
-                              (format "~a ~a" test-string n)))
-                      (loop (cdr test-messages)
-                            (add1 n))))))
-    
-          ))
+          (match current-lang-strings
+            (`(,_
+               ,language-str
+               ,server-str
+               ,port-str
+               ,connect-str
+               ,definitions-str
+               ,synthesized-result-str
+               ,test-str)
+             
+             (send gui-language-choice set-label language-str)
+             (send server-ip-address-field set-label server-str)
+             (send server-port-field set-label port-str)
+             (send server-connect-button set-label connect-str)
+             (send definitions-message set-label definitions-str)
+             (send synthesized-result-message set-label synthesized-result-str)
+             
+             (define test-messages (unbox *test-messages-box*))
+             (when test-messages
+               (let loop ((test-messages test-messages)
+                          (n 1))
+                 (cond
+                   ((null? test-messages) (void))
+                   (else (let ((test-message (car test-messages)))
+                           (send test-message set-label
+                                 (format "~a ~a" test-str n)))
+                         (loop (cdr test-messages)
+                               (add1 n))))))
+             )
+            (else (error 'update-GUI-text-for-language
+                         (format "current-lang-strings is ~s for language ~s" current-lang-strings lang))))))
       
       (set-box! *tab-focus-order-box* wrappable-tabbable-items)
 
+      (update-GUI-text-for-language)
+      
       ;; trigger reflowing of object sizes
       (send top-window reflow-container)
     
