@@ -50,15 +50,19 @@
 
 (define LANG_ENGLISH "English")
 (define LANG_JAPANESE "日本語")
+(define LANG_SIMPLIFIED_CHINESE "中文")
 
 (define ENGLISH_DEFINITIONS_STRING "Definitions                ")
 (define JAPANESE_DEFINITIONS_STRING "日本語 Definitions")
+(define SIMPLIFIED_CHINESE_DEFINITIONS_STRING "中文 Definitions")
 
 (define ENGLISH_BEST_GUESS_STRING "Best Guess                  ")
 (define JAPANESE_BEST_GUESS_STRING "日本語 Best Guess")
+(define SIMPLIFIED_CHINESE_BEST_GUESS_STRING "中文 Best Guess")
 
-(define ENGLISH_TEST_STRING "Test")
+(define ENGLISH_TEST_STRING "Test          ")
 (define JAPANESE_TEST_STRING "テスト")
+(define SIMPLIFIED_CHINESE_TEST_STRING "中文 Test")
 
 
 (define *test-messages-box* (box #f))
@@ -346,7 +350,9 @@
       (new choice%
            (label "Language")
            (parent server-info-panel)
-           (choices (list LANG_ENGLISH LANG_JAPANESE))
+           (choices (list LANG_ENGLISH
+                          LANG_JAPANESE
+                          LANG_SIMPLIFIED_CHINESE))
            (callback (lambda (self event)
                        (define lang (send self get-string-selection))
                        (printf "User selected language ~s\n" lang)
@@ -810,6 +816,10 @@
              (set! definitions-string JAPANESE_DEFINITIONS_STRING)
              (set! best-guess-string JAPANESE_BEST_GUESS_STRING)
              (set! test-string JAPANESE_TEST_STRING))
+            ((equal? lang LANG_SIMPLIFIED_CHINESE)
+             (set! definitions-string SIMPLIFIED_CHINESE_DEFINITIONS_STRING)
+             (set! best-guess-string SIMPLIFIED_CHINESE_BEST_GUESS_STRING)
+             (set! test-string SIMPLIFIED_CHINESE_TEST_STRING))
             (else (error 'gui-language-choice
                          (format "unknown language ~s" lang))))
 
