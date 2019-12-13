@@ -822,6 +822,9 @@
 
           (define lang (unbox *GUI-language*))
 
+          (define language-string #f)
+          (define server-string #f)
+          (define port-string #f)
           (define connect-string #f)
           (define definitions-string #f)
           (define best-guess-string #f)
@@ -829,23 +832,36 @@
     
           (cond
             ((equal? lang LANG_ENGLISH)
+             (set! language-string ENGLISH_LANGUAGE_STRING)
+             (set! server-string ENGLISH_SERVER_STRING)
+             (set! port-string ENGLISH_PORT_STRING)
              (set! connect-string ENGLISH_CONNECT_STRING)
              (set! definitions-string ENGLISH_DEFINITIONS_STRING)
              (set! best-guess-string ENGLISH_BEST_GUESS_STRING)
              (set! test-string ENGLISH_TEST_STRING))
             ((equal? lang LANG_JAPANESE)
+             (set! language-string JAPANESE_LANGUAGE_STRING)
+             (set! server-string JAPANESE_SERVER_STRING)
+             (set! port-string JAPANESE_PORT_STRING)
              (set! connect-string JAPANESE_CONNECT_STRING)
              (set! definitions-string JAPANESE_DEFINITIONS_STRING)
              (set! best-guess-string JAPANESE_BEST_GUESS_STRING)
              (set! test-string JAPANESE_TEST_STRING))
             ((equal? lang LANG_SIMPLIFIED_CHINESE)
+             (set! language-string SIMPLIFIED_CHINESE_LANGUAGE_STRING)             
+             (set! server-string SIMPLIFIED_CHINESE_SERVER_STRING)
+             (set! port-string SIMPLIFIED_CHINESE_PORT_STRING)
              (set! connect-string SIMPLIFIED_CHINESE_CONNECT_STRING)
              (set! definitions-string SIMPLIFIED_CHINESE_DEFINITIONS_STRING)
              (set! best-guess-string SIMPLIFIED_CHINESE_BEST_GUESS_STRING)
              (set! test-string SIMPLIFIED_CHINESE_TEST_STRING))
             (else (error 'gui-language-choice
                          (format "unknown language ~s" lang))))
+
           
+          (send gui-language-choice set-label language-string)
+          (send server-ip-address-field set-label server-string)
+          (send server-port-field set-label port-string)
           (send server-connect-button set-label connect-string)
           (send definitions-message set-label definitions-string)
           (send best-guess-message set-label best-guess-string)
