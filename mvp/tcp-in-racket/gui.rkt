@@ -52,15 +52,15 @@
 (define LANG_JAPANESE "日本語")
 (define LANG_SIMPLIFIED_CHINESE "中文")
 
-(define ENGLISH_DEFINITIONS_STRING "Definitions                ")
+(define ENGLISH_DEFINITIONS_STRING "Definitions")
 (define JAPANESE_DEFINITIONS_STRING "日本語 Definitions")
 (define SIMPLIFIED_CHINESE_DEFINITIONS_STRING "中文 Definitions")
 
-(define ENGLISH_BEST_GUESS_STRING "Best Guess                  ")
+(define ENGLISH_BEST_GUESS_STRING "Best Guess")
 (define JAPANESE_BEST_GUESS_STRING "日本語 Best Guess")
 (define SIMPLIFIED_CHINESE_BEST_GUESS_STRING "中文 Best Guess")
 
-(define ENGLISH_TEST_STRING "Test          ")
+(define ENGLISH_TEST_STRING "Test")
 (define JAPANESE_TEST_STRING "テスト")
 (define SIMPLIFIED_CHINESE_TEST_STRING "中文 Test")
 
@@ -522,7 +522,8 @@
     (define definitions-message
       (new message%
            (parent definitions-messages-panel-left)
-           (label ENGLISH_DEFINITIONS_STRING)))
+           (label (string-append ENGLISH_DEFINITIONS_STRING
+                                 "             "))))
 
     (define definitions-status-message
       (new message%
@@ -570,7 +571,8 @@
     (define best-guess-message
       (new message%
            (parent best-guess-messages-panel-left)
-           (label ENGLISH_BEST_GUESS_STRING)))
+           (label (string-append ENGLISH_BEST_GUESS_STRING
+                                 "             "))))
 
     (define best-guess-status-message
       (new message%
