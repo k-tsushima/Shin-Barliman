@@ -48,8 +48,15 @@
 (define LANG_ENGLISH "English")
 (define LANG_JAPANESE "日本語")
 
+(define ENGLISH_DEFINITIONS_STRING "Definitions                ")
+(define JAPANESE_DEFINITIONS_STRING "日本語 Definitions")
+
+(define ENGLISH_BEST_GUESS_STRING "Best Guess                  ")
+(define JAPANESE_BEST_GUESS_STRING "日本語 Best Guess")
+
 (define ENGLISH_TEST_STRING "Test")
 (define JAPANESE_TEST_STRING "テスト")
+
 
 (define *test-messages-box* (box #f))
 
@@ -120,36 +127,6 @@
     (list *test-5-value-expr*-box* (list VALUE 5))
     (list *test-6-expression-expr*-box* (list EXPRESSION 6))
     (list *test-6-value-expr*-box* (list VALUE 6))
-    ))
-
-(define update-GUI-text-for-language
-  (lambda ()
-
-    (define lang (unbox *GUI-language*))
-
-    (define test-string #f)
-    
-    (cond
-      ((equal? lang LANG_ENGLISH)
-       (set! test-string ENGLISH_TEST_STRING))
-      ((equal? lang LANG_JAPANESE)
-       (set! test-string JAPANESE_TEST_STRING))
-      (else (error 'gui-language-choice
-                   (format "unknown language ~s" lang))))
-
-    (define test-messages (unbox *test-messages-box*))
-
-    (when test-messages
-      (let loop ((test-messages test-messages)
-                 (n 1))
-        (cond
-          ((null? test-messages) (void))
-          (else (let ((test-message (car test-messages)))
-                  (send test-message set-label
-                        (format "~a ~a" test-string n)))
-                (loop (cdr test-messages)
-                      (add1 n))))))
-    
     ))
 
 (define (print-all-user-editable-canvases-boxes-values)
@@ -359,6 +336,9 @@
            (alignment '(center center))
            (stretchable-height #f)))
 
+    (define update-GUI-text-for-language
+      (lambda () (error 'update-GUI-text-for-language "uninitialized")))
+    
     (define gui-language-choice
       (new choice%
            (label "Language")
@@ -533,7 +513,7 @@
     (define definitions-message
       (new message%
            (parent definitions-messages-panel-left)
-           (label "Definitions")))
+           (label ENGLISH_DEFINITIONS_STRING)))
 
     (define definitions-status-message
       (new message%
@@ -541,11 +521,10 @@
            (label INITIAL-STATUS-MESSAGE-STRING)
            (auto-resize #f)))
 
-    
     (define definitions-editor-canvas
       (new editor-canvas%
            (parent left-top-panel)
-           (label "Definitions")
+           (label ENGLISH_DEFINITIONS_STRING)
            (style '(hide-hscroll hide-vscroll))))
     (define definitions-text
       (new (make-smart-text%
@@ -582,7 +561,7 @@
     (define best-guess-message
       (new message%
            (parent best-guess-messages-panel-left)
-           (label "Best Guess")))
+           (label ENGLISH_BEST_GUESS_STRING)))
 
     (define best-guess-status-message
       (new message%
@@ -593,7 +572,7 @@
     (define best-guess-editor-canvas
       (new editor-canvas%
            (parent left-bottom-panel)
-           (label "Best Guess")
+           (label ENGLISH_BEST_GUESS_STRING)
            (style '(hide-hscroll hide-vscroll))
            (enabled #f)))
     (define best-guess-text
@@ -809,7 +788,45 @@
          tabbable-items
          ;; wrap around (forward)
          (list (car tabbable-items))))
+
+      (set! update-GUI-text-for-language
+        (lambda ()
+
+          (define lang (unbox *GUI-language*))
+
+          (define definitions-string #f)
+          (define best-guess-string #f)
+          (define test-string #f)
     
+          (cond
+            ((equal? lang LANG_ENGLISH)
+             (set! definitions-string ENGLISH_DEFINITIONS_STRING)
+             (set! best-guess-string ENGLISH_BEST_GUESS_STRING)
+             (set! test-string ENGLISH_TEST_STRING))
+            ((equal? lang LANG_JAPANESE)
+             (set! definitions-string JAPANESE_DEFINITIONS_STRING)
+             (set! best-guess-string JAPANESE_BEST_GUESS_STRING)
+             (set! test-string JAPANESE_TEST_STRING))
+            (else (error 'gui-language-choice
+                         (format "unknown language ~s" lang))))
+
+          (send definitions-message set-label definitions-string)
+          (send best-guess-message set-label best-guess-string)
+          
+          (define test-messages (unbox *test-messages-box*))
+          (when test-messages
+            (let loop ((test-messages test-messages)
+                       (n 1))
+              (cond
+                ((null? test-messages) (void))
+                (else (let ((test-message (car test-messages)))
+                        (send test-message set-label
+                              (format "~a ~a" test-string n)))
+                      (loop (cdr test-messages)
+                            (add1 n))))))
+    
+          ))
+      
       (set-box! *tab-focus-order-box* wrappable-tabbable-items)
 
       ;; trigger reflowing of object sizes
