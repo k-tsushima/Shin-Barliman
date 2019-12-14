@@ -11,7 +11,6 @@ TODO
 *Finish i18n support:
 + Update placeholder "Disconnect" messages for other languages.
 + Consider changing application title in the window's title bar when the language is changed.
-+ Status messages should be printed in the currently selected language.
 + Persistent preference mechanism to allow setting a default language.
 + Consider moving i18n strings to a separate "strings" file.
 
