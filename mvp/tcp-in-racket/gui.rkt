@@ -8,7 +8,11 @@
 #|
 TODO
 
-*Finish i18n support:
+* Support any number of input/output tests.
+
+* Support multiple synthesized results.
+
+* Finish i18n support:
 + Update placeholder "Disconnect" messages for other languages.
 + Consider changing application title in the window's title bar when the language is changed.
 + Persistent preference mechanism to allow setting a default language.
