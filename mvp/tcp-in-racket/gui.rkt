@@ -15,6 +15,10 @@ TODO
 + Persistent preference mechanism to allow setting a default language.
 + Consider moving i18n strings to a separate "strings" file.
 
+* Add font size preferences, etc., to a "Preferences" menu item.
+
+* Update the available menus and menu items to better match the choices of a regular application.
+
 * Clean up, simplify, generalize code. Aim for "pearl quality."
 
 |#
