@@ -68,11 +68,11 @@ TODO
 
 (define I18N-STRINGS
   '(("English" .
-     ("Language" "Server"  "Port"     "Connect" "Disconnect"              "Definitions" "Synthesized Result" "Test" "Illegal expression!"              "Too many expressions!"))
+     ("Language" "Server"  "Port"     "Connect" "Disconnect"              "Definitions" "Synthesized Result" "Test" "Illegal expression!"              "Too many expressions!" "Not connected" "\nConnecting to ~a..." "\nConnected to ~a" "\nUnable to connect to ~a" "\nDisconnecting from ~a..." "\nDisconnected from ~a"))
     ("日本語" .
-     ("言語"      "サーバー" "ポート番号" "接続"    "FIXME 日本語 Disconnect"  "定義"        "プログラム合成結果"    "テスト" "FIXME 日本語 Illegal expression!" "FIXME 日本語 Too many expressions!"))
+     ("言語"      "サーバー" "ポート番号" "接続"    "FIXME 日本語 Disconnect"  "定義"        "プログラム合成結果"    "テスト" "FIXME 日本語 Illegal expression!" "FIXME 日本語 Too many expressions!" "FIXME 日本語 Not connected" "\nFIXME 日本語 Connecting to ~a..." "\nFIXME 日本語 Connected to ~a" "\nFIXME 日本語 Unable to connect to ~a" "\nFIXME 日本語 Disconnecting from ~a..." "\nFIXME 日本語 Disconnected from ~a"))
     ("中文" .
-     ("语言"      "服务器"  "端口"       "链接"   "FIXME 中文 Disconnect"    "定义"        "合成结果"             "测试"  "FIXME 中文 Illegal expression!"    "FIXME 中文 Too many expressions!"))))
+     ("语言"      "服务器"  "端口"       "链接"   "FIXME 中文 Disconnect"    "定义"        "合成结果"             "测试"  "FIXME 中文 Illegal expression!"    "FIXME 中文 Too many expressions!"  "FIXME 中文 Not connected" "\nFIXME 中文 Connecting to ~a..." "\nFIXME 中文 Connected to ~a" "\nFIXME 中文 Unable to connect to ~a" "\nFIXME 中文 Disconnecting from ~a..." "\nFIXME 中文 Disconnected from ~a"))))
 
 (define *test-messages-box* (box #f))
 
@@ -90,6 +90,14 @@ TODO
 (define *disconnect-str-box* (box #f))
 (define *illegal-expression-str-box* (box #f))
 (define *too-many-expressions-str-box* (box #f))
+
+(define *not-connected-str-box* (box #f))
+(define *connecting-to-str-box* (box #f))
+(define *connected-to-str-box* (box #f))
+(define *unable-to-connect-str-box* (box #f))
+(define *disconnecting-str-box* (box #f))
+(define *disconnected-str-box* (box #f))
+
 
 (define (read-exprs-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
@@ -417,7 +425,7 @@ TODO
                           ;; (for example, server may not be running)
                             
                           (send server-messages-text insert
-                                (format "\nConnecting to ~a..."
+                                (format (unbox *connecting-to-str-box*)
                                         full-address-str))
                           (printf "Connecting to ~a...\n"
                                   full-address-str)
@@ -439,7 +447,7 @@ TODO
                                 (send server-port-field enable #f)
                                   
                                 (send server-messages-text insert
-                                      (format "\nConnected to ~a"
+                                      (format (unbox *connected-to-str-box*)
                                               full-address-str))
                                 (printf "Connected to ~a\n"
                                         full-address-str)
@@ -452,7 +460,7 @@ TODO
                               (begin
 
                                 (send server-messages-text insert
-                                      (format "\nUnable to connect to ~a"
+                                      (format (unbox *unable-to-connect-str-box*)
                                               full-address-str))
                                 (printf "Unable to connect to ~a\n"
                                         full-address-str)
@@ -463,7 +471,7 @@ TODO
                          ((equal? (unbox *connection-state-box*) CONNECTED)
 
                           (send server-messages-text insert
-                                (format "\nDisconnecting from ~a..."
+                                (format (unbox *disconnecting-str-box*)
                                         full-address-str))
                           (printf "Disconnecting from ~a...\n"
                                   full-address-str)
@@ -488,7 +496,7 @@ TODO
                           (send server-port-field enable #t)
                             
                           (send server-messages-text insert
-                                (format "\nDisconnected from ~a"
+                                (format (unbox *disconnected-str-box*)
                                         full-address-str))
                           (printf "Disconnected from ~a\n"
                                   full-address-str)
@@ -498,9 +506,7 @@ TODO
                          (else
                           (error 'server-connect-button
                                  (format "unexpected state ~s" (unbox *connection-state-box*)))))
-                         
-                                                       
-                       ))))          
+                       ))))
 
     (define server-messages-editor-canvas
       (new editor-canvas%
@@ -510,7 +516,6 @@ TODO
            (stretchable-height #f)
            (label "Server Messages")))
     (define server-messages-text (new text%))
-    (send server-messages-text insert "Not connected")
     (send server-messages-editor-canvas
           set-editor server-messages-text)
     
@@ -829,7 +834,13 @@ TODO
                ,synthesized-result-str
                ,test-str
                ,illegal-expression-str
-               ,too-many-expressions-str)
+               ,too-many-expressions-str
+               ,not-connected-str
+               ,connecting-to-str
+               ,connected-to-str
+               ,unable-to-connect-str
+               ,disconnecting-str
+               ,disconnected-str)
              
              (send gui-language-choice set-label language-str)
              (send server-ip-address-field set-label server-str)
@@ -844,6 +855,13 @@ TODO
              
              (set-box! *illegal-expression-str-box* illegal-expression-str)
              (set-box! *too-many-expressions-str-box* too-many-expressions-str)
+
+             (set-box! *not-connected-str-box* not-connected-str)
+             (set-box! *connecting-to-str-box* connecting-to-str)
+             (set-box! *connected-to-str-box* connected-to-str)
+             (set-box! *unable-to-connect-str-box* unable-to-connect-str)
+             (set-box! *disconnecting-str-box* disconnecting-str)
+             (set-box! *disconnected-str-box* disconnected-str)             
              
              (send definitions-message set-label definitions-str)
              (send synthesized-result-message set-label synthesized-result-str)
