@@ -5,6 +5,19 @@
 ;;; Code adapted from the mediKanren Racket GUI
 ;;; (https://github.com/webyrd/mediKanren).
 
+#|
+TODO
+
+*Finish i18n support:
++ "Connect" button changes label to "Disconnect" in English.  Support for other languages.
++ Consider changing application title in the window's title bar when the language is changed.
++ Status messages should be printed in the currently selected language.
++ Persistent preference mechanism to allow setting a default language.
+
+* Clean up, simplify, generalize code. Aim for "pearl quality."
+
+|#
+
 (require
   racket/gui/base
   racket/tcp
