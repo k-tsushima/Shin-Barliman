@@ -123,41 +123,41 @@ TODO
 (define *definitions-exprs-box*
   (box (read-exprs-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
 ;;
-(define *test-1-expression-expr*-box* (box '()))
-(define *test-1-value-expr*-box* (box '()))
+(define *test-1-expression-exprs-box* (box '()))
+(define *test-1-value-exprs-box* (box '()))
 ;;
-(define *test-2-expression-expr*-box* (box '()))
-(define *test-2-value-expr*-box* (box '()))
+(define *test-2-expression-exprs-box* (box '()))
+(define *test-2-value-exprs-box* (box '()))
 ;;
-(define *test-3-expression-expr*-box* (box '()))
-(define *test-3-value-expr*-box* (box '()))
+(define *test-3-expression-exprs-box* (box '()))
+(define *test-3-value-exprs-box* (box '()))
 ;;
-(define *test-4-expression-expr*-box* (box '()))
-(define *test-4-value-expr*-box* (box '()))
+(define *test-4-expression-exprs-box* (box '()))
+(define *test-4-value-exprs-box* (box '()))
 ;;
-(define *test-5-expression-expr*-box* (box '()))
-(define *test-5-value-expr*-box* (box '()))
+(define *test-5-expression-exprs-box* (box '()))
+(define *test-5-value-exprs-box* (box '()))
 ;;
-(define *test-6-expression-expr*-box* (box '()))
-(define *test-6-value-expr*-box* (box '()))
+(define *test-6-expression-exprs-box* (box '()))
+(define *test-6-value-exprs-box* (box '()))
 
 ;; List of *box*/canvas-type/[optional-canvas-number] for the
 ;; user-editable canvas boxes containing exprs.
 (define *user-editable-canvases-boxes*
   (list
     (list *definitions-exprs-box* DEFINITIONS)
-    (list *test-1-expression-expr*-box* (list EXPRESSION 1))
-    (list *test-1-value-expr*-box* (list VALUE 1))
-    (list *test-2-expression-expr*-box* (list EXPRESSION 2))
-    (list *test-2-value-expr*-box* (list VALUE 2))
-    (list *test-3-expression-expr*-box* (list EXPRESSION 3))
-    (list *test-3-value-expr*-box* (list VALUE 3))
-    (list *test-4-expression-expr*-box* (list EXPRESSION 4))
-    (list *test-4-value-expr*-box* (list VALUE 4))
-    (list *test-5-expression-expr*-box* (list EXPRESSION 5))
-    (list *test-5-value-expr*-box* (list VALUE 5))
-    (list *test-6-expression-expr*-box* (list EXPRESSION 6))
-    (list *test-6-value-expr*-box* (list VALUE 6))
+    (list *test-1-expression-exprs-box* (list EXPRESSION 1))
+    (list *test-1-value-exprs-box* (list VALUE 1))
+    (list *test-2-expression-exprs-box* (list EXPRESSION 2))
+    (list *test-2-value-exprs-box* (list VALUE 2))
+    (list *test-3-expression-exprs-box* (list EXPRESSION 3))
+    (list *test-3-value-exprs-box* (list VALUE 3))
+    (list *test-4-expression-exprs-box* (list EXPRESSION 4))
+    (list *test-4-value-exprs-box* (list VALUE 4))
+    (list *test-5-expression-exprs-box* (list EXPRESSION 5))
+    (list *test-5-value-exprs-box* (list VALUE 5))
+    (list *test-6-expression-exprs-box* (list EXPRESSION 6))
+    (list *test-6-value-exprs-box* (list VALUE 6))
     ))
 
 (define (print-all-user-editable-canvases-boxes-values)
@@ -247,8 +247,8 @@ TODO
        (and (not (user-canvas-box-error b t))
             (loop rest))])))
 
-(define (user-canvas-box-error expr*-box type)
-  (let ((expr* (unbox expr*-box)))
+(define (user-canvas-box-error exprs-box type)
+  (let ((expr* (unbox exprs-box)))
     (cond
       [(equal? INVALID-EXPRESSION-VALUE expr*)
        (unbox *illegal-expression-str-box*)]
@@ -271,7 +271,7 @@ TODO
                    (format "unexpected expr*: ~s" expr*))])))
 
 (define (make-smart-text% type canvas status-message . args)
-  (let ((expr*-box (if (= (length args) 1)
+  (let ((exprs-box (if (= (length args) 1)
                        (car args)
                        #f)))
     (let ((name (match type
@@ -285,24 +285,24 @@ TODO
           (printf "after-edit-sequence called for ~s\n" name)
           (define str (send this get-text))
           (printf "text for ~s: ~s\n" name str)
-          (define expr*-in-list (read-exprs-from-string str name))
-          (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
+          (define exprs-in-list (read-exprs-from-string str name))
+          (printf "~s exprs-in-list: ~s\n" name exprs-in-list)
           
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('synthesized-result')
           (when (send canvas is-enabled?)
-            (set-box! expr*-box expr*-in-list)            
-            (when (list? expr*-in-list)
-              (if (= (length expr*-in-list) 1)
-                  (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
+            (set-box! exprs-box exprs-in-list)            
+            (when (list? exprs-in-list)
+              (if (= (length exprs-in-list) 1)
+                  (printf "~s single raw expr: ~s\n" name (car exprs-in-list))
                   (begin
                     (printf "~s multiple raw exprs:\n" name)
                     (for-each
                       (lambda (expr)
                         (printf "~s\n" expr))
-                      expr*-in-list))))
+                      exprs-in-list))))
 
-            (let ((e (user-canvas-box-error expr*-box type)))
+            (let ((e (user-canvas-box-error exprs-box type)))
               (if e
                   (send status-message set-label e)
                   (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
@@ -615,15 +615,15 @@ TODO
     (define (make-test-message/status/status/expression/value
              n
              parent-panel
-             expression-expr*-box
-             value-expr*-box)
+             expression-exprs-box
+             value-exprs-box)
 
       (define (make-test-editor-canvas
                type-name
                n
                parent-panel
                status-message
-               expr*-box)
+               exprs-box)
         (define test-editor-canvas
           (new editor-canvas%
                (parent parent-panel)
@@ -633,7 +633,7 @@ TODO
                 (list type-name n)
                 test-editor-canvas
                 status-message
-                expr*-box)))
+                exprs-box)))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
@@ -674,7 +674,7 @@ TODO
          n
          parent-panel
          test-expression-status-message
-         expression-expr*-box))
+         expression-exprs-box))
 
       (define value-messages-panel
         (new horizontal-pane%
@@ -705,7 +705,7 @@ TODO
          n
          parent-panel
          test-value-status-message
-         value-expr*-box))
+         value-exprs-box))
       
       (values test-expression-message
               test-expression-status-message
@@ -721,8 +721,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     1
                     right-panel
-                    *test-1-expression-expr*-box*
-                    *test-1-value-expr*-box*)]
+                    *test-1-expression-exprs-box*
+                    *test-1-value-exprs-box*)]
                   [(test-2-message
                     test-2-expression-status-message
                     test-2-value-status-message
@@ -731,8 +731,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     2
                     right-panel
-                    *test-2-expression-expr*-box*
-                    *test-2-value-expr*-box*)]
+                    *test-2-expression-exprs-box*
+                    *test-2-value-exprs-box*)]
                   [(test-3-message
                     test-3-expression-status-message
                     test-3-value-status-message
@@ -741,8 +741,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     3
                     right-panel
-                    *test-3-expression-expr*-box*
-                    *test-3-value-expr*-box*)]
+                    *test-3-expression-exprs-box*
+                    *test-3-value-exprs-box*)]
                   [(test-4-message
                     test-4-expression-status-message
                     test-4-value-status-message
@@ -751,8 +751,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     4
                     right-panel
-                    *test-4-expression-expr*-box*
-                    *test-4-value-expr*-box*)]
+                    *test-4-expression-exprs-box*
+                    *test-4-value-exprs-box*)]
                   [(test-5-message
                     test-5-expression-status-message
                     test-5-value-status-message
@@ -761,8 +761,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     5
                     right-panel
-                    *test-5-expression-expr*-box*
-                    *test-5-value-expr*-box*)]
+                    *test-5-expression-exprs-box*
+                    *test-5-value-exprs-box*)]
                   [(test-6-message
                     test-6-expression-status-message
                     test-6-value-status-message
@@ -771,8 +771,8 @@ TODO
                    (make-test-message/status/status/expression/value
                     6
                     right-panel
-                    *test-6-expression-expr*-box*
-                    *test-6-value-expr*-box*)])
+                    *test-6-expression-exprs-box*
+                    *test-6-value-exprs-box*)])
 
       (define test-messages
         (list
