@@ -8,6 +8,8 @@
 #|
 TODO
 
+* Be able to recover when a connection to the server hangs (for example, if the server isn't running), and to be able to explicitly stop the connection process.
+
 * Support any number of input/output tests.
 
 * Support multiple synthesized results.
