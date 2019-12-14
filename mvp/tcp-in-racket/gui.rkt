@@ -53,7 +53,7 @@ TODO
 
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
-(define INITIAL-STATUS-MESSAGE-STRING (make-string 50 #\ ))
+(define INITIAL-STATUS-MESSAGE-STRING (make-string 70 #\ ))
 (define INITIAL-PLACEHOLDER-LABEL-STRING (make-string 40 #\ ))
 
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
@@ -67,9 +67,12 @@ TODO
 (define DISCONNECTED 'disconnected)
 
 (define I18N-STRINGS
-  '(("English" . ("Language" "Server"  "Port"     "Connect" "Disconnect"              "Definitions" "Synthesized Result" "Test"))
-    ("日本語"   . ("言語"      "サーバー" "ポート番号" "接続"    "FIXME 日本語 Disconnect"  "定義"        "プログラム合成結果"    "テスト"))
-    ("中文"     . ("语言"      "服务器"  "端口"       "链接"   "FIXME 中文 Disconnect"    "定义"        "合成结果"             "测试"))))
+  '(("English" .
+     ("Language" "Server"  "Port"     "Connect" "Disconnect"              "Definitions" "Synthesized Result" "Test" "Illegal expression!"              "Too many expressions!"))
+    ("日本語" .
+     ("言語"      "サーバー" "ポート番号" "接続"    "FIXME 日本語 Disconnect"  "定義"        "プログラム合成結果"    "テスト" "FIXME 日本語 Illegal expression!" "FIXME 日本語 Too many expressions!"))
+    ("中文" .
+     ("语言"      "服务器"  "端口"       "链接"   "FIXME 中文 Disconnect"    "定义"        "合成结果"             "测试"  "FIXME 中文 Illegal expression!"    "FIXME 中文 Too many expressions!"))))
 
 (define *test-messages-box* (box #f))
 
@@ -85,6 +88,8 @@ TODO
 
 (define *connect-str-box* (box #f))
 (define *disconnect-str-box* (box #f))
+(define *illegal-expression-str-box* (box #f))
+(define *too-many-expressions-str-box* (box #f))
 
 (define (read-exprs-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
@@ -238,7 +243,7 @@ TODO
   (let ((expr* (unbox expr*-box)))
     (cond
       [(equal? INVALID-EXPRESSION-VALUE expr*)
-       "Illegal expression!"]
+       (unbox *illegal-expression-str-box*)]
       [(list? expr*)
        (match type
          [`(,t ,m)
@@ -251,7 +256,7 @@ TODO
           ;; empty or of length 1 (disallow multiple
           ;; expressions)
           (if (> (length expr*) 1)
-              "Too many expressions!"
+              (unbox *too-many-expressions-str-box*)
               #f)]
          [else #f])]
       [else (error 'user-canvas-box-error
@@ -808,9 +813,9 @@ TODO
 
       (set! update-GUI-text-for-language
         (lambda ()
-
+          
           (define lang (unbox *GUI-language-box*))
-
+          
           (define current-lang-strings (assoc lang I18N-STRINGS))
           
           (match current-lang-strings
@@ -822,17 +827,23 @@ TODO
                ,disconnect-str
                ,definitions-str
                ,synthesized-result-str
-               ,test-str)
+               ,test-str
+               ,illegal-expression-str
+               ,too-many-expressions-str)
              
              (send gui-language-choice set-label language-str)
              (send server-ip-address-field set-label server-str)
              (send server-port-field set-label port-str)
-
+             
              (set-box! *connect-str-box* connect-str)
              (set-box! *disconnect-str-box* disconnect-str)
+             
              (if (equal? (unbox *connection-state-box*) DISCONNECTED)
                  (send server-connect-button set-label (unbox *connect-str-box*))
                  (send server-connect-button set-label (unbox *disconnect-str-box*)))
+             
+             (set-box! *illegal-expression-str-box* illegal-expression-str)
+             (set-box! *too-many-expressions-str-box* too-many-expressions-str)
              
              (send definitions-message set-label definitions-str)
              (send synthesized-result-message set-label synthesized-result-str)
