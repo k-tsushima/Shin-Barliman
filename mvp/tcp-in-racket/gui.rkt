@@ -76,17 +76,17 @@ TODO
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
-(define *input-port-from-server* (box #f))
-(define *output-port-to-server* (box #f))
+(define *input-port-from-server-box* (box #f))
+(define *output-port-to-server-box* (box #f))
 
 (define *connection-state-box* (box DISCONNECTED))
 
-(define *GUI-language* (box (caar I18N-STRINGS)))
+(define *GUI-language-box* (box (caar I18N-STRINGS)))
 
 (define *connect-str-box* (box #f))
 (define *disconnect-str-box* (box #f))
 
-(define (read-expr*-from-string str name)
+(define (read-exprs-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
                                (printf "exn for ~s: ~s\n" name exn)
                                INVALID-EXPRESSION-VALUE)])
@@ -107,8 +107,8 @@ TODO
 ;;
 ;; Invalid expression(s) are represented by the non-list value
 ;; INVALID-EXPRESSION-VALUE.
-(define *definitions-expr*-box*
-  (box (read-expr*-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
+(define *definitions-exprs-box*
+  (box (read-exprs-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
 ;;
 (define *test-1-expression-expr*-box* (box '()))
 (define *test-1-value-expr*-box* (box '()))
@@ -132,7 +132,7 @@ TODO
 ;; user-editable canvas boxes containing exprs.
 (define *user-editable-canvases-boxes*
   (list
-    (list *definitions-expr*-box* DEFINITIONS)
+    (list *definitions-exprs-box* DEFINITIONS)
     (list *test-1-expression-expr*-box* (list EXPRESSION 1))
     (list *test-1-value-expr*-box* (list VALUE 1))
     (list *test-2-expression-expr*-box* (list EXPRESSION 2))
@@ -166,8 +166,8 @@ TODO
 
 (define (send-synthesize-message)
 
-  (define in (unbox *input-port-from-server*))
-  (define out (unbox *output-port-to-server*))
+  (define in (unbox *input-port-from-server-box*))
+  (define out (unbox *output-port-to-server-box*))
   
   (when (and in
              out
@@ -272,7 +272,7 @@ TODO
           (printf "after-edit-sequence called for ~s\n" name)
           (define str (send this get-text))
           (printf "text for ~s: ~s\n" name str)
-          (define expr*-in-list (read-expr*-from-string str name))
+          (define expr*-in-list (read-exprs-from-string str name))
           (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
           
           ;; Ignore any canvas that isn't enabled/user editable
@@ -365,7 +365,7 @@ TODO
            (callback (lambda (self event)
                        (define lang (send self get-string-selection))
                        (printf "User selected language ~s\n" lang)
-                       (set-box! *GUI-language* lang)
+                       (set-box! *GUI-language-box* lang)
                        (update-GUI-text-for-language)))))
     
     (define server-info-hor-draggable-panel
@@ -423,8 +423,8 @@ TODO
                           (if (and in out)
                               (begin
                                 ;; connection succeeded...
-                                (set-box! *input-port-from-server* in)
-                                (set-box! *output-port-to-server* out)
+                                (set-box! *input-port-from-server-box* in)
+                                (set-box! *output-port-to-server-box* out)
                                 
                                 (set-box! *connection-state-box* CONNECTED)
                                   
@@ -463,15 +463,15 @@ TODO
                           (printf "Disconnecting from ~a...\n"
                                   full-address-str)
 
-                          (define in (unbox *input-port-from-server*))
-                          (define out (unbox *output-port-to-server*))
+                          (define in (unbox *input-port-from-server-box*))
+                          (define out (unbox *output-port-to-server-box*))
                            
                           (when in
                             (close-input-port in)
-                            (set-box! *input-port-from-server* #f))
+                            (set-box! *input-port-from-server-box* #f))
                           (when out
                             (close-output-port out)
-                            (set-box! *output-port-to-server* #f))
+                            (set-box! *output-port-to-server-box* #f))
 
                           ;; disconnection succeeded
                           ;;
@@ -548,7 +548,7 @@ TODO
             DEFINITIONS
             definitions-editor-canvas
             definitions-status-message
-            *definitions-expr*-box*)))
+            *definitions-exprs-box*)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -809,7 +809,7 @@ TODO
       (set! update-GUI-text-for-language
         (lambda ()
 
-          (define lang (unbox *GUI-language*))
+          (define lang (unbox *GUI-language-box*))
 
           (define current-lang-strings (assoc lang I18N-STRINGS))
           
