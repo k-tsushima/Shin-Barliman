@@ -49,8 +49,12 @@ efficient synthesis.
     (cond
       ((eof-object? msg)
        (write '(goodbye) out)
+       (flush-output out)
        (printf "mcp: sent goodbye message\n"))
       (else
+       (write '(keep-going) out)
+       (flush-output out)
+       (printf "mcp: sent keep-going message\n")
        (loop (read in))))))
 
 ;; > (require "mcp.rkt")
