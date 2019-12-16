@@ -1,3 +1,17 @@
+;; Shin-Barliman Sub Controlling Process (SCP)
+
+#|
+Description of the Sub Controlling Process.
+----------------------------------------
+
+The MCP is responsible for coordinating communication between the
+user interface (UI) and the sub-processes responsible for synthesis.
+
+The MCP is also responsible for the policies and strategies used for
+efficient synthesis.
+|#
+
+
 (define *program* (box #f))
 (define *tests* (box #f))
 (define *scm-files* (box #f))
