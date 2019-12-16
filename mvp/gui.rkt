@@ -134,6 +134,8 @@ TODO
       "\nFIXME 中文 Disconnecting from ~a..."
       "\nFIXME 中文 Disconnected from ~a"))))
 
+(define *editable-code-items-box* (box #f))
+
 (define *test-messages-box* (box #f))
 
 (define *current-focus-box* (box #f))
@@ -606,14 +608,18 @@ TODO
                        (cond
                          ((equal? SYNTHESIZING new-synthesize-state)
                           ;; disable editing for definitions and all input/output examples
+                          (for-each (lambda (obj) (send obj enable #f)) (unbox *editable-code-items-box*))
+                          
                           ;; send synthesis message to MCP
                           ;; enter loop waiting for MCP synthesis results/displaying synthesis results
                           (void))
                          ((equal? NOT-SYNTHESIZING new-synthesize-state)
                           ;; send stop-synthesis message to MCP
-                          ;; enable editing for definitions and all input/output examples                          
+                          
+                          ;; enable editing for definitions and all input/output examples
+                          (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*))
                           (void))
-                         )                      
+                         )
                        ))))
 
     (define server-messages-editor-canvas
@@ -892,8 +898,8 @@ TODO
          test-6-message))
 
       (set-box! *test-messages-box* test-messages)
-      
-      (define tabbable-items
+
+      (define editable-code-items
         (list
          definitions-editor-canvas
          ;;
@@ -915,6 +921,10 @@ TODO
          test-expression-6-editor-canvas
          test-value-6-editor-canvas
          ))
+
+      (set-box! *editable-code-items-box* editable-code-items)
+      
+      (define tabbable-items editable-code-items)
 
       (define wrappable-tabbable-items
         (append
