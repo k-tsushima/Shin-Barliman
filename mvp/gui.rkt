@@ -135,6 +135,7 @@ TODO
       "\nFIXME 中文 Disconnected from ~a"))))
 
 (define *editable-code-items-box* (box #f))
+(define *synthesize-button-box* (box #f))
 
 (define *test-messages-box* (box #f))
 
@@ -379,10 +380,18 @@ TODO
             (printf "======================================\n")
             (print-all-user-editable-canvases-boxes-values)
             (send-synthesize-message)
-            (printf "======================================\n")
+            (printf "======================================\n")                       
             (if (all-user-canvas-boxes-have-legal-exprs?)
-                (printf "all user canvas boxes have legal exprs!\n")
-                (printf "at least one canvas box contains an illegal expr!\n"))
+                (begin
+                  (printf "all user canvas boxes have legal exprs!\n")
+                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                    (send (unbox *synthesize-button-box*) enable #t)))
+                (begin
+                  (printf "at least one canvas box contains an illegal expr!\n")
+                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                    (send (unbox *synthesize-button-box*) enable #f))))
             (newline))
           (void))
         (augment after-insert)
@@ -611,16 +620,22 @@ TODO
                           (for-each (lambda (obj) (send obj enable #f)) (unbox *editable-code-items-box*))
                           
                           ;; send synthesis message to MCP
+                          (if (all-user-canvas-boxes-have-legal-exprs?)
+                              (send-synthesize-message)
+                              (error 'synthesize-button
+                                     "tried to send synthesis message with illegal exprs"))
+                          
                           ;; enter loop waiting for MCP synthesis results/displaying synthesis results
-                          (void))
+                          
+                          )
                          ((equal? NOT-SYNTHESIZING new-synthesize-state)
                           ;; send stop-synthesis message to MCP
                           
                           ;; enable editing for definitions and all input/output examples
-                          (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*))
-                          (void))
+                          (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*)))
                          )
                        ))))
+    (set-box! *synthesize-button-box* synthesize-button)
 
     (define server-messages-editor-canvas
       (new editor-canvas%
