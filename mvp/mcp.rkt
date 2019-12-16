@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 ;; Shin-Barliman Main Control Program (MCP)
 
@@ -52,10 +52,22 @@ efficient synthesis.
        (flush-output out)
        (printf "mcp: sent goodbye message\n"))
       (else
-       (write '(keep-going) out)
-       (flush-output out)
-       (printf "mcp: sent keep-going message\n")
-       (loop (read in))))))
+       (match msg
+         (`(synthesize-kudasai
+            (from ,sender)
+            (vals ,vals))
+          (write `(thinking) out)
+          (flush-output out)
+          (printf "mcp: sent thinking message\n")
+          (loop (read in)))
+         (`(stop-synthesize-kudasai
+            (from ,sender))
+          (write `(stopped-thinking) out)
+          (flush-output out)
+          (printf "mcp: sent stopped-thinking message\n")
+          (loop (read in)))
+         (else 'handle
+               (format "unknown message type ~s" msg)))))))
 
 ;; > (require "mcp.rkt")
 ;; > (define stop (serve 8080))
