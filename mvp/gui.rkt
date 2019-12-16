@@ -586,18 +586,34 @@ TODO
            (enabled #f)
            (callback (lambda (self event)
                        (printf "clicked on 'Synthesize' button\n")
+
+                       (define old-synthesize-state (unbox *synthesis-state-box*))
+                       (define new-synthesize-state
+                         (cond
+                           ((equal? SYNTHESIZING old-synthesize-state) NOT-SYNTHESIZING)
+                           ((equal? NOT-SYNTHESIZING old-synthesize-state) SYNTHESIZING)
+                           (else (error 'synthesize-button "unknown synthesize state ~s" old-synthesize-state))))
+
+                       (printf "old-synthesize-state ~s\n" old-synthesize-state)
+                       (printf "new-synthesize-state ~s\n" new-synthesize-state)
                        
-                       ;; toggle state: synthesize/stop synthesis
+                       (set-box! *synthesis-state-box* new-synthesize-state)
 
-                       ;; if synthesizing:
-                       ;;    disable editing for definitions and all input/output examples
-                       ;;    send synthesis message to MCP
-                       ;;    enter loop waiting for MCP synthesis results/displaying synthesis results
-                       ;; else if stopping synthesis
-                       ;;    send stop-synthesis message to MCP
-                       ;;    enable editing for definitions and all input/output examples
+                       (if (equal? SYNTHESIZING new-synthesize-state)
+                           (send synthesize-button set-label (unbox *stop-synthesis-str-box*))
+                           (send synthesize-button set-label (unbox *synthesize-str-box*)))
 
-                       ;; toggle button text
+                       (cond
+                         ((equal? SYNTHESIZING new-synthesize-state)
+                          ;; disable editing for definitions and all input/output examples
+                          ;; send synthesis message to MCP
+                          ;; enter loop waiting for MCP synthesis results/displaying synthesis results
+                          (void))
+                         ((equal? NOT-SYNTHESIZING new-synthesize-state)
+                          ;; send stop-synthesis message to MCP
+                          ;; enable editing for definitions and all input/output examples                          
+                          (void))
+                         )                      
                        ))))
 
     (define server-messages-editor-canvas
