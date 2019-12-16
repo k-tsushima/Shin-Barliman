@@ -137,6 +137,8 @@ TODO
 (define *editable-code-items-box* (box #f))
 (define *synthesize-button-box* (box #f))
 
+(define *receive-mcp-messages-thread-box* (box #f))
+
 (define *test-messages-box* (box #f))
 
 (define *current-focus-box* (box #f))
@@ -270,6 +272,28 @@ TODO
     (printf "sending message ~s\n" msg)
     (write msg out)
     (flush-output out)))
+
+(define wait-on-mcp-synthesis-results
+  (lambda ()
+    (printf "wait-on-mcp-synthesis-results starting up...\n")
+    (define in (unbox *input-port-from-server-box*))
+    (define out (unbox *output-port-to-server-box*))
+    (when (and in out)
+      (printf "wait-on-mcp-synthesis-results waiting for message...\n")
+      (let loop ((msg (read in)))
+        (printf "wait-on-mcp-synthesis-results received message ~s\n" msg)
+        (cond
+          ((eof-object? msg)
+           (void))
+          (else
+           (match msg
+             (`(goodbye)
+              (printf "wait-on-mcp-synthesis-results received goodbye from mcp!  Dun with fish\n"))
+             (`(keep-going)
+              (printf "wait-on-mcp-synthesis-results xoreceived keep-going from mcp!  Onward...\n")
+              (loop (read in)))
+             (else (error 'wait-on-mcp-synthesis-results
+                          (format "unknown message type: ~s" msg))))))))))
 
 (define smart-top-level-window%
  (class frame%
@@ -620,11 +644,15 @@ TODO
                               (error 'synthesize-button
                                      "tried to send synthesis message with illegal exprs"))
                           
-                          ;; enter loop waiting for MCP synthesis results/displaying synthesis results
-                          
-                          )
-                         ((equal? NOT-SYNTHESIZING new-synthesize-state)                          
+                          ;; start thread with loop waiting for MCP synthesis results/displaying synthesis results
+                          (set-box! *receive-mcp-messages-thread-box* (thread wait-on-mcp-synthesis-results)))
+                         ((equal? NOT-SYNTHESIZING new-synthesize-state)
                           (send-stop-synthesis-message)
+
+                          ;; kill loop waiting thread
+                          (when (unbox *receive-mcp-messages-thread-box*)
+                            (kill-thread (unbox *receive-mcp-messages-thread-box*))
+                            (set-box! *receive-mcp-messages-thread-box* #f))
                           
                           ;; enable editing for definitions and all input/output examples
                           (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*)))
