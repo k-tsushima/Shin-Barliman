@@ -5,6 +5,28 @@
 ;;; Code adapted from the mediKanren Racket GUI
 ;;; (https://github.com/webyrd/mediKanren).
 
+#|
+TODO
+
+* Be able to recover when a connection to the server hangs (for example, if the server isn't running), and to be able to explicitly stop the connection process.
+
+* Support any number of input/output tests.
+
+* Support multiple synthesized results.
+
+* Finish i18n support:
++ Update placeholder "Disconnect" messages for other languages.
++ Consider changing application title in the window's title bar when the language is changed.
++ Persistent preference mechanism to allow setting a default language.
++ Consider moving i18n strings to a separate "strings" file.
+
+* Add font size preferences, etc., to a "Preferences" menu item.
+
+* Update the available menus and menu items to better match the choices of a regular application.
+
+* Clean up, simplify, generalize code. Aim for "pearl quality."
+|#
+
 (require
   racket/gui/base
   racket/tcp
@@ -36,7 +58,7 @@
 
 (define DEFAULT-PROGRAM-TEXT "(define ,A\n  (lambda ,B\n    ,C))")
 
-(define INITIAL-STATUS-MESSAGE-STRING (make-string 50 #\ ))
+(define INITIAL-STATUS-MESSAGE-STRING (make-string 70 #\ ))
 (define INITIAL-PLACEHOLDER-LABEL-STRING (make-string 40 #\ ))
 
 (define INVALID-EXPRESSION-VALUE 'invalid-expression)
@@ -49,22 +71,107 @@
 (define CONNECTED 'connected)
 (define DISCONNECTED 'disconnected)
 
+(define NOT-SYNTHESIZING 'not-synthesizing)
+(define SYNTHESIZING 'synthesizing)
+
+
 (define I18N-STRINGS
-  '(("English" . ("Language" "Server"  "Port"     "Connect" "Definitions" "Synthesized Result" "Test"))
-    ("日本語"   . ("言語"      "サーバー" "ポート番号" "接続"     "定義"        "プログラム合成結果"    "テスト"))
-    ("中文"     . ("语言"      "服务器"  "端口"       "链接"    "定义"        "合成结果"             "测试"))))
+  '(("English" .
+     ("Language"
+      "Server"
+      "Port"
+      "Connect"
+      "Disconnect"
+      "Synthesize"
+      "Stop"
+      "Definitions"
+      "Synthesized Result"
+      "Test"
+      "Illegal expression!"
+      "Too many expressions!"
+      "Not connected"
+      "\nConnecting to ~a..."
+      "\nConnected to ~a"
+      "\nUnable to connect to ~a"
+      "\nDisconnecting from ~a..."
+      "\nDisconnected from ~a"))
+    ("日本語" .
+     ("言語"
+      "サーバー"
+      "ポート番号"
+      "接続"
+      "FIXME 日本語 Disconnect"
+      "FIXME 日本語 Synthesize"
+      "FIXME 日本語 Stop"
+      "定義"
+      "プログラム合成結果"
+      "テスト"
+      "FIXME 日本語 Illegal expression!"
+      "FIXME 日本語 Too many expressions!"
+      "FIXME 日本語 Not connected"
+      "\nFIXME 日本語 Connecting to ~a..."
+      "\nFIXME 日本語 Connected to ~a"
+      "\nFIXME 日本語 Unable to connect to ~a"
+      "\nFIXME 日本語 Disconnecting from ~a..."
+      "\nFIXME 日本語 Disconnected from ~a"))
+    ("中文" .
+     ("语言"
+      "服务器"
+      "端口"
+      "链接"
+      "FIXME 中文 Disconnect"
+      "FIXME 中文 Synthesize"
+      "FIXME 中文 Stop"
+      "定义"
+      "合成结果"
+      "测试"
+      "FIXME 中文 Illegal expression!"
+      "FIXME 中文 Too many expressions!"
+      "FIXME 中文 Not connected"
+      "\nFIXME 中文 Connecting to ~a..."
+      "\nFIXME 中文 Connected to ~a"
+      "\nFIXME 中文 Unable to connect to ~a"
+      "\nFIXME 中文 Disconnecting from ~a..."
+      "\nFIXME 中文 Disconnected from ~a"))))
+
+(define *editable-code-items-box* (box #f))
+(define *synthesize-button-box* (box #f))
+
+(define *receive-mcp-messages-thread-box* (box #f))
 
 (define *test-messages-box* (box #f))
 
 (define *current-focus-box* (box #f))
 (define *tab-focus-order-box* (box '()))
 
-(define *input-port-from-server* (box #f))
-(define *output-port-to-server* (box #f))
+(define *input-port-from-server-box* (box #f))
+(define *output-port-to-server-box* (box #f))
 
-(define *GUI-language* (box (caar I18N-STRINGS)))
+(define *connection-state-box* (box DISCONNECTED))
 
-(define (read-expr*-from-string str name)
+(define *synthesis-state-box* (box NOT-SYNTHESIZING))
+
+
+(define *GUI-language-box* (box (caar I18N-STRINGS)))
+
+(define *connect-str-box* (box #f))
+(define *disconnect-str-box* (box #f))
+
+(define *synthesize-str-box* (box #f))
+(define *stop-synthesis-str-box* (box #f))
+
+(define *illegal-expression-str-box* (box #f))
+(define *too-many-expressions-str-box* (box #f))
+
+(define *not-connected-str-box* (box #f))
+(define *connecting-to-str-box* (box #f))
+(define *connected-to-str-box* (box #f))
+(define *unable-to-connect-str-box* (box #f))
+(define *disconnecting-str-box* (box #f))
+(define *disconnected-str-box* (box #f))
+
+
+(define (read-exprs-from-string str name)
   (with-handlers ([exn:fail? (lambda (exn)
                                (printf "exn for ~s: ~s\n" name exn)
                                INVALID-EXPRESSION-VALUE)])
@@ -85,44 +192,44 @@
 ;;
 ;; Invalid expression(s) are represented by the non-list value
 ;; INVALID-EXPRESSION-VALUE.
-(define *definitions-expr*-box*
-  (box (read-expr*-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
+(define *definitions-exprs-box*
+  (box (read-exprs-from-string DEFAULT-PROGRAM-TEXT 'default-program-text)))
 ;;
-(define *test-1-expression-expr*-box* (box '()))
-(define *test-1-value-expr*-box* (box '()))
+(define *test-1-expression-exprs-box* (box '()))
+(define *test-1-value-exprs-box* (box '()))
 ;;
-(define *test-2-expression-expr*-box* (box '()))
-(define *test-2-value-expr*-box* (box '()))
+(define *test-2-expression-exprs-box* (box '()))
+(define *test-2-value-exprs-box* (box '()))
 ;;
-(define *test-3-expression-expr*-box* (box '()))
-(define *test-3-value-expr*-box* (box '()))
+(define *test-3-expression-exprs-box* (box '()))
+(define *test-3-value-exprs-box* (box '()))
 ;;
-(define *test-4-expression-expr*-box* (box '()))
-(define *test-4-value-expr*-box* (box '()))
+(define *test-4-expression-exprs-box* (box '()))
+(define *test-4-value-exprs-box* (box '()))
 ;;
-(define *test-5-expression-expr*-box* (box '()))
-(define *test-5-value-expr*-box* (box '()))
+(define *test-5-expression-exprs-box* (box '()))
+(define *test-5-value-exprs-box* (box '()))
 ;;
-(define *test-6-expression-expr*-box* (box '()))
-(define *test-6-value-expr*-box* (box '()))
+(define *test-6-expression-exprs-box* (box '()))
+(define *test-6-value-exprs-box* (box '()))
 
 ;; List of *box*/canvas-type/[optional-canvas-number] for the
 ;; user-editable canvas boxes containing exprs.
 (define *user-editable-canvases-boxes*
   (list
-    (list *definitions-expr*-box* DEFINITIONS)
-    (list *test-1-expression-expr*-box* (list EXPRESSION 1))
-    (list *test-1-value-expr*-box* (list VALUE 1))
-    (list *test-2-expression-expr*-box* (list EXPRESSION 2))
-    (list *test-2-value-expr*-box* (list VALUE 2))
-    (list *test-3-expression-expr*-box* (list EXPRESSION 3))
-    (list *test-3-value-expr*-box* (list VALUE 3))
-    (list *test-4-expression-expr*-box* (list EXPRESSION 4))
-    (list *test-4-value-expr*-box* (list VALUE 4))
-    (list *test-5-expression-expr*-box* (list EXPRESSION 5))
-    (list *test-5-value-expr*-box* (list VALUE 5))
-    (list *test-6-expression-expr*-box* (list EXPRESSION 6))
-    (list *test-6-value-expr*-box* (list VALUE 6))
+    (list *definitions-exprs-box* DEFINITIONS)
+    (list *test-1-expression-exprs-box* (list EXPRESSION 1))
+    (list *test-1-value-exprs-box* (list VALUE 1))
+    (list *test-2-expression-exprs-box* (list EXPRESSION 2))
+    (list *test-2-value-exprs-box* (list VALUE 2))
+    (list *test-3-expression-exprs-box* (list EXPRESSION 3))
+    (list *test-3-value-exprs-box* (list VALUE 3))
+    (list *test-4-expression-exprs-box* (list EXPRESSION 4))
+    (list *test-4-value-exprs-box* (list VALUE 4))
+    (list *test-5-expression-exprs-box* (list EXPRESSION 5))
+    (list *test-5-value-exprs-box* (list VALUE 5))
+    (list *test-6-expression-exprs-box* (list EXPRESSION 6))
+    (list *test-6-value-exprs-box* (list VALUE 6))
     ))
 
 (define (print-all-user-editable-canvases-boxes-values)
@@ -142,28 +249,51 @@
         (list type (unbox b))
         (loop rest))])))
 
-(define (send-synthesize-message)
-
-  (define in (unbox *input-port-from-server*))
-  (define out (unbox *output-port-to-server*))
-  
-  (when (and in
-             out
-             (all-user-canvas-boxes-have-legal-exprs?))
+(define (send-synthesize-message)  
+  (when (all-user-canvas-boxes-have-legal-exprs?)
     (define vals
       (all-user-editable-canvases-boxes-values))
-    (define synthesize-msg
+    (define msg
       `(synthesize-kudasai
         (from gui)
         (vals ,vals)))
+    (send-message msg)))
 
-    (printf "sending message ~s\n"
-            synthesize-msg)
+(define (send-stop-synthesis-message)
+  (define msg
+    `(stop-synthesize-kudasai
+       (from gui)))  
+  (send-message msg))
 
-    (write synthesize-msg out)
-    (flush-output out)
-    )
-  )
+(define (send-message msg)
+  (define in (unbox *input-port-from-server-box*))
+  (define out (unbox *output-port-to-server-box*))
+  (when (and in out)
+    (printf "sending message ~s\n" msg)
+    (write msg out)
+    (flush-output out)))
+
+(define wait-on-mcp-synthesis-results
+  (lambda ()
+    (printf "wait-on-mcp-synthesis-results starting up...\n")
+    (define in (unbox *input-port-from-server-box*))
+    (define out (unbox *output-port-to-server-box*))
+    (when (and in out)
+      (printf "wait-on-mcp-synthesis-results waiting for message...\n")
+      (let loop ((msg (read in)))
+        (printf "wait-on-mcp-synthesis-results received message ~s\n" msg)
+        (cond
+          ((eof-object? msg)
+           (void))
+          (else
+           (match msg
+             (`(goodbye)
+              (printf "wait-on-mcp-synthesis-results received goodbye from mcp!  Dun with fish\n"))
+             (`(keep-going)
+              (printf "wait-on-mcp-synthesis-results xoreceived keep-going from mcp!  Onward...\n")
+              (loop (read in)))
+             (else (error 'wait-on-mcp-synthesis-results
+                          (format "unknown message type: ~s" msg))))))))))
 
 (define smart-top-level-window%
  (class frame%
@@ -212,11 +342,11 @@
        (and (not (user-canvas-box-error b t))
             (loop rest))])))
 
-(define (user-canvas-box-error expr*-box type)
-  (let ((expr* (unbox expr*-box)))
+(define (user-canvas-box-error exprs-box type)
+  (let ((expr* (unbox exprs-box)))
     (cond
       [(equal? INVALID-EXPRESSION-VALUE expr*)
-       "Illegal expression!"]
+       (unbox *illegal-expression-str-box*)]
       [(list? expr*)
        (match type
          [`(,t ,m)
@@ -229,14 +359,14 @@
           ;; empty or of length 1 (disallow multiple
           ;; expressions)
           (if (> (length expr*) 1)
-              "Too many expressions!"
+              (unbox *too-many-expressions-str-box*)
               #f)]
          [else #f])]
       [else (error 'user-canvas-box-error
                    (format "unexpected expr*: ~s" expr*))])))
 
 (define (make-smart-text% type canvas status-message . args)
-  (let ((expr*-box (if (= (length args) 1)
+  (let ((exprs-box (if (= (length args) 1)
                        (car args)
                        #f)))
     (let ((name (match type
@@ -250,35 +380,42 @@
           (printf "after-edit-sequence called for ~s\n" name)
           (define str (send this get-text))
           (printf "text for ~s: ~s\n" name str)
-          (define expr*-in-list (read-expr*-from-string str name))
-          (printf "~s expr*-in-list: ~s\n" name expr*-in-list)
+          (define exprs-in-list (read-exprs-from-string str name))
+          (printf "~s exprs-in-list: ~s\n" name exprs-in-list)
           
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('synthesized-result')
           (when (send canvas is-enabled?)
-            (set-box! expr*-box expr*-in-list)            
-            (when (list? expr*-in-list)
-              (if (= (length expr*-in-list) 1)
-                  (printf "~s single raw expr: ~s\n" name (car expr*-in-list))
+            (set-box! exprs-box exprs-in-list)            
+            (when (list? exprs-in-list)
+              (if (= (length exprs-in-list) 1)
+                  (printf "~s single raw expr: ~s\n" name (car exprs-in-list))
                   (begin
                     (printf "~s multiple raw exprs:\n" name)
                     (for-each
                       (lambda (expr)
                         (printf "~s\n" expr))
-                      expr*-in-list))))
+                      exprs-in-list))))
 
-            (let ((e (user-canvas-box-error expr*-box type)))
+            (let ((e (user-canvas-box-error exprs-box type)))
               (if e
                   (send status-message set-label e)
                   (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
             
             (printf "======================================\n")
-            (print-all-user-editable-canvases-boxes-values)
-            (send-synthesize-message)
-            (printf "======================================\n")
+            (print-all-user-editable-canvases-boxes-values)            
+            (printf "======================================\n")                       
             (if (all-user-canvas-boxes-have-legal-exprs?)
-                (printf "all user canvas boxes have legal exprs!\n")
-                (printf "at least one canvas box contains an illegal expr!\n"))
+                (begin
+                  (printf "all user canvas boxes have legal exprs!\n")
+                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                    (send (unbox *synthesize-button-box*) enable #t)))
+                (begin
+                  (printf "at least one canvas box contains an illegal expr!\n")
+                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                    (send (unbox *synthesize-button-box*) enable #f))))
             (newline))
           (void))
         (augment after-insert)
@@ -343,7 +480,7 @@
            (callback (lambda (self event)
                        (define lang (send self get-string-selection))
                        (printf "User selected language ~s\n" lang)
-                       (set-box! *GUI-language* lang)
+                       (set-box! *GUI-language-box* lang)
                        (update-GUI-text-for-language)))))
     
     (define server-info-hor-draggable-panel
@@ -365,116 +502,163 @@
            (init-value "8080")))
 
     (define server-connect-button
-      (let ((state DISCONNECTED))
-        (new button%
-             (parent server-info-panel)
-             (label " Connect ")
-             (callback (lambda (self event)
+      (new button%
+           (parent server-info-panel)
+           (label "Connect")
+           (callback (lambda (self event)
 
-                         (define address-str
-                           (send server-ip-address-field
-                                 get-value))
-                         (define port-str
-                           (send server-port-field
-                                 get-value))
-                         (define full-address-str
-                           (string-append address-str ":" port-str))
+                       (define address-str
+                         (send server-ip-address-field
+                               get-value))
+                       (define port-str
+                         (send server-port-field
+                               get-value))
+                       (define full-address-str
+                         (string-append address-str ":" port-str))
 
-                         ;; TODO -- this may not be a legal port number,
-                         ;; or a number at all!
-                         (define port (string->number port-str))
+                       ;; TODO -- this may not be a legal port number,
+                       ;; or a number at all!
+                       (define port (string->number port-str))
                          
-                         (cond
-                           ((equal? state DISCONNECTED)
+                       (cond
+                         ((equal? (unbox *connection-state-box*) DISCONNECTED)
 
-                            ;; TODO Implement timeout for connecting
-                            ;; (for example, server may not be running)
+                          ;; TODO Implement timeout for connecting
+                          ;; (for example, server may not be running)
                             
-                            (send server-messages-text insert
-                                  (format "\nConnecting to ~a..."
-                                          full-address-str))
-                            (printf "Connecting to ~a...\n"
-                                    full-address-str)
+                          (send server-messages-text insert
+                                (format (unbox *connecting-to-str-box*)
+                                        full-address-str))
+                          (printf "Connecting to ~a...\n"
+                                  full-address-str)
 
-                            (define-values (in out)
-                              (tcp-connect address-str port))
+                          (define-values (in out)
+                            (tcp-connect address-str port))
 
-                            (if (and in out)
-                                (begin
-                                  ;; connection succeeded...
-                                  (set-box! *input-port-from-server* in)
-                                  (set-box! *output-port-to-server* out)
+                          (if (and in out)
+                              (begin
+                                ;; connection succeeded...
+                                (set-box! *input-port-from-server-box* in)
+                                (set-box! *output-port-to-server-box* out)
+                                
+                                (set-box! *connection-state-box* CONNECTED)
                                   
-                                  (set! state CONNECTED)
+                                (send self set-label (unbox *disconnect-str-box*))
                                   
-                                  (send self set-label "Disconnect")
-                                  
-                                  (send server-ip-address-field enable #f)
-                                  (send server-port-field enable #f)
-                                  
-                                  (send server-messages-text insert
-                                        (format "\nConnected to ~a"
-                                                full-address-str))
-                                  (printf "Connected to ~a\n"
-                                          full-address-str)
-                                  
-                                  ;; send message with definitions and
-                                  ;; examples to server
-                                  (send-synthesize-message)
-                                  
-                                  )
-                                (begin
+                                (send server-ip-address-field enable #f)
+                                (send server-port-field enable #f)
 
-                                  (send server-messages-text insert
-                                        (format "\nUnable to connect to ~a"
-                                                full-address-str))
-                                  (printf "Unable to connect to ~a\n"
-                                          full-address-str)
-                                  
-                                  ))
-                            )
+                                (send synthesize-button enable #t)
+                                
+                                (send server-messages-text insert
+                                      (format (unbox *connected-to-str-box*)
+                                              full-address-str))
+                                (printf "Connected to ~a\n"
+                                        full-address-str)                                                                  
+                                )
+                              (begin
 
-                           ((equal? state CONNECTED)
+                                (send server-messages-text insert
+                                      (format (unbox *unable-to-connect-str-box*)
+                                              full-address-str))
+                                (printf "Unable to connect to ~a\n"
+                                        full-address-str)                                  
+                                ))
+                          )
 
-                            (send server-messages-text insert
-                                  (format "\nDisconnecting from ~a..."
-                                          full-address-str))
-                            (printf "Disconnecting from ~a...\n"
-                                    full-address-str)
+                         ((equal? (unbox *connection-state-box*) CONNECTED)
 
-                            (define in (unbox *input-port-from-server*))
-                            (define out (unbox *output-port-to-server*))
+                          (send server-messages-text insert
+                                (format (unbox *disconnecting-str-box*)
+                                        full-address-str))
+                          (printf "Disconnecting from ~a...\n"
+                                  full-address-str)
+
+                          (define in (unbox *input-port-from-server-box*))
+                          (define out (unbox *output-port-to-server-box*))
                            
-                            (when in
-                              (close-input-port in)
-                              (set-box! *input-port-from-server* #f))
-                            (when out
-                              (close-output-port out)
-                              (set-box! *output-port-to-server* #f))
+                          (when in
+                            (close-input-port in)
+                            (set-box! *input-port-from-server-box* #f))
+                          (when out
+                            (close-output-port out)
+                            (set-box! *output-port-to-server-box* #f))
 
-                            ;; disconnection succeeded
-                            ;;
-                            (set! state DISCONNECTED)
-                            ;;
-                            (send self set-label " Connect ")
-                            ;;
-                            (send server-ip-address-field enable #t)
-                            (send server-port-field enable #t)
+                          ;; disconnection succeeded
+                          ;;
+                          (set-box! *connection-state-box* DISCONNECTED)
+                          ;;
+                          (send self set-label (unbox *connect-str-box*))
+                          ;;
+                          (send server-ip-address-field enable #t)
+                          (send server-port-field enable #t)
+                          
+                          (send synthesize-button enable #f)
+                          
+                          (send server-messages-text insert
+                                (format (unbox *disconnected-str-box*)
+                                        full-address-str))
+                          (printf "Disconnected from ~a\n"
+                                  full-address-str)
                             
-                            (send server-messages-text insert
-                                  (format "\nDisconnected from ~a"
-                                          full-address-str))
-                            (printf "Disconnected from ~a\n"
-                                    full-address-str)
-                            
-                            )
+                          )
 
-                           (else
-                            (error 'server-connect-button
-                                   (format "unexpected state ~s" state))))
-                         
-                                                       
-                         )))))          
+                         (else
+                          (error 'server-connect-button
+                                 (format "unexpected state ~s" (unbox *connection-state-box*)))))
+                       ))))
+
+    (define synthesize-button
+      (new button%
+           (parent server-info-panel)
+           (label "Synthesize")
+           (enabled #f)
+           (callback (lambda (self event)
+                       (printf "clicked on 'Synthesize' button\n")
+
+                       (define old-synthesize-state (unbox *synthesis-state-box*))
+                       (define new-synthesize-state
+                         (cond
+                           ((equal? SYNTHESIZING old-synthesize-state) NOT-SYNTHESIZING)
+                           ((equal? NOT-SYNTHESIZING old-synthesize-state) SYNTHESIZING)
+                           (else (error 'synthesize-button "unknown synthesize state ~s" old-synthesize-state))))
+
+                       (printf "old-synthesize-state ~s\n" old-synthesize-state)
+                       (printf "new-synthesize-state ~s\n" new-synthesize-state)
+                       
+                       (set-box! *synthesis-state-box* new-synthesize-state)
+
+                       (if (equal? SYNTHESIZING new-synthesize-state)
+                           (send synthesize-button set-label (unbox *stop-synthesis-str-box*))
+                           (send synthesize-button set-label (unbox *synthesize-str-box*)))
+
+                       (cond
+                         ((equal? SYNTHESIZING new-synthesize-state)
+                          
+                          ;; disable editing for definitions and all input/output examples
+                          (for-each (lambda (obj) (send obj enable #f)) (unbox *editable-code-items-box*))
+                          
+                          ;; send synthesis message to MCP
+                          (if (all-user-canvas-boxes-have-legal-exprs?)
+                              (send-synthesize-message)
+                              (error 'synthesize-button
+                                     "tried to send synthesis message with illegal exprs"))
+                          
+                          ;; start thread with loop waiting for MCP synthesis results/displaying synthesis results
+                          (set-box! *receive-mcp-messages-thread-box* (thread wait-on-mcp-synthesis-results)))
+                         ((equal? NOT-SYNTHESIZING new-synthesize-state)
+                          (send-stop-synthesis-message)
+
+                          ;; kill loop waiting thread
+                          (when (unbox *receive-mcp-messages-thread-box*)
+                            (kill-thread (unbox *receive-mcp-messages-thread-box*))
+                            (set-box! *receive-mcp-messages-thread-box* #f))
+                          
+                          ;; enable editing for definitions and all input/output examples
+                          (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*)))
+                         )
+                       ))))
+    (set-box! *synthesize-button-box* synthesize-button)
 
     (define server-messages-editor-canvas
       (new editor-canvas%
@@ -484,7 +668,6 @@
            (stretchable-height #f)
            (label "Server Messages")))
     (define server-messages-text (new text%))
-    (send server-messages-text insert "Not connected")
     (send server-messages-editor-canvas
           set-editor server-messages-text)
     
@@ -527,7 +710,7 @@
             DEFINITIONS
             definitions-editor-canvas
             definitions-status-message
-            *definitions-expr*-box*)))
+            *definitions-exprs-box*)))
     (send definitions-text insert DEFAULT-PROGRAM-TEXT)
     (send definitions-editor-canvas set-editor definitions-text)
     (send definitions-text set-max-undo-history MAX-UNDO-DEPTH)
@@ -584,15 +767,15 @@
     (define (make-test-message/status/status/expression/value
              n
              parent-panel
-             expression-expr*-box
-             value-expr*-box)
+             expression-exprs-box
+             value-exprs-box)
 
       (define (make-test-editor-canvas
                type-name
                n
                parent-panel
                status-message
-               expr*-box)
+               exprs-box)
         (define test-editor-canvas
           (new editor-canvas%
                (parent parent-panel)
@@ -602,7 +785,7 @@
                 (list type-name n)
                 test-editor-canvas
                 status-message
-                expr*-box)))
+                exprs-box)))
         (send test-editor-canvas set-editor test-text)
         (send test-text set-max-undo-history MAX-UNDO-DEPTH)
 
@@ -643,7 +826,7 @@
          n
          parent-panel
          test-expression-status-message
-         expression-expr*-box))
+         expression-exprs-box))
 
       (define value-messages-panel
         (new horizontal-pane%
@@ -674,7 +857,7 @@
          n
          parent-panel
          test-value-status-message
-         value-expr*-box))
+         value-exprs-box))
       
       (values test-expression-message
               test-expression-status-message
@@ -690,8 +873,8 @@
                    (make-test-message/status/status/expression/value
                     1
                     right-panel
-                    *test-1-expression-expr*-box*
-                    *test-1-value-expr*-box*)]
+                    *test-1-expression-exprs-box*
+                    *test-1-value-exprs-box*)]
                   [(test-2-message
                     test-2-expression-status-message
                     test-2-value-status-message
@@ -700,8 +883,8 @@
                    (make-test-message/status/status/expression/value
                     2
                     right-panel
-                    *test-2-expression-expr*-box*
-                    *test-2-value-expr*-box*)]
+                    *test-2-expression-exprs-box*
+                    *test-2-value-exprs-box*)]
                   [(test-3-message
                     test-3-expression-status-message
                     test-3-value-status-message
@@ -710,8 +893,8 @@
                    (make-test-message/status/status/expression/value
                     3
                     right-panel
-                    *test-3-expression-expr*-box*
-                    *test-3-value-expr*-box*)]
+                    *test-3-expression-exprs-box*
+                    *test-3-value-exprs-box*)]
                   [(test-4-message
                     test-4-expression-status-message
                     test-4-value-status-message
@@ -720,8 +903,8 @@
                    (make-test-message/status/status/expression/value
                     4
                     right-panel
-                    *test-4-expression-expr*-box*
-                    *test-4-value-expr*-box*)]
+                    *test-4-expression-exprs-box*
+                    *test-4-value-exprs-box*)]
                   [(test-5-message
                     test-5-expression-status-message
                     test-5-value-status-message
@@ -730,8 +913,8 @@
                    (make-test-message/status/status/expression/value
                     5
                     right-panel
-                    *test-5-expression-expr*-box*
-                    *test-5-value-expr*-box*)]
+                    *test-5-expression-exprs-box*
+                    *test-5-value-exprs-box*)]
                   [(test-6-message
                     test-6-expression-status-message
                     test-6-value-status-message
@@ -740,8 +923,8 @@
                    (make-test-message/status/status/expression/value
                     6
                     right-panel
-                    *test-6-expression-expr*-box*
-                    *test-6-value-expr*-box*)])
+                    *test-6-expression-exprs-box*
+                    *test-6-value-exprs-box*)])
 
       (define test-messages
         (list
@@ -753,8 +936,8 @@
          test-6-message))
 
       (set-box! *test-messages-box* test-messages)
-      
-      (define tabbable-items
+
+      (define editable-code-items
         (list
          definitions-editor-canvas
          ;;
@@ -777,6 +960,10 @@
          test-value-6-editor-canvas
          ))
 
+      (set-box! *editable-code-items-box* editable-code-items)
+      
+      (define tabbable-items editable-code-items)
+
       (define wrappable-tabbable-items
         (append
          ;; wrap around (reverse)
@@ -787,9 +974,9 @@
 
       (set! update-GUI-text-for-language
         (lambda ()
-
-          (define lang (unbox *GUI-language*))
-
+          
+          (define lang (unbox *GUI-language-box*))
+          
           (define current-lang-strings (assoc lang I18N-STRINGS))
           
           (match current-lang-strings
@@ -798,14 +985,51 @@
                ,server-str
                ,port-str
                ,connect-str
+               ,disconnect-str
+               ,synthesize-str
+               ,stop-synthesis-str
                ,definitions-str
                ,synthesized-result-str
-               ,test-str)
+               ,test-str
+               ,illegal-expression-str
+               ,too-many-expressions-str
+               ,not-connected-str
+               ,connecting-to-str
+               ,connected-to-str
+               ,unable-to-connect-str
+               ,disconnecting-str
+               ,disconnected-str)
              
              (send gui-language-choice set-label language-str)
              (send server-ip-address-field set-label server-str)
              (send server-port-field set-label port-str)
-             (send server-connect-button set-label connect-str)
+             
+             (set-box! *connect-str-box* connect-str)
+             (set-box! *disconnect-str-box* disconnect-str)
+             
+             (if (equal? (unbox *connection-state-box*) DISCONNECTED)
+                 (send server-connect-button set-label (unbox *connect-str-box*))
+                 (send server-connect-button set-label (unbox *disconnect-str-box*)))
+
+
+             (set-box! *synthesize-str-box* synthesize-str)
+             (set-box! *stop-synthesis-str-box* stop-synthesis-str)
+             
+             (if (equal? (unbox *synthesis-state-box*) SYNTHESIZING)
+                 (send synthesize-button set-label (unbox *stop-synthesis-str-box*))
+                 (send synthesize-button set-label (unbox *synthesize-str-box*)))
+             
+             
+             (set-box! *illegal-expression-str-box* illegal-expression-str)
+             (set-box! *too-many-expressions-str-box* too-many-expressions-str)
+
+             (set-box! *not-connected-str-box* not-connected-str)
+             (set-box! *connecting-to-str-box* connecting-to-str)
+             (set-box! *connected-to-str-box* connected-to-str)
+             (set-box! *unable-to-connect-str-box* unable-to-connect-str)
+             (set-box! *disconnecting-str-box* disconnecting-str)
+             (set-box! *disconnected-str-box* disconnected-str)             
+             
              (send definitions-message set-label definitions-str)
              (send synthesized-result-message set-label synthesized-result-str)
              
