@@ -1,4 +1,10 @@
 (load "pmatch.scm")
+;; load mk & relational interpreter
+
+;; have the standard Barliman synthesis template available
+
+;; have MCP send just the parts to fill in to the standard synthesis
+;; template, namely (possibly modified) definitions and input/output examples
 
 (write '(synthesis-subprocess-ready))
 
