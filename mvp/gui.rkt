@@ -71,13 +71,68 @@ TODO
 (define CONNECTED 'connected)
 (define DISCONNECTED 'disconnected)
 
+(define NOT-SYNTHESIZING 'not-synthesizing)
+(define SYNTHESIZING 'synthesizing)
+
+
 (define I18N-STRINGS
   '(("English" .
-     ("Language" "Server"  "Port"     "Connect" "Disconnect"              "Definitions" "Synthesized Result" "Test" "Illegal expression!"              "Too many expressions!" "Not connected" "\nConnecting to ~a..." "\nConnected to ~a" "\nUnable to connect to ~a" "\nDisconnecting from ~a..." "\nDisconnected from ~a"))
+     ("Language"
+      "Server"
+      "Port"
+      "Connect"
+      "Disconnect"
+      "Synthesize"
+      "Stop"
+      "Definitions"
+      "Synthesized Result"
+      "Test"
+      "Illegal expression!"
+      "Too many expressions!"
+      "Not connected"
+      "\nConnecting to ~a..."
+      "\nConnected to ~a"
+      "\nUnable to connect to ~a"
+      "\nDisconnecting from ~a..."
+      "\nDisconnected from ~a"))
     ("日本語" .
-     ("言語"      "サーバー" "ポート番号" "接続"    "FIXME 日本語 Disconnect"  "定義"        "プログラム合成結果"    "テスト" "FIXME 日本語 Illegal expression!" "FIXME 日本語 Too many expressions!" "FIXME 日本語 Not connected" "\nFIXME 日本語 Connecting to ~a..." "\nFIXME 日本語 Connected to ~a" "\nFIXME 日本語 Unable to connect to ~a" "\nFIXME 日本語 Disconnecting from ~a..." "\nFIXME 日本語 Disconnected from ~a"))
+     ("言語"
+      "サーバー"
+      "ポート番号"
+      "接続"
+      "FIXME 日本語 Disconnect"
+      "FIXME 日本語 Synthesize"
+      "FIXME 日本語 Stop"
+      "定義"
+      "プログラム合成結果"
+      "テスト"
+      "FIXME 日本語 Illegal expression!"
+      "FIXME 日本語 Too many expressions!"
+      "FIXME 日本語 Not connected"
+      "\nFIXME 日本語 Connecting to ~a..."
+      "\nFIXME 日本語 Connected to ~a"
+      "\nFIXME 日本語 Unable to connect to ~a"
+      "\nFIXME 日本語 Disconnecting from ~a..."
+      "\nFIXME 日本語 Disconnected from ~a"))
     ("中文" .
-     ("语言"      "服务器"  "端口"       "链接"   "FIXME 中文 Disconnect"    "定义"        "合成结果"             "测试"  "FIXME 中文 Illegal expression!"    "FIXME 中文 Too many expressions!"  "FIXME 中文 Not connected" "\nFIXME 中文 Connecting to ~a..." "\nFIXME 中文 Connected to ~a" "\nFIXME 中文 Unable to connect to ~a" "\nFIXME 中文 Disconnecting from ~a..." "\nFIXME 中文 Disconnected from ~a"))))
+     ("语言"
+      "服务器"
+      "端口"
+      "链接"
+      "FIXME 中文 Disconnect"
+      "FIXME 中文 Synthesize"
+      "FIXME 中文 Stop"
+      "定义"
+      "合成结果"
+      "测试"
+      "FIXME 中文 Illegal expression!"
+      "FIXME 中文 Too many expressions!"
+      "FIXME 中文 Not connected"
+      "\nFIXME 中文 Connecting to ~a..."
+      "\nFIXME 中文 Connected to ~a"
+      "\nFIXME 中文 Unable to connect to ~a"
+      "\nFIXME 中文 Disconnecting from ~a..."
+      "\nFIXME 中文 Disconnected from ~a"))))
 
 (define *test-messages-box* (box #f))
 
@@ -89,10 +144,17 @@ TODO
 
 (define *connection-state-box* (box DISCONNECTED))
 
+(define *synthesis-state-box* (box NOT-SYNTHESIZING))
+
+
 (define *GUI-language-box* (box (caar I18N-STRINGS)))
 
 (define *connect-str-box* (box #f))
 (define *disconnect-str-box* (box #f))
+
+(define *synthesize-str-box* (box #f))
+(define *stop-synthesis-str-box* (box #f))
+
 (define *illegal-expression-str-box* (box #f))
 (define *too-many-expressions-str-box* (box #f))
 
@@ -513,6 +575,14 @@ TODO
                                  (format "unexpected state ~s" (unbox *connection-state-box*)))))
                        ))))
 
+    (define synthesize-button
+      (new button%
+           (parent server-info-panel)
+           (label "Synthesize")
+           (callback (lambda (self event)
+                       (printf "clicked on 'Synthesize' button\n")
+                       ))))
+
     (define server-messages-editor-canvas
       (new editor-canvas%
            (parent left-top-panel)
@@ -835,6 +905,8 @@ TODO
                ,port-str
                ,connect-str
                ,disconnect-str
+               ,synthesize-str
+               ,stop-synthesis-str
                ,definitions-str
                ,synthesized-result-str
                ,test-str
@@ -857,6 +929,15 @@ TODO
              (if (equal? (unbox *connection-state-box*) DISCONNECTED)
                  (send server-connect-button set-label (unbox *connect-str-box*))
                  (send server-connect-button set-label (unbox *disconnect-str-box*)))
+
+
+             (set-box! *synthesize-str-box* synthesize-str)
+             (set-box! *stop-synthesis-str-box* stop-synthesis-str)
+             
+             (if (equal? (unbox *synthesis-state-box*) SYNTHESIZING)
+                 (send synthesize-button set-label (unbox *stop-synthesis-str-box*))
+                 (send synthesize-button set-label (unbox *synthesize-str-box*)))
+             
              
              (set-box! *illegal-expression-str-box* illegal-expression-str)
              (set-box! *too-many-expressions-str-box* too-many-expressions-str)
