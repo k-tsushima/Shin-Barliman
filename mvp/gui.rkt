@@ -581,6 +581,17 @@ TODO
            (label "Synthesize")
            (callback (lambda (self event)
                        (printf "clicked on 'Synthesize' button\n")
+
+                       ;; toggle state: synthesize/stop synthesis
+
+                       ;; if synthesizing:
+                       ;;    disable editing for definitions and all input/output examples
+                       ;;    send synthesis message to MCP
+                       ;; else if stopping synthesis
+                       ;;    send stop-synthesis message to MCP
+                       ;;    enable editing for definitions and all input/output examples
+
+                       ;; toggle button text
                        ))))
 
     (define server-messages-editor-canvas
