@@ -247,28 +247,29 @@ TODO
         (list type (unbox b))
         (loop rest))])))
 
-(define (send-synthesize-message)
-
-  (define in (unbox *input-port-from-server-box*))
-  (define out (unbox *output-port-to-server-box*))
-  
-  (when (and in
-             out
-             (all-user-canvas-boxes-have-legal-exprs?))
+(define (send-synthesize-message)  
+  (when (all-user-canvas-boxes-have-legal-exprs?)
     (define vals
       (all-user-editable-canvases-boxes-values))
-    (define synthesize-msg
+    (define msg
       `(synthesize-kudasai
         (from gui)
         (vals ,vals)))
+    (send-message msg)))
 
-    (printf "sending message ~s\n"
-            synthesize-msg)
+(define (send-stop-synthesis-message)
+  (define msg
+    `(stop-synthesize-kudasai
+       (from gui)))  
+  (send-message msg))
 
-    (write synthesize-msg out)
-    (flush-output out)
-    )
-  )
+(define (send-message msg)
+  (define in (unbox *input-port-from-server-box*))
+  (define out (unbox *output-port-to-server-box*))
+  (when (and in out)
+    (printf "sending message ~s\n" msg)
+    (write msg out)
+    (flush-output out)))
 
 (define smart-top-level-window%
  (class frame%
@@ -609,6 +610,7 @@ TODO
 
                        (cond
                          ((equal? SYNTHESIZING new-synthesize-state)
+                          
                           ;; disable editing for definitions and all input/output examples
                           (for-each (lambda (obj) (send obj enable #f)) (unbox *editable-code-items-box*))
                           
@@ -621,8 +623,8 @@ TODO
                           ;; enter loop waiting for MCP synthesis results/displaying synthesis results
                           
                           )
-                         ((equal? NOT-SYNTHESIZING new-synthesize-state)
-                          ;; send stop-synthesis message to MCP
+                         ((equal? NOT-SYNTHESIZING new-synthesize-state)                          
+                          (send-stop-synthesis-message)
                           
                           ;; enable editing for definitions and all input/output examples
                           (for-each (lambda (obj) (send obj enable #t)) (unbox *editable-code-items-box*)))
