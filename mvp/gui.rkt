@@ -512,7 +512,9 @@ TODO
                                   
                                 (send server-ip-address-field enable #f)
                                 (send server-port-field enable #f)
-                                  
+
+                                (send synthesize-button enable #t)
+                                
                                 (send server-messages-text insert
                                       (format (unbox *connected-to-str-box*)
                                               full-address-str))
@@ -561,7 +563,9 @@ TODO
                           ;;
                           (send server-ip-address-field enable #t)
                           (send server-port-field enable #t)
-                            
+                          
+                          (send synthesize-button enable #f)
+                          
                           (send server-messages-text insert
                                 (format (unbox *disconnected-str-box*)
                                         full-address-str))
@@ -579,9 +583,10 @@ TODO
       (new button%
            (parent server-info-panel)
            (label "Synthesize")
+           (enabled #f)
            (callback (lambda (self event)
                        (printf "clicked on 'Synthesize' button\n")
-
+                       
                        ;; toggle state: synthesize/stop synthesis
 
                        ;; if synthesizing:
