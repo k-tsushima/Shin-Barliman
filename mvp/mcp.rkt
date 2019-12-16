@@ -1,9 +1,9 @@
 #lang racket
 
-;; Shin-Barliman Main Control Program (MCP)
+;; Shin-Barliman Main Control Process (MCP)
 
 #|
-Description of the Main Control Program.
+Description of the Main Control Process.
 ----------------------------------------
 
 The MCP is responsible for coordinating communication between the
