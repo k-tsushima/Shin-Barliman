@@ -378,8 +378,7 @@ TODO
                   (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
             
             (printf "======================================\n")
-            (print-all-user-editable-canvases-boxes-values)
-            (send-synthesize-message)
+            (print-all-user-editable-canvases-boxes-values)            
             (printf "======================================\n")                       
             (if (all-user-canvas-boxes-have-legal-exprs?)
                 (begin
@@ -530,12 +529,7 @@ TODO
                                       (format (unbox *connected-to-str-box*)
                                               full-address-str))
                                 (printf "Connected to ~a\n"
-                                        full-address-str)
-                                  
-                                ;; send message with definitions and
-                                ;; examples to server
-                                (send-synthesize-message)
-                                  
+                                        full-address-str)                                                                  
                                 )
                               (begin
 
@@ -543,8 +537,7 @@ TODO
                                       (format (unbox *unable-to-connect-str-box*)
                                               full-address-str))
                                 (printf "Unable to connect to ~a\n"
-                                        full-address-str)
-                                  
+                                        full-address-str)                                  
                                 ))
                           )
 
