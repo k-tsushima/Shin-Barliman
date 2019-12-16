@@ -587,6 +587,7 @@ TODO
                        ;; if synthesizing:
                        ;;    disable editing for definitions and all input/output examples
                        ;;    send synthesis message to MCP
+                       ;;    enter loop waiting for MCP synthesis results/displaying synthesis results
                        ;; else if stopping synthesis
                        ;;    send stop-synthesis message to MCP
                        ;;    enable editing for definitions and all input/output examples
