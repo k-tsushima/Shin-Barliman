@@ -28,7 +28,7 @@ efficient synthesis.
 ; (1) get & keep information from MCP via tcp-client-for-subprocess.
 ;     (*program*, *tests*, *scm-files*)
 (let-values ([(to-stdin from-stdout from-stderr process-id)
-	      (open-process-ports "exec /usr/local/bin/racket tcp-client-for-subprocess.rkt"
+	      (open-process-ports "exec /usr/local/bin/racket scp-tcp-proxy.rkt"
 		    (buffer-mode block)
 		    (make-transcoder (utf-8-codec)))])
   (printf "started process ~s\n" process-id)
