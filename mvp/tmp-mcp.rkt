@@ -8,6 +8,8 @@
 ; (define *tests* '((add one ()) (cons 1 ())))
 (define *scm-files* '((+ 3 4) (+ 2 3) (+ 1 2)))
 
+(define *number-of-synthesis-subprocess* (box #f))
+
 (provide  
   (all-from-out racket/tcp)
   (all-defined-out))
@@ -54,22 +56,30 @@
 (define (handle in out)
   (printf "handle called\n")
   (let loop ((msg (read in)))
-    (printf "server received message ~s\n" msg)
-    ;;(cond
-    ;;  ((eof-object? msg)
-    ;;   (write '(goodbye) out)
-    ;;   (flush-output out)
-    ;;   (printf "server sent goodbye message\n"))
-    ;;  (else
-    ;;   (loop (read in))))
-       (write (list 'data-sending *scm-files*) out)
-       (write 'finished)
+    (printf "TMP-MCP received message ~s\n" msg)
+    (cond
+      ((eof-object? msg)
        (write '(goodbye) out)
        (flush-output out)
-       (printf "server sent goodbye message\n")
+       (printf "TMP-MCP sent goodbye message\n"))
+      ((eq? (car msg) 'give-me-job)
+       (write (list 'data-sending *program* *tests* *scm-files*) out)
+       (write 'finished)
+       (flush-output out)
+       (printf "TMP-MCP sent data and 'finished\n")
+      )
+      ((eq? (car msg) 'number-of-subprocess)
+      ; TODO: we need to distinguish the SCPs
+       (set! *number-of-synthesis-subprocess* (cdr msg))
+       (write 'finished)
+       (flush-output out)
+       (printf "TMP-MCP received number-of-subprocess\n")
+      )
+      (else
+       (loop (read in))))
        ))
 
-;; > (require "temp-server.rkt")
+;; > (require "tmp-mcp.rkt")
 ;; > (define stop (serve 8081))
 ;; > (stop)
 ;; > (define stop (serve 8081))
