@@ -11,11 +11,14 @@ UI
 ;--------------------
 Received from MCP
 ;--------------------
+(synthesizing)
+(stopped)
 
 ;--------------------
 Sent to MCP
 ;--------------------
-
+(synthesize (,definitions ,inputs ,outputs))
+(stop)
 
 
 ;===================
@@ -25,10 +28,14 @@ MCP
 ;--------------------
 Received from UI
 ;--------------------
+(synthesize (,definitions ,inputs ,outputs))
+(stop)
 
 ;--------------------
 Sent to UI
 ;--------------------
+(synthesizing)
+(stopped)
 
 ;--------------------
 Received from SCP
