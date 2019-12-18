@@ -13,6 +13,7 @@ Received from MCP
 ;--------------------
 (synthesizing)
 (stopped)
+(goodbye)
 
 ;--------------------
 Sent to MCP
@@ -36,6 +37,7 @@ Sent to UI
 ;--------------------
 (synthesizing)
 (stopped)
+(goodbye)
 
 ;--------------------
 Received from SCP
