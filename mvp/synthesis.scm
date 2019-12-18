@@ -10,7 +10,7 @@
 
 (write '(synthesis-subprocess-ready))
 
-(let loop ((msg (read)))  
+(let loop ((msg (read)))
   (cond
     ((eof-object? msg)
      (write `(unexpected-eof))
