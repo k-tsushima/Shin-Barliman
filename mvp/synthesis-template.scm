@@ -1,5 +1,5 @@
 (define (fill-in-template definitions inputs outputs)
-  `(define (ans-allTests)
+  `(let ()
      (define (results)
        (run 1 (defns)
          (let ((g1 (gensym "g1"))
@@ -50,7 +50,8 @@
                (absento g20 defn-list))
 
              (== ,definitions defns)
-             (appendo defns `(((lambda x x) . ,inputs))
+             (appendo defns
+                      (list (cons '(lambda x x) ,inputs))
                       begin-body)
              (evalo `(begin . ,begin-body)
                     ,outputs)))))
@@ -58,3 +59,53 @@
        (if (null? results-fast)
            (begin (set! allow-incomplete-search? #f) (results))
            results-fast))))
+
+#!eof
+
+;; examples
+
+(fill-in-template
+ ;; definitions
+ '`((define ,A
+      (lambda ,B
+        ,C)))
+ ;; inputs
+ '`((append '() '()))
+ ;; outputs
+ '`(()))
+
+(fill-in-template
+ ;; definitions
+ '`((define append
+      (lambda (l s)
+        (if (null? l)
+            ,A
+            (cons ,B ,C)))))
+ ;; inputs
+ '`((append '() '())
+    (append '(a) '(b))
+    (append '(c) '(d))
+    (append '(e f) '(g h)))
+ ;; outputs
+ '`(()
+    (a b)
+    (c d)
+    (e f g h)))
+
+(fill-in-template
+ ;; definitions
+ '`((define append
+      (lambda (l s)
+        (if (null? l)
+            ,A
+            (cons ,B ,C)))))
+ ;; inputs
+ '`((append '() '())
+    (append '(,g1) '(,g2))
+    (append '(,g3) '(,g4))
+    (append '(,g5 ,g6) '(,g7 ,g8)))
+ ;; outputs
+ '`(()
+    (,g1 ,g2)
+    (,g3 ,g4)
+    (,g5 ,g6 ,g7 ,g8)))
