@@ -1,28 +1,62 @@
 (load "pmatch.scm")
-;; load mk & relational interpreter
+(load "mk-chez.scm")
+(load "mk.scm")
+(load "interp.scm")
+(load "sythesis-template.scm")
 
-;; have the standard Barliman synthesis template available
+(define FUEL 100000) ; ticks
 
-;; have MCP send just the parts to fill in to the standard synthesis
-;; template, namely (possibly modified) definitions and input/output examples
+(define *engine-box* (box #f))
 
 (write '(synthesis-subprocess-ready))
 
-(let loop ((msg (read)))
+(let loop ((msg (read)))  
   (cond
     ((eof-object? msg)
-     (write `(unexpected-eof)))
+     (write `(unexpected-eof))
+     (flush-output-port)
+     (exit))
     (else
      (pmatch msg
-       [(quit)
-        (write `(quitting))
-        (flush-output-port)]
-       [(eval-expr ,expr)        
-        (let ((val (eval expr)))
-          (write `(value ,expr ,val))
-          (flush-output-port)
-          (loop (read)))]
-       [,else
-        (write `(unknown-message ,msg))
+       [(ping)
+        (write `(ping))
         (flush-output-port)
-        (loop (read))]))))
+        (if (input-port-ready? (current-input-port))
+            (loop (read))
+            (loop `(no-message-to-read)))]
+       [(stop)
+        (write `(stopped))
+        (flush-output-port)
+        (exit)]
+       [(synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
+        (let ((expr (fill-in-template definitions inputs outputs)))
+          (let ((e (make-engine (lambda ()
+                                  (list (eval expr) synthesis-id)))))
+            (set-box! *engine-box* e)
+            (if (input-port-ready? (current-input-port))
+                (loop (read))
+                (loop `(no-message-to-read)))))]
+       [(no-message-to-read)
+        (let ((e (unbox *engine-box*)))
+          (when e
+            (pmatch (e FUEL
+                       (lambda (remaining-fuel val/synthesis-id)
+                         (pmatch val/synthesis-id
+                           [(,val ,synthesis-id)
+                            `(completed ,remaining-fuel ,val ,synthesis-id)]))
+                       (lambda (e)
+                         `(expired ,e)))
+              [(completed ,remaining-fuel ,val ,synthesis-id)
+               (set-box! *engine-box* #f)
+               (write `(synthesis-finished ,synthesis-id ,val ,statistics))               
+               (flush-output-port)
+               (loop (read))]
+              [(expired ,e)
+               (set-box! *engine-box* e)])))        
+        (if (input-port-ready? (current-input-port))
+            (loop (read))
+            (loop `(no-message-to-read)))]
+       [,msg
+        (write `(unknown-message-type ,msg))
+        (flush-output-port)
+        (exit)]))))
