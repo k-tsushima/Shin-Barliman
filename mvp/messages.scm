@@ -55,11 +55,18 @@ Sent to MCP
 ;--------------------
 Received from Synthesis subprocess
 ;--------------------
+(ping)
+(stopped)
+;; error messages sent to SCP:
+(unexpected-eof)
+(unknown-message-type ,msg)
 
 ;--------------------
 Sent to Synthesis subprocess
 ;--------------------
-
+(ping)
+(stop)
+(synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
 
 
 ;===================
