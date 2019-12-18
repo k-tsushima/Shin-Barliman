@@ -56,10 +56,17 @@ SCP
 ;--------------------
 Received from MCP
 ;--------------------
+(synthesize ,def-inoutputs-synid)
+(stop-all-synthesis)
+(stop-one-task ,synthesis-id)
+(ping)
 
 ;--------------------
 Sent to MCP
 ;--------------------
+(num-processes ,number-of-synthesis-subprocesses ,*scp-id*)
+(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics)
+(ping)
 
 ;--------------------
 Received from Synthesis subprocess
@@ -94,6 +101,7 @@ Sent to SCP
 ;--------------------
 (ping)
 (stopped)
+(synthesis-finished ,synthesis-id ,val ,statistics)
 ;; error messages sent to SCP:
 (unexpected-eof)
 (unknown-message-type ,msg)

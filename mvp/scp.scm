@@ -14,8 +14,8 @@ efficient synthesis.
 |#
 
 
-;; (define RACKET-BINARY-PATH "/usr/local/bin/racket")
-(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
+(define RACKET-BINARY-PATH "/usr/local/bin/racket")
+;; (define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
 
 (define CHEZ-BINARY-PATH "/usr/local/bin/scheme")
 (define CHEZ-FLAGS "-q")
@@ -32,6 +32,10 @@ efficient synthesis.
 (define number-of-synthesis-subprocesses 3)
 (define *synthesis-subprocesses-box* (box '()))
 
+(define *scp-id* (gensym))
+(define *subprocess-table* '())
+(define *synthesis-task-table* '())
+(define *task-queue* '())
 
 (define (check-for-mcp-messages)
   (printf "SCP checking for messages from MCP...\n")
@@ -44,6 +48,16 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
+	   [(synthesize ,def-inoutputs-synid)
+	    (set! queue (append queue def-inoutputs-synid))]
+	   [(stop-all-synthesis)
+	    (set! queue '())
+	    (stop-all-subprocess)]
+	   [(stop-one-task ,synthesis-id)
+	    (stop-one-task synthesis-id)]
+	   [(ping)
+	    (write `(ping))
+	    (flush-output-port)]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -78,6 +92,12 @@ efficient synthesis.
               (printf "FIXME do nothing ~s\n" msg))
              (else
               (pmatch msg
+		[(unexpected-eof)
+		 ; TODO
+		 (void)]
+		[(unknown-message-type ,msg)
+		 ; TODO
+		 (void)]
                 [,anything
                  (printf "FIXME do nothing ~s\n" msg)]))
              )))
@@ -94,6 +114,14 @@ efficient synthesis.
                  (let ((expr '(* 3 4)))
                    (write `(eval-expr ,expr) to-stdin)
                    (flush-output-port to-stdin))]
+		[(synthesis-finished ,synthesis-id ,val ,statistics)
+		 (send-synthesis-finished-to-mcp synthesis-id val statistics)]
+		[(ping)
+		 ; TODO?
+		 (void)]
+		[(stopped)
+		 ; TODO?
+		 (void)]
                 [,anything
                  (printf "FIXME do nothing ~s\n" msg)]))
              )))
@@ -149,8 +177,87 @@ efficient synthesis.
 
 (printf "synthesis-subprocesses list:\n~s\n" (unbox *synthesis-subprocesses-box*))
 
+(define (stop-all-subprocess)
+  (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
+    (pmatch synthesis-subprocesses
+      [() (printf "stopped all synthesis subprocesses\n")]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+        . ,rest)
+       (write '(stop) to-stdin)
+       (loop rest)]))
+  )
+
+(define (partition func lst)
+  (pmatch lst
+    [(()) '(() ())]
+    [(,a . ,rest)
+     (let ((result (partition func rest)))
+       (if (func (car a))
+	   `(,(cons a (car result)) ,(cdr result))
+	   `(,(car result) ,(cons a (cdr result)))))
+     ]
+    ))
+
+(define (searching-subprocess-out lst id)
+  (pmatch lst
+    [() (printf "FIXME, there is no subprocess ~s\n" id)]
+    [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+      . ,rest)
+     (if (equal? id i) ; Is this true?
+	   to-stdin
+	   (searching-subprocess-out rest id))]
+    ))
+  
+
+(define (stop-running-one-task id)
+  ; TODO: find the information in systhesis table and quit that job
+  (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
+    (pmatch lst
+      [(() . ,rest)
+       ; the id is not found in the table
+       (printf "FIXME, received id is not found in queue and task table\n")
+       ]
+      [((,synthesis-id ,subprocess-id ,definitions ,examples ,status). ,rest)
+       ; the id is found in the table
+       (set! *synthesis-task-table* rest)
+       (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*))))
+	 (write '(stop) out)
+	 )  
+       ; TODO: start another work?
+       
+       ]))  
+  )
+
+(define (stop-one-task id)
+  ; in the case, that task is in the queue
+  (let ((lst (partition (lambda (x) (equal? id (car x))) *task-queue*)))
+    (pmatch lst
+      [(() . ,rest)
+       ; the id is not found in the queue
+       (stop-running-one-task id)
+       ]
+      [(,a . ,rest)
+       ; the id is found in the queue
+       (set! *task-queue* rest)])))
+
+(define (send-number-of-subprocess-to-mcp)
+  (let ((out (unbox *mcp-out-port-box*)))
+    (write '(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
+    (flush-output-port out)))
+
+(define (send-synthesis-finished-to-mcp synthesis-id val statistics)
+  (let ((out (unbox *mcp-out-port-box*)))
+    (write '(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
+    (flush-output-port out)))
+
+
+; assoc & filter , assp (List.filter), member 
+
+; snoc/ append
+
 ;; process messages
 (let loop ()
   (check-for-mcp-messages)
+ ; (send-number-of-subprocess-to-mcp)
   (check-for-synthesis-subprocess-messages)
   (loop))
