@@ -47,10 +47,17 @@ SCP
 ;--------------------
 Received from MCP
 ;--------------------
+(synthesize ,def-inoutputs-synid)
+(stop-all-synthesis)
+(stop-one-task ,synthesis-id)
+(ping)
 
 ;--------------------
 Sent to MCP
 ;--------------------
+(num-processes ,number-of-synthesis-subprocesses ,*scp-id*)
+(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics)
+(ping)
 
 ;--------------------
 Received from Synthesis subprocess
