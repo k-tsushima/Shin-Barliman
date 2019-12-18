@@ -101,6 +101,7 @@ Sent to SCP
 ;--------------------
 (ping)
 (stopped)
+(synthesis-finished ,synthesis-id ,val ,statistics)
 ;; error messages sent to SCP:
 (unexpected-eof)
 (unknown-message-type ,msg)

@@ -114,6 +114,8 @@ efficient synthesis.
                  (let ((expr '(* 3 4)))
                    (write `(eval-expr ,expr) to-stdin)
                    (flush-output-port to-stdin))]
+		[(synthesis-finished ,synthesis-id ,val ,statistics)
+		 (send-synthesis-finished-to-mcp synthesis-id val statistics)]
 		[(ping)
 		 ; TODO?
 		 (void)]
@@ -176,8 +178,13 @@ efficient synthesis.
 (printf "synthesis-subprocesses list:\n~s\n" (unbox *synthesis-subprocesses-box*))
 
 (define (stop-all-subprocess)
-  ; TODO
-  (void)
+  (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
+    (pmatch synthesis-subprocesses
+      [() (printf "stopped all synthesis subprocesses\n")]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+        . ,rest)
+       (write '(stop) to-stdin)
+       (loop rest)]))
   )
 
 (define (partition func lst)
@@ -191,8 +198,19 @@ efficient synthesis.
      ]
     ))
 
+(define (searching-subprocess-out lst id)
+  (pmatch lst
+    [() (printf "FIXME, there is no subprocess ~s\n" id)]
+    [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+      . ,rest)
+     (if (equal? id i) ; Is this true?
+	   to-stdin
+	   (searching-subprocess-out rest id))]
+    ))
+  
+
 (define (stop-running-one-task id)
-  ; todo: find the information in systhesis table and quit that job
+  ; TODO: find the information in systhesis table and quit that job
   (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
     (pmatch lst
       [(() . ,rest)
@@ -202,7 +220,10 @@ efficient synthesis.
       [((,synthesis-id ,subprocess-id ,definitions ,examples ,status). ,rest)
        ; the id is found in the table
        (set! *synthesis-task-table* rest)
-       ; TODO: stop the work on the subprocess & start another work?
+       (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*))))
+	 (write '(stop) out)
+	 )  
+       ; TODO: start another work?
        
        ]))  
   )
@@ -229,11 +250,6 @@ efficient synthesis.
     (write '(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
     (flush-output-port out)))
 
-(define (send-ping-to-mcp)
-  (let ((out (unbox *mcp-out-port-box*)))
-    (write '(ping) out)
-    (flush-output-port out)))
-
 
 ; assoc & filter , assp (List.filter), member 
 
@@ -242,6 +258,6 @@ efficient synthesis.
 ;; process messages
 (let loop ()
   (check-for-mcp-messages)
-  (send-number-of-subprocess-to-mcp)
+ ; (send-number-of-subprocess-to-mcp)
   (check-for-synthesis-subprocess-messages)
   (loop))
