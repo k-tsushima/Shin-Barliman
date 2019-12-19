@@ -181,7 +181,7 @@ efficient synthesis.
       [() (printf "stopped all synthesis subprocesses\n")]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
         . ,rest)
-       (write '(stop) to-stdin)
+       (write `(stop) to-stdin)
        (loop rest)]))
   )
 
@@ -219,7 +219,7 @@ efficient synthesis.
        ; the id is found in the table
        (set! *synthesis-task-table* rest)
        (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*))))
-	 (write '(stop) out)
+	 (write `(stop) out)
 	 )  
        ; TODO: start another work?
        
