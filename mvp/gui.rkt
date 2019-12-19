@@ -249,20 +249,45 @@ TODO
         (list type (unbox b))
         (loop rest))])))
 
+(define (all-input-boxes-values)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() '()]
+      [`((,b (expression ,n)) . ,rest)
+       (let ((v (unbox b)))
+         (cond
+           ((null? v) (loop rest))
+           (else (cons (car v) (loop rest)))))]
+      [`((,b ,type) . ,rest)
+       (loop rest)])))
+
+(define (all-output-boxes-values)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() '()]
+      [`((,b (value ,n)) . ,rest)
+       (let ((v (unbox b)))
+         (cond
+           ((null? v) (loop rest))
+           (else (cons (car v) (loop rest)))))]
+      [`((,b ,type) . ,rest)
+       (loop rest)])))
+
 (define (send-synthesize-message)  
   (when (all-user-canvas-boxes-have-legal-exprs?)
-    (define vals
-      (all-user-editable-canvases-boxes-values))
+    (define definitions
+      (unbox *definitions-exprs-box*))
+    (define inputs
+      (all-input-boxes-values))
+    (define outputs
+      (all-output-boxes-values))
     (define msg
-      `(synthesize-kudasai
-        (from gui)
-        (vals ,vals)))
+      `(synthesize (,definitions ,inputs ,outputs)))
     (send-message msg)))
 
 (define (send-stop-synthesis-message)
   (define msg
-    `(stop-synthesize-kudasai
-       (from gui)))  
+    `(stop))
   (send-message msg))
 
 (define (send-message msg)

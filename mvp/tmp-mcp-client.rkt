@@ -53,18 +53,15 @@ efficient synthesis.
        (printf "mcp: sent goodbye message\n"))
       (else
        (match msg
-         (`(synthesize-kudasai
-            (from ,sender)
-            (vals ,vals))
-          (write `(thinking) out)
+         (`(synthesize (,definitions ,inputs ,outputs))
+          (write `(synthesizing) out)
           (flush-output out)
-          (printf "mcp: sent thinking message\n")
+          (printf "mcp: sent synthesizing message\n")
           (loop (read in)))
-         (`(stop-synthesize-kudasai
-            (from ,sender))
-          (write `(stopped-thinking) out)
+         (`(stop)
+          (write `(stopped) out)
           (flush-output out)
-          (printf "mcp: sent stopped-thinking message\n")
+          (printf "mcp: sent stopped message\n")
           (loop (read in)))
          (else 'handle
                (format "unknown message type ~s" msg)))))))
