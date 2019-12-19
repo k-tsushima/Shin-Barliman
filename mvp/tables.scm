@@ -4,6 +4,13 @@
 MCP
 ;===================
 
+synthesis-tasks-table
+
+ui-connections-table
+
+scp-connections-table
+
+
 
 ;===================
 SCP
