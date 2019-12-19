@@ -46,7 +46,10 @@ Received from SCP
 ;--------------------
 Sent to SCP
 ;--------------------
-
+(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
+(stop-all-synthesis)
+(stop-one-task ,synthesis-id)
+(ping)
 
 
 ;===================
@@ -56,31 +59,34 @@ SCP
 ;--------------------
 Received from MCP
 ;--------------------
-(synthesize ,def-inoutputs-synid)
+(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
 (stop-all-synthesis)
 (stop-one-task ,synthesis-id)
-(ping)
+;; error messages sent to MCP (using error port):
+(unexpected-eof)
+(unknown-message-type ,msg)
 
 ;--------------------
 Sent to MCP
 ;--------------------
-(num-processes ,number-of-synthesis-subprocesses ,*scp-id*)
-(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics)
-(ping)
+(num-processes ,number-of-synthesis-subprocesses ,scp-id)
+(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+;; error messages sent to MCP (using error port):
+(unexpected-eof)
+(unknown-message-type ,msg)
 
 ;--------------------
 Received from Synthesis subprocess
 ;--------------------
-(ping)
 (stopped)
-;; error messages sent to SCP:
+(synthesis-finished ,synthesis-id ,val ,statistics)
+;; error messages sent to SCP (using error port):
 (unexpected-eof)
 (unknown-message-type ,msg)
 
 ;--------------------
 Sent to Synthesis subprocess
 ;--------------------
-(ping)
 (stop)
 (synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
 

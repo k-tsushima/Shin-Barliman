@@ -48,16 +48,12 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
-	   [(synthesize ,def-inoutputs-synid)
-	    (set! queue (append queue def-inoutputs-synid))]
-	   [(stop-all-synthesis)
-	    (set! queue '())
-	    (stop-all-subprocess)]
-	   [(stop-one-task ,synthesis-id)
-	    (stop-one-task synthesis-id)]
-	   [(ping)
-	    (write `(ping))
-	    (flush-output-port)]
+	   [(unexpected-eof)
+	    (printf "SCP receive unexpected EOF from MCP\n")
+	    ]
+	   [(unknown-message-type ,msg)
+	    (printf "SCP receive error message ~s from MCP\n" msg)
+	    ]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -70,6 +66,13 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
+	   [(synthesize ,def-inoutputs-synid)
+	    (set! queue (append queue def-inoutputs-synid))]
+	   [(stop-all-synthesis)
+	    (set! queue '())
+	    (stop-all-subprocess)]
+	   [(stop-one-task ,synthesis-id)
+	    (stop-one-task synthesis-id)]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -93,11 +96,9 @@ efficient synthesis.
              (else
               (pmatch msg
 		[(unexpected-eof)
-		 ; TODO
-		 (void)]
+		 (printf "SCP receive unexpected EOF from subprocess\n")]
 		[(unknown-message-type ,msg)
-		 ; TODO
-		 (void)]
+		 (printf "SCP receive error message ~s from subprocess\n" msg)]
                 [,anything
                  (printf "FIXME do nothing ~s\n" msg)]))
              )))
@@ -110,15 +111,12 @@ efficient synthesis.
               (printf "FIXME do nothing ~s\n" msg))
              (else
               (pmatch msg
-                [(synthesis-subprocess-ready)
-                 (let ((expr '(* 3 4)))
-                   (write `(eval-expr ,expr) to-stdin)
-                   (flush-output-port to-stdin))]
+                ;[(synthesis-subprocess-ready)
+                ; (let ((expr '(* 3 4)))
+                ;   (write `(eval-expr ,expr) to-stdin)
+                ;   (flush-output-port to-stdin))]
 		[(synthesis-finished ,synthesis-id ,val ,statistics)
 		 (send-synthesis-finished-to-mcp synthesis-id val statistics)]
-		[(ping)
-		 ; TODO?
-		 (void)]
 		[(stopped)
 		 ; TODO?
 		 (void)]
@@ -183,7 +181,7 @@ efficient synthesis.
       [() (printf "stopped all synthesis subprocesses\n")]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
         . ,rest)
-       (write '(stop) to-stdin)
+       (write `(stop) to-stdin)
        (loop rest)]))
   )
 
@@ -221,7 +219,7 @@ efficient synthesis.
        ; the id is found in the table
        (set! *synthesis-task-table* rest)
        (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*))))
-	 (write '(stop) out)
+	 (write `(stop) out)
 	 )  
        ; TODO: start another work?
        
@@ -242,18 +240,15 @@ efficient synthesis.
 
 (define (send-number-of-subprocess-to-mcp)
   (let ((out (unbox *mcp-out-port-box*)))
-    (write '(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
+    (write `(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
     (flush-output-port out)))
 
 (define (send-synthesis-finished-to-mcp synthesis-id val statistics)
   (let ((out (unbox *mcp-out-port-box*)))
-    (write '(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
+    (write `(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
     (flush-output-port out)))
 
-
-; assoc & filter , assp (List.filter), member 
-
-; snoc/ append
+#!eof
 
 ;; process messages
 (let loop ()
