@@ -30,12 +30,27 @@ efficient synthesis.
 (define *mcp-pid-port-box* (box #f))
 
 (define number-of-synthesis-subprocesses 3)
-(define *synthesis-subprocesses-box* (box '()))
 
-(define *scp-id* (gensym))
-(define *subprocess-table* '())
+(define *synthesis-subprocesses-box* (box '()))
+; *synthesis-subprocesses-box* is the following
+; (list `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free))
+
+(define *scp-id* #f)
 (define *synthesis-task-table* '())
+; *synthesis-task-table* is the following
+; ((,synthesis-id ,subprocess-id ,definitions ,examples ,status) . ,rest)
 (define *task-queue* '())
+; def-inoutputs-synid
+
+(define (send-number-of-subprocess-to-mcp)
+  (let ((out (unbox *mcp-out-port-box*)))
+    (write `(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
+    (flush-output-port out)))
+
+(define (send-synthesis-finished-to-mcp synthesis-id val statistics)
+  (let ((out (unbox *mcp-out-port-box*)))
+    (write `(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
+    (flush-output-port out)))
 
 (define (check-for-mcp-messages)
   (printf "SCP checking for messages from MCP...\n")
@@ -66,8 +81,16 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
+	   [(scp-id ,scp-id)
+	    ; receiving scp-id, keep it and send number-of-subprocess
+	    (set! *scp-id* scp-id)
+	    (send-number-of-subprocess-to-mcp)
+	    ]
 	   [(synthesize ,def-inoutputs-synid)
-	    (set! queue (append queue def-inoutputs-synid))]
+	    (set! *task-queue* (append *task-queue* def-inoutputs-synid))
+            ; TODO: if there is free subprocesses, start synthesis
+	    (start-synthesis-with-free-subprocesses)
+	    ]
 	   [(stop-all-synthesis)
 	    (set! queue '())
 	    (stop-all-subprocess)]
@@ -78,13 +101,54 @@ efficient synthesis.
         )))
   )
 
+(define (start-synthesis-with-free-subprocesses)
+  (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
+    (pmatch synthesis-subprocesses
+      [()
+       (printf "started synthesis with all free synthesis subprocesses\n")]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free)
+        . ,rest)
+       (printf "there is job ...\n")
+       (pmatch *task-queue*
+	 [() (printf "there is no more job in queue")]
+	 [(,val. ,rest)
+	  (write `(synthesize ,val) to-stdin)
+         ; TODO: update subprocess status to working
+	  (update-status-to-free process-id)
+	  (set! *task-queue* rest)
+	  ])
+       ]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr working)
+        . ,rest)
+       (loop rest)
+       ])))
+
+(define (update-status-to-free id)
+  (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
+    (pmatch synthesis-subprocesses
+      [()
+       (printf "tried update-status-to-free, but ~s is not found\n" id)]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free)
+        . ,rest)
+       (if (equal? process-id id)
+	   (printf "tried update-status-to-free, but ~s is already free\n" process-id)
+	   (loop rest))
+       ]
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr working)
+        . ,rest)
+       (if (equal? process-id id)
+	   (printf "update-status-to-free, updated \n" process-id)
+	   (loop rest))
+       ])))
+
+  
 (define (check-for-synthesis-subprocess-messages)
   (printf "SCP checking for messages from synthesis subprocesses...\n")
   (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
     (pmatch synthesis-subprocesses
       [()
        (printf "checked for all synthesis subprocesses messages\n")]
-      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
         . ,rest)
 
        (when (input-port-ready? from-stderr)
@@ -116,7 +180,11 @@ efficient synthesis.
                 ;   (write `(eval-expr ,expr) to-stdin)
                 ;   (flush-output-port to-stdin))]
 		[(synthesis-finished ,synthesis-id ,val ,statistics)
-		 (send-synthesis-finished-to-mcp synthesis-id val statistics)]
+		 (send-synthesis-finished-to-mcp synthesis-id val statistics)
+	         ; TODO: update the status and start working with the free subprocesses
+		 (update-status-to-free process-id)
+		 (start-synthesis-with-free-subprocesses)
+		 ]
 		[(stopped)
 		 ; TODO?
 		 (void)]
@@ -150,7 +218,7 @@ efficient synthesis.
          (printf "started synthesis subprocesses ~s with process id ~s\n" i process-id)
          (set-box! *synthesis-subprocesses-box*
                    (append (unbox *synthesis-subprocesses-box*)
-                           (list `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr))))))
+                           (list `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free))))))
      (loop (add1 i)))))
 
 
@@ -186,6 +254,7 @@ efficient synthesis.
   )
 
 (define (partition func lst)
+  (printf "partition: ~s\n" lst)
   (pmatch lst
     [(()) '(() ())]
     [(,a . ,rest)
@@ -208,23 +277,28 @@ efficient synthesis.
   
 
 (define (stop-running-one-task id)
-  ; TODO: find the information in systhesis table and quit that job
-  (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
-    (pmatch lst
-      [(() . ,rest)
-       ; the id is not found in the table
-       (printf "FIXME, received id is not found in queue and task table\n")
-       ]
-      [((,synthesis-id ,subprocess-id ,definitions ,examples ,status). ,rest)
+  ; find the information in systhesis table and quit that job
+
+  (printf "task-table:~s\n" *synthesis-task-table*)
+  (pmatch *synthesis-task-table*
+    [() (printf "FIXME, received id is not found in syntheiss table\n")]
+    [,else 
+     (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
+       (printf "Partition: ~s\n" lst)
+       (pmatch lst
+	 [(() . ())
+					; the id is not found in the table
+	  (printf "FIXME, received id is not found in queue and task table\n")
+	  ]
+	 [((,synthesis-id ,subprocess-id ,definitions ,examples ,status) . ,rest)
        ; the id is found in the table
-       (set! *synthesis-task-table* rest)
-       (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*))))
-	 (write `(stop) out)
-	 )  
+	  (set! *synthesis-task-table* rest)
+	  (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
+	    (write `(stop) out)
+	    )  
        ; TODO: start another work?
        
-       ]))  
-  )
+       ]))]))
 
 (define (stop-one-task id)
   ; in the case, that task is in the queue
@@ -237,16 +311,6 @@ efficient synthesis.
       [(,a . ,rest)
        ; the id is found in the queue
        (set! *task-queue* rest)])))
-
-(define (send-number-of-subprocess-to-mcp)
-  (let ((out (unbox *mcp-out-port-box*)))
-    (write `(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
-    (flush-output-port out)))
-
-(define (send-synthesis-finished-to-mcp synthesis-id val statistics)
-  (let ((out (unbox *mcp-out-port-box*)))
-    (write `(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
-    (flush-output-port out)))
 
 #!eof
 

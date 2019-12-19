@@ -13,19 +13,27 @@
 ; (define *scm-files* (box #f))
 
 (define *data* (box #f))
+(define *tcp-out* #f)
 
 (print-as-expression #f)
 
-(define (handle tcp-in tcp-out)
-  (printf "handle called\n")
-  (let loop ((msg (read (current-input-port))))
+(define (handle-scp)
+   (let loop ((msg (read (current-input-port))))
      ; (printf "subprocess-client received message from SCP ~s\n" msg)
-     (write msg tcp-out)
-     (flush-output tcp-out)
+     (write msg *tcp-out*)
+     (flush-output *tcp-out*)
      ; (printf "subprocess-client sent message from MCP ~s\n" msg)
      (loop (read (current-input-port))))
-  )
+)
 
+(define (handle-tcp tcp-in tcp-out)
+  (lambda ()
+   (let loop ((msg (read tcp-in)))
+      (write msg (current-output-port))
+      (flush-output (current-output-port))
+      (loop (read tcp-in))
+     )
+  ))
 
 ;   (cond
 ;     ((eof-object? msg)
@@ -48,20 +56,24 @@
 (define (connect address port)
   (define-values (tcp-in tcp-out) (tcp-connect address port))
 ;  (printf "client writing hello message\n")
-  (write '(hello) tcp-out)
-  (flush-output tcp-out)
+   (write '(hello) tcp-out)
+   (set! *tcp-out* tcp-out)
+   (flush-output tcp-out)
 ;  (printf "client wrote hello message\n")
 
-  (handle tcp-in tcp-out)
-;  (printf "program ~s\n" *program*)
-;  (printf "tests ~s\n" *tests*)
-;  (printf "scm-files ~s\n" *scm-files*)
-  (printf "~s\n" *data*)
-  (close-input-port tcp-in)
-  (close-output-port tcp-out)
-  )
+   (thread (handle-tcp tcp-in tcp-out))
+   (handle-scp)
+   
+
+
+
+;   (close-input-port tcp-in)
+;   (close-output-port tcp-out)
+
+)
 
 (connect "localhost" 8081)
+
 
 ;; (connect "localhost" 8081)
 
