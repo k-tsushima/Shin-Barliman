@@ -281,7 +281,7 @@ efficient synthesis.
 
   (printf "task-table:~s\n" *synthesis-task-table*)
   (pmatch *synthesis-task-table*
-    [() (printf "FIXME, received id is not found in syntheiss table\n")]
+    [() (printf "FIXME, received id is not found in synthesis table\n")]
     [,else 
      (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
        (printf "Partition: ~s\n" lst)
