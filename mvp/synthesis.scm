@@ -18,12 +18,6 @@
      (exit))
     (else
      (pmatch msg
-       [(ping)
-        (write `(ping))
-        (flush-output-port)
-        (if (input-port-ready? (current-input-port))
-            (loop (read))
-            (loop `(no-message-to-read)))]
        [(stop)
         (write `(stopped))
         (flush-output-port)
