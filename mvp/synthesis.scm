@@ -13,7 +13,7 @@
 (let loop ((msg (read)))
   (cond
     ((eof-object? msg)
-     (write `(unexpected-eof))
+     (write `(unexpected-eof) (current-error-port))
      (flush-output-port)
      (exit))
     (else
@@ -51,6 +51,6 @@
             (loop (read))
             (loop `(no-message-to-read)))]
        [,msg
-        (write `(unknown-message-type ,msg))
+        (write `(unknown-message-type ,msg) (current-error-port))
         (flush-output-port)
         (exit)]))))
