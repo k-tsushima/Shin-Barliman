@@ -240,18 +240,15 @@ efficient synthesis.
 
 (define (send-number-of-subprocess-to-mcp)
   (let ((out (unbox *mcp-out-port-box*)))
-    (write '(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
+    (write `(num-processes ,number-of-synthesis-subprocesses ,*scp-id*) out)
     (flush-output-port out)))
 
 (define (send-synthesis-finished-to-mcp synthesis-id val statistics)
   (let ((out (unbox *mcp-out-port-box*)))
-    (write '(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
+    (write `(synthesis-finished ,*scp-id* ,synthesis-id ,val ,statistics) out)
     (flush-output-port out)))
 
-
-; assoc & filter , assp (List.filter), member 
-
-; snoc/ append
+#!eof
 
 ;; process messages
 (let loop ()

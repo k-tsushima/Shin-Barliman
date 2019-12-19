@@ -16,27 +16,38 @@
 
 (print-as-expression #f)
 
-(define (handle in out)
-;  (printf "handle called\n")
-  (let loop ((msg (read in)))
-;    (printf "subprocess-client received message ~s\n" msg)
-    (cond
-      ((eof-object? msg)
-       (write '(goodbye) out)
- ;      (printf "subprocess-client sent goodbye message\n")
- 	)
-      ((eq? msg 'finished)
-       (loop (read in)))
-      ((eq? (car msg) 'data-sending)
+(define (handle tcp-in tcp-out)
+  (printf "handle called\n")
+  (let loop ((msg (read tcp-in)))
+     (printf "subprocess-client received message from MCP ~s\n" msg)
+     (write msg)
+     (flush-output (current-output-port))
+     (printf "subprocess-client sent message to SCP ~s\n" msg)
+     (let ((msg (read (current-input-port))))
+     	  (printf "subprocess-client received message from SCP ~s\n" msg)
+     	  (write msg tcp-out)
+	  (flush-output tcp-out)
+	  (printf "subprocess-client sent message from MCP ~s\n" msg)
+	       (loop (read tcp-in)))))
+
+
+;   (cond
+;     ((eof-object? msg)
+;      (write '(goodbye) tcp-out)
+;      (printf "subprocess-client sent goodbye message\n")
+;	)	
+;     ((eq? msg 'finished)
+;      (loop (read tcp-in)))
+;     ((eq? (car msg) 'data-sending)
 ;       (set! *program* (cdr (car (cdr msg))))
 ;       (set! *tests* (cdr (car (cdr (cdr msg)))))
 ;       (set! *scm-files* (cdr (car (cdr (cdr (cdr msg))))))
-        (set! *data* (cadr msg))
-	(open-input-string "~s\n" (cdr *data*))
-       (loop (read in)))
-      (else 
+;        (set! *data* (cadr msg))
+;	(open-input-string "~s\n" (cdr *data*))
+;       (loop (read tcp-in)))
+;      (else 
 ;       (printf "error : ~s\n" msg)       
-       (loop (read in))))))
+;       (loop (read tcp-in))))))
 
 (define (connect address port)
   (define-values (in out) (tcp-connect address port))
@@ -58,5 +69,5 @@
 
 ;; (connect "localhost" 8081)
 
-;; > (require "tcp-client-for-subprocess.rkt")
+;; > (require scp-tcp-proxy.rkt")
 ;; > (connect "localhost" 8080)
