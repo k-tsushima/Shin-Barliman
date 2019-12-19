@@ -24,6 +24,12 @@
         (write `(stopped))
         (flush-output-port)
         (exit)]
+       [(get-status)        
+        (write `(status ,(if (unbox *engine-box*) 'synthesizing 'waiting)))
+        (flush-output-port)
+        (if (input-port-ready? (current-input-port))
+            (loop (read))
+            (loop `(no-message-to-read)))]
        [(synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
         (let ((expr (fill-in-template definitions inputs outputs)))
           (let ((e (make-engine (lambda ()
@@ -49,11 +55,10 @@
                  (let ((elapsed-seconds (time-second elapsed-time))
                        (elapsed-nanoseconds (time-nanosecond elapsed-time)))
                    (let ((statistics `(elapsed-time (seconds ,elapsed-seconds) (nanoseconds ,elapsed-nanoseconds))))
-                     (write `(synthesis-finished ,synthesis-id ,val ,statistics)))))
-               (set-box! *start-time* #f)
-               (write `(synthesis-finished ,val))
-               (flush-output-port)
-               (loop (read))]
+                     (write `(synthesis-finished ,synthesis-id ,val ,statistics))
+                     (set-box! *start-time* #f)               
+                     (flush-output-port)
+                     (loop (read)))))]
               [(expired ,e)
                (set-box! *engine-box* e)])))        
         (if (input-port-ready? (current-input-port))
