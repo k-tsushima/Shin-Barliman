@@ -48,16 +48,12 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
-	   [(synthesize ,def-inoutputs-synid)
-	    (set! queue (append queue def-inoutputs-synid))]
-	   [(stop-all-synthesis)
-	    (set! queue '())
-	    (stop-all-subprocess)]
-	   [(stop-one-task ,synthesis-id)
-	    (stop-one-task synthesis-id)]
-	   [(ping)
-	    (write `(ping))
-	    (flush-output-port)]
+	   [(unexpected-eof)
+	    (printf "SCP receive unexpected EOF from MCP\n")
+	    ]
+	   [(unknown-message-type ,msg)
+	    (printf "SCP receive error message ~s from MCP\n" msg)
+	    ]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -70,6 +66,13 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
+	   [(synthesize ,def-inoutputs-synid)
+	    (set! queue (append queue def-inoutputs-synid))]
+	   [(stop-all-synthesis)
+	    (set! queue '())
+	    (stop-all-subprocess)]
+	   [(stop-one-task ,synthesis-id)
+	    (stop-one-task synthesis-id)]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -93,11 +96,9 @@ efficient synthesis.
              (else
               (pmatch msg
 		[(unexpected-eof)
-		 ; TODO
-		 (void)]
+		 (printf "SCP receive unexpected EOF from subprocess\n")]
 		[(unknown-message-type ,msg)
-		 ; TODO
-		 (void)]
+		 (printf "SCP receive error message ~s from subprocess\n" msg)]
                 [,anything
                  (printf "FIXME do nothing ~s\n" msg)]))
              )))
@@ -110,15 +111,12 @@ efficient synthesis.
               (printf "FIXME do nothing ~s\n" msg))
              (else
               (pmatch msg
-                [(synthesis-subprocess-ready)
-                 (let ((expr '(* 3 4)))
-                   (write `(eval-expr ,expr) to-stdin)
-                   (flush-output-port to-stdin))]
+                ;[(synthesis-subprocess-ready)
+                ; (let ((expr '(* 3 4)))
+                ;   (write `(eval-expr ,expr) to-stdin)
+                ;   (flush-output-port to-stdin))]
 		[(synthesis-finished ,synthesis-id ,val ,statistics)
 		 (send-synthesis-finished-to-mcp synthesis-id val statistics)]
-		[(ping)
-		 ; TODO?
-		 (void)]
 		[(stopped)
 		 ; TODO?
 		 (void)]
