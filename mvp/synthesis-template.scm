@@ -1,7 +1,5 @@
 ;; TODO Is there a way to simplify the template's complicated use of quotate, quasiquote, and unquote?
 
-;; TODO Perhaps (outputs (cons 'quasiquote (list outputs))) should be (outputs (cons 'quote (list outputs)))
-
 (define (fill-in-template definitions inputs outputs)
   (let ((definitions (cons 'quasiquote (list definitions)))
         (inputs (cons 'quasiquote (list inputs)))
