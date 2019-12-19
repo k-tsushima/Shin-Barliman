@@ -42,10 +42,12 @@ Sent to UI
 ;--------------------
 Received from SCP
 ;--------------------
+(hello)
 
 ;--------------------
 Sent to SCP
 ;--------------------
+(scp-id ,scp-id) ;; scp-id is an integer
 (synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
 (stop-all-synthesis)
 (stop-one-task ,synthesis-id)
@@ -59,6 +61,7 @@ SCP
 ;--------------------
 Received from MCP
 ;--------------------
+(scp-id ,scp-id) ;; scp-id is an integer
 (synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
 (stop-all-synthesis)
 (stop-one-task ,synthesis-id)
@@ -69,6 +72,7 @@ Received from MCP
 ;--------------------
 Sent to MCP
 ;--------------------
+(hello)
 (num-processes ,number-of-synthesis-subprocesses ,scp-id)
 (synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
 ;; error messages sent to MCP (using error port):
