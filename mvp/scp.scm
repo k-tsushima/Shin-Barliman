@@ -113,14 +113,14 @@ efficient synthesis.
 	 [() (printf "there is no more job in queue\n")]
 	 [((,definitions ,inputs ,outputs ,synthesis-id) . ,rest)
 	  (printf "there is job ...\n")
-	  (write `(synthesize (,definitions ,inputs ,outputs ,synthesis-id)) to-stdin)
-	  
-					; TODO: update subprocess status to working
-	  
+	  (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)
+	  (flush-output-port to-stdin)
+	  ; update subprocess status to working
 	  (update-status 'working process-id)
-	  (printf "nyaa\n")
+	  (printf "Process-id ~s started working\n" process-id)
+	  (printf "~s\n" (unbox *synthesis-subprocesses-box*))
 	  (set! *task-queue* rest)
-	  (set! *synthesis-task-table* (cons '(,synthesis-id ,process-id ,definitions ,inputs ,outputs started) *synthesis-task-table*))
+	  (set! *synthesis-task-table* (cons `(,synthesis-id ,process-id ,definitions ,inputs ,outputs started) *synthesis-task-table*))
 	  (start-synthesis-with-free-subprocesses)
 	  ])
        ]
@@ -135,22 +135,28 @@ efficient synthesis.
 	(else (printf "opposite: status error"))))
 
 
-(define (update-status status id)
+(define (update-status-aux status id)
   (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
     (pmatch synthesis-subprocesses
       [()
-       (printf "tried update-status-to ~s, but ~s is not found\n" status id)]
+       (printf "tried update-status-to ~s, but ~s is not found\n" status id)
+       '()]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status)
         . ,rest)
        (cond
 	((equal? process-id id)
-	 (cond ((equal? status current-status) (printf "tried update-status-to ~s, but ~s is already ~s\n" current-status process-id current-status))
+	 (cond ((equal? status current-status)
+		(printf "tried update-status-to ~s, but ~s is already ~s\n" current-status process-id current-status)
+		(cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status) rest))
 	       ((equal? status (opposite current-status))
-		(printf "update-status-to ~s: updated! id = ~s" (opposite current-status) process-id)
-		(cons '(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free) rest))
+		(printf "update-status-to ~s: updated! id = ~s\n" (opposite current-status) process-id)
+		(cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,(opposite current-status)) rest))
 	       (else (printf "status error"))))
-	(else (cons '(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,(opposite current-status)) (loop rest))))
+	(else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,(opposite current-status)) (loop rest))))
        ])))
+
+(define (update-status status id)
+  (set-box! *synthesis-subprocesses-box* (update-status-aux status id)))
 
 
 
@@ -190,9 +196,9 @@ efficient synthesis.
               (pmatch msg
                 [(synthesis-subprocess-ready)
 		 (update-status 'free process-id)
-					; (let ((expr '(* 3 4)))
+	        ; (let ((expr '(* 3 4)))
                 ;   (write `(eval-expr ,expr) to-stdin)
-					;   (flush-output-port to-stdin))
+		;   (flush-output-port to-stdin))
 		 ]
 		[(stopped)
 		 ; TODO?
@@ -270,6 +276,7 @@ efficient synthesis.
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
         . ,rest)
        (write `(stop) to-stdin)
+       (flush-output-port to-stdin)
        (loop rest)]))
   )
 
@@ -315,6 +322,7 @@ efficient synthesis.
 	  (set! *synthesis-task-table* rest)
 	  (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
 	    (write `(stop) out)
+	    (flush-output-port out)
 	    )  
        ; TODO: start another work?
        
