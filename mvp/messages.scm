@@ -98,7 +98,7 @@ Sent to Synthesis subprocess
 ;--------------------
 (stop)
 (synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
-(get-status)
+(get-status) ; when will we send this?
 
 
 ;===================

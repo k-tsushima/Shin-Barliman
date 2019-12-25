@@ -53,7 +53,7 @@ efficient synthesis.
        (printf "mcp: sent goodbye message\n"))
       (else
        (match msg
-         (`(synthesize (,definitions ,inputs ,outputs))
+         (`(synthesize ((,definitions ,inputs ,outputs) ,synthesis-id))
           (write `(synthesizing) out)
           (flush-output out)
           (printf "mcp: sent synthesizing message\n")
@@ -63,10 +63,10 @@ efficient synthesis.
           (flush-output out)
           (printf "mcp: sent stopped message\n")
           (loop (read in)))
-         (else 'handle
-               (format "unknown message type ~s" msg)))))))
+         (else (printf "unknown message type ~s\n" msg)
+	       (loop (read in))))))))
 
-;; > (require "mcp.rkt")
+;; > (require "tmp-mcp-client.rkt")
 ;; > (define stop (serve 8080))
 ;; > (stop)
 ;; > (define stop (serve 8080))
