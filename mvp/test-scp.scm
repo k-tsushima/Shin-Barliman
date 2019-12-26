@@ -35,9 +35,18 @@
 #!eof
 
 ; checked working with "tmp-mcp-client.rkt"
+(stop-all-subprocess)  ; stopped (= quitted) all subprocesses (looking ./top)
 
+
+
+
+--- the following ones are previous data
+
+; checked working with "tmp-mcp-client.rkt"
+
+send hello message from client 
 (send-number-of-subprocess-to-mcp) ; message sent to MCP.
-(stop-all-subprocess)  ; stopped (= removed) all subprocesses (looking ./top)
+
 (stop-one-task 59857) ; the number should be one of working number. stopped (= removed) the subprocess (looking ./top)
 (start-synthesis-with-free-subprocesses) ; synthesis started & after using (check-for-synthesis-subprocess-messages) two times, the results sent to MCP.
 
