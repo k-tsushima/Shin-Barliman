@@ -82,7 +82,7 @@ efficient synthesis.
         (else
          (pmatch msg
 	   [(scp-id ,scp-id)
-	    ; receiving scp-id, keep it and send number-of-subprocess
+	    ; receiving scp-id, keep it in *scp-id* and send number-of-subprocess
 	    (set! *scp-id* scp-id)
 	    ; Sent to MCP: 
 	    (send-number-of-subprocess-to-mcp)
@@ -112,7 +112,7 @@ efficient synthesis.
        (pmatch *task-queue*
 	 [() (printf "there is no more job in queue\n")]
 	 [((,definitions ,inputs ,outputs ,synthesis-id) . ,rest)
-	  (printf "there is job ...\n")
+	  (printf "there is a job at least...\n")
 	  (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)
 	  (flush-output-port to-stdin)
 	  ; update subprocess status to working
@@ -159,6 +159,19 @@ efficient synthesis.
 (define (update-status status id)
   (set-box! *synthesis-subprocesses-box* (update-status-aux status id)))
 
+(define (remove-subprocess-from-box-aux id synthesis-subprocesses)
+  (pmatch synthesis-subprocesses
+    [()
+     (printf "remove-subprocess-from-box-aux checked all, but id ~s can not be could.\n" process-id)
+     '()]
+    [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
+      . ,rest)
+     (cond ((equal? process-id id)
+	    rest)
+	   (else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status) (remove-subprocess-from-box-aux id rest))))]))									  
+(define (remove-subprocess-from-box id)
+  (set-box! *synthesis-subprocesses-box* (remove-subprocess-from-box-aux id (unbox *synthesis-subprocesses-box*))))
+
 
 (define (check-for-synthesis-subprocess-messages)
   (printf "SCP checking for messages from synthesis subprocesses...\n")
@@ -194,14 +207,18 @@ efficient synthesis.
              (else
               (pmatch msg
                 [(synthesis-subprocess-ready)
+		; TODO?: what SCP should do after receiving this message?
 		 (update-status 'free process-id)
 	        ; (let ((expr '(* 3 4)))
                 ;   (write `(eval-expr ,expr) to-stdin)
 		;   (flush-output-port to-stdin))
 		 ]
 		[(stopped)
-		 ; TODO?
-		 (void)]
+		 (printf "SCP received stop message from ~s\n" process-id)
+		 (void)
+	         ; remove this process-id from *synthesis-subprocesses-box*
+		 (remove-subprocess-from-box process-id)
+		 ]
 		[(synthesis-finished ,synthesis-id ,val ,statistics)
 		 (printf "SCP received synthesis-finished message from ~s\n" synthesis-id)
 		 ; Sent to MCP:
@@ -211,19 +228,13 @@ efficient synthesis.
 		 (start-synthesis-with-free-subprocesses)
 		]
 		[(status ,stat)
-	         ; TODO
+	         ; TODO?: what SCP should do after receiving this status message?
+		 (printf "SCP received status message ~s from ~s\n" stat process-id)
 		 (void)]
                 [,anything
                  (printf "FIXME do nothing ~s: anything\n" msg)]))
              )))
        (loop rest)])))
-
-
-
-; call tcp-client-for-subprocess.rkt
-; TODO:
-; (1) get & keep information from MCP via tcp-client-for-subprocess.
-;     (*program*, *tests*, *scm-files*)
 
 
 ;; start synthesis subprocesses as soon as SCP starts
@@ -333,7 +344,7 @@ efficient synthesis.
 	    (flush-output-port out)
 	    (printf "Sent stop to id ~s\n" subprocess-id)
 	    )  
-       ; TODO: start another work?
+       ; TODO?: shall we start another process?
        
        ]))]))
 
@@ -358,3 +369,5 @@ efficient synthesis.
   (check-for-mcp-messages)
   (check-for-synthesis-subprocess-messages)
   (loop))
+
+

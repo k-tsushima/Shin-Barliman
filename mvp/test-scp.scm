@@ -42,7 +42,10 @@
 (start-synthesis-with-free-subprocesses) ; synthesis started & after using (check-for-synthesis-subprocess-messages) two times, the results sent to MCP.
 
 ; todo
-(synthesis-subprocess-ready) ; what should we do for this?
-loop part
+- (synthesis-subprocess-ready) ; what should we do for this?
+- (status ,stat) ; what should we do for this?
+- Currently sending-stop-to-subprocess means quitting. Is this OK?
+  When should we start new processes?
+- loop part ; there is a tentative definition after #!eof in scp.scm
 
 

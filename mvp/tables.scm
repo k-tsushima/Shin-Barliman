@@ -34,7 +34,7 @@ synthesis-subprocesses table
 (synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status) ;; status is 'free or 'working
 
 synthesis-task table ;; the running tasks
-(,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status) ;; status choices are...??? -> Currently 'started
+(,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status) ;; status choices are...??? -> Currently only 'started
 
 task-queue ;; the next work to do
 ((,definitions ,inputs ,outputs ,synthesis-id) ...)
