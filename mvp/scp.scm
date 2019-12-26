@@ -129,6 +129,7 @@ efficient synthesis.
        (loop rest)
        ])))
 
+; 'working -> 'free / 'free -> 'working
 (define (opposite status)
   (cond ((equal? status 'working) 'free)
 	((equal? status 'free) 'working)
@@ -159,8 +160,6 @@ efficient synthesis.
   (set-box! *synthesis-subprocesses-box* (update-status-aux status id)))
 
 
-
-  
 (define (check-for-synthesis-subprocess-messages)
   (printf "SCP checking for messages from synthesis subprocesses...\n")
   (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
@@ -204,7 +203,7 @@ efficient synthesis.
 		 ; TODO?
 		 (void)]
 		[(synthesis-finished ,synthesis-id ,val ,statistics)
-		 (printf "SCP received synthesis-finished message from ~s" synthesis-id)
+		 (printf "SCP received synthesis-finished message from ~s\n" synthesis-id)
 		 ; Sent to MCP:
 		 (send-synthesis-finished-to-mcp synthesis-id val statistics)
 	         ; update the status and start working with the free subprocesses
@@ -273,7 +272,7 @@ efficient synthesis.
   (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
     (pmatch synthesis-subprocesses
       [() (printf "stopped all synthesis subprocesses\n")]
-      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+      [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
         . ,rest)
        (write `(stop) to-stdin)
        (flush-output-port to-stdin)
@@ -283,10 +282,17 @@ efficient synthesis.
 (define (partition func lst)
   (printf "partition: ~s\n" lst)
   (pmatch lst
-    [(()) '(() ())]
+    [() '()]
+    [(()) `(() ())]
+    [(,a)
+     (if (func (car (cdr a)))
+	   `(,(cons a '()) ())
+	   `(() ,(cons a '())))
+     ]
     [(,a . ,rest)
      (let ((result (partition func rest)))
-       (if (func (car a))
+       (printf "result: ~s\n" result)
+       (if (func (car (cdr a)))
 	   `(,(cons a (car result)) ,(cdr result))
 	   `(,(car result) ,(cons a (cdr result)))))
      ]
@@ -294,10 +300,10 @@ efficient synthesis.
 
 (define (searching-subprocess-out lst id)
   (pmatch lst
-    [() (printf "FIXME, there is no subprocess ~s\n" id)]
-    [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr)
+    [() (printf "Searching-subprocess-out: there is no subprocess id ~s\n" id)]
+    [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
       . ,rest)
-     (if (equal? id i) ; Is this true?
+     (if (equal? id process-id)
 	   to-stdin
 	   (searching-subprocess-out rest id))]
     ))
@@ -308,31 +314,36 @@ efficient synthesis.
 
   (printf "task-table:~s\n" *synthesis-task-table*)
   (pmatch *synthesis-task-table*
-    [() (printf "FIXME, received id is not found in synthesis table\n")]
+    [() (printf "Error :received id is not found in synthesis table\n")]
     [,else 
-     (let ((lst (partition (lambda (x) (equal? id (car x))) *synthesis-task-table*)))
+     (let ((lst (partition (lambda (x) (equal? id x)) *synthesis-task-table*)))
        (printf "Partition: ~s\n" lst)
        (pmatch lst
-	 [(() . ())
+	 [(() . ,rest)
 					; the id is not found in the table
 	  (printf "FIXME, received id is not found in queue and task table\n")
 	  ]
-	 [((,synthesis-id ,subprocess-id ,definitions ,examples ,status) . ,rest)
+	 ; (,synthesis-id ,subprocess-id ,definitions ,examples)
+	 [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)). ,rest)
        ; the id is found in the table
 	  (set! *synthesis-task-table* rest)
+	  (printf "ID ~s found!\n" subprocess-id)
 	  (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
 	    (write `(stop) out)
 	    (flush-output-port out)
+	    (printf "Sent stop to id ~s\n" subprocess-id)
 	    )  
        ; TODO: start another work?
        
        ]))]))
 
+
+; Now working ..
 (define (stop-one-task id)
   ; in the case, that task is in the queue
   (let ((lst (partition (lambda (x) (equal? id (car x))) *task-queue*)))
     (pmatch lst
-      [(() . ,rest)
+      [()
        ; the id is not found in the queue
        (stop-running-one-task id)
        ]
@@ -345,6 +356,5 @@ efficient synthesis.
 ;; process messages
 (let loop ()
   (check-for-mcp-messages)
- ; (send-number-of-subprocess-to-mcp)
   (check-for-synthesis-subprocess-messages)
   (loop))
