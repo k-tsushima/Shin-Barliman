@@ -325,7 +325,6 @@ efficient synthesis.
 
 (define (stop-one-task id)
   ; in the case, that task is in the queue
-  ; TODO!!: FIX HERE about partition!
   (let ((lst (partition (lambda (x) (equal? id (car (cdr (cdr (cdr x)))))) *task-queue*)))
     (pmatch lst
       [()
@@ -335,6 +334,23 @@ efficient synthesis.
       [(,a . ,rest)
        ; the id is found in the queue
        (set! *task-queue* rest)])))
+
+
+;; start TCP proxy so SCP can communicate with MCP
+(let ((start-tcp-proxy-command (format "exec ~a scp-tcp-proxy.rkt" RACKET-BINARY-PATH)))
+  (printf "starting tcp proxy with command:\n~s\n" start-tcp-proxy-command)
+  (let-values ([(to-stdin from-stdout from-stderr process-id)
+	        (open-process-ports start-tcp-proxy-command
+		                    (buffer-mode block)
+		                    (make-transcoder (utf-8-codec)))])
+    (printf "started tcp proxy with process id ~s\n" process-id)
+    (set-box! *mcp-out-port-box* to-stdin)
+    (set-box! *mcp-in-port-box* from-stdout)
+    (set-box! *mcp-err-port-box* from-stderr)
+    (set-box! *mcp-pid-port-box* process-id)))
+
+
+(printf "synthesis-subprocesses list:\n~s\n" (unbox *synthesis-subprocesses-box*))
 
 
 ;; start synthesis subprocesses as soon as SCP starts
