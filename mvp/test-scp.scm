@@ -12,7 +12,7 @@
                                     (,g3 ,g4)
                                     (,g5 ,g6 ,g7 ,g8)))
                          (synthesis-id 1))
-		     `((,definitions ,inputs ,outputs ,synthesis-id) . ())))
+                     `((,definitions ,inputs ,outputs ,synthesis-id) . ())))
 
 (set! *task-queue* (let ((definitions '((define append
                                           (lambda (k s)
@@ -28,7 +28,7 @@
                                     (,g3 ,g4)
                                     (,g5 ,g6 ,g7 ,g8)))
                          (synthesis-id 1))
-	             `((,definitions ,inputs ,outputs ,synthesis-id) . ,*task-queue*)))
+                     `((,definitions ,inputs ,outputs ,synthesis-id) . ,*task-queue*)))
 
 (start-synthesis-with-free-subprocesses)
 

@@ -15,7 +15,7 @@ efficient synthesis.
 
 
 (define RACKET-BINARY-PATH "/usr/local/bin/racket")
-;; (define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
+;;(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
 
 (define CHEZ-BINARY-PATH "/usr/local/bin/scheme")
 (define CHEZ-FLAGS "-q")
@@ -70,12 +70,12 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
-	   [(unexpected-eof)
-	    (printf "SCP receive unexpected EOF from MCP\n")
-	    ]
-	   [(unknown-message-type ,msg)
-	    (printf "SCP receive unknown error message ~s from MCP\n" msg)
-	    ]
+           [(unexpected-eof)
+            (printf "SCP receive unexpected EOF from MCP\n")
+            ]
+           [(unknown-message-type ,msg)
+            (printf "SCP receive unknown error message ~s from MCP\n" msg)
+            ]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -88,29 +88,29 @@ efficient synthesis.
          (printf "FIXME do nothing ~s\n" msg))
         (else
          (pmatch msg
-	   [(scp-id ,scp-id)
-	    ; receive scp-id from MCP, keep it in *scp-id* and 
+           [(scp-id ,scp-id)
+            ; receive scp-id from MCP, keep it in *scp-id* and 
             ; send number-of-subprocess (Sent to MCP)
-	    (set! *scp-id* scp-id)
-	    (send-number-of-subprocess-to-mcp)
-	    ]
-	   [(synthesize ,def-inoutputs-synid)
-	    ; receive synthesize message from MCP
+            (set! *scp-id* scp-id)
+            (send-number-of-subprocess-to-mcp)
+            ]
+           [(synthesize ,def-inoutputs-synid)
+            ; receive synthesize message from MCP
             ; add them to *task-queue* 
-	    (set! *task-queue* (append *task-queue* def-inoutputs-synid))
-	    ; and start synthesis if here are free subprocesses
-	    (start-synthesis-with-free-subprocesses)
-	    ]
-	   [(stop-all-synthesis)
-	    ; receive stop-all-synthesis message from MCP
-	    ; empty *task-queue*
-	    (set! *task-queue* '())
-	    ; stop all subprocesses
-	    (stop-all-subprocess)]
-	   [(stop-one-task ,synthesis-id)
-	    ; receive sto-one-task message from MCP
-	    ; stop the task with synthesis-id
-	    (stop-one-task synthesis-id)]
+            (set! *task-queue* (append *task-queue* def-inoutputs-synid))
+            ; and start synthesis if here are free subprocesses
+            (start-synthesis-with-free-subprocesses)
+            ]
+           [(stop-all-synthesis)
+            ; receive stop-all-synthesis message from MCP
+            ; empty *task-queue*
+            (set! *task-queue* '())
+            ; stop all subprocesses
+            (stop-all-subprocess)]
+           [(stop-one-task ,synthesis-id)
+            ; receive sto-one-task message from MCP
+            ; stop the task with synthesis-id
+            (stop-one-task synthesis-id)]
            [,anything
             (printf "FIXME do nothing ~s\n" msg)]))
         )))
@@ -124,20 +124,20 @@ efficient synthesis.
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free)
         . ,subprocess-rest)
        (pmatch *task-queue*
-	 [() (printf "there is no more job in *task-queue*\n")]
-	 [((,definitions ,inputs ,outputs ,synthesis-id) . ,rest)
-	  (printf "there is at least one job\n")
-	  (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)
-	  (flush-output-port to-stdin)
-	  ; update subprocess status to working
-	  (update-status 'working process-id)
-	  (printf "Process-id ~s started working\n" process-id)
-	  ; for debugging: 				;
-	  ; (printf "~s\n" (unbox *synthesis-subprocesses-box*))
-	  (set! *task-queue* rest)
-	  (set! *synthesis-task-table* (cons `(,synthesis-id ,process-id ,definitions ,inputs ,outputs started) *synthesis-task-table*))
-	  (loop subprocess-rest)
-	  ])
+         [() (printf "there is no more job in *task-queue*\n")]
+         [((,definitions ,inputs ,outputs ,synthesis-id) . ,rest)
+          (printf "there is at least one job\n")
+          (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)
+          (flush-output-port to-stdin)
+          ; update subprocess status to working
+          (update-status 'working process-id)
+          (printf "Process-id ~s started working\n" process-id)
+          ; for debugging:                              ;
+          ; (printf "~s\n" (unbox *synthesis-subprocesses-box*))
+          (set! *task-queue* rest)
+          (set! *synthesis-task-table* (cons `(,synthesis-id ,process-id ,definitions ,inputs ,outputs started) *synthesis-task-table*))
+          (loop subprocess-rest)
+          ])
        ]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr working)
         . ,rest)
@@ -147,8 +147,8 @@ efficient synthesis.
 ; 'working -> 'free / 'free -> 'working
 (define (opposite status)
   (cond ((equal? status 'working) 'free)
-	((equal? status 'free) 'working)
-	(else (printf "opposite: status error"))))
+        ((equal? status 'free) 'working)
+        (else (printf "opposite: status error"))))
 
 
 (define (update-status-aux status id)
@@ -160,15 +160,15 @@ efficient synthesis.
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status)
         . ,rest)
        (cond
-	((equal? process-id id)
-	 (cond ((equal? status current-status) ; if status = current-status
-		(printf "tried update-status-to ~s, but ~s is already ~s\n" status process-id current-status)
-		(cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status) rest))
-	       ((equal? status (opposite current-status)) ; if status <> current-status
-		(printf "update-status-to ~s: updated! id = ~s\n" (opposite current-status) process-id)
-		(cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,(opposite current-status)) rest))
-	       (else (printf "status error"))))
-	(else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status) (loop rest))))
+        ((equal? process-id id)
+         (cond ((equal? status current-status) ; if status = current-status
+                (printf "tried update-status-to ~s, but ~s is already ~s\n" status process-id current-status)
+                (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status) rest))
+               ((equal? status (opposite current-status)) ; if status <> current-status
+                (printf "update-status-to ~s: updated! id = ~s\n" (opposite current-status) process-id)
+                (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,(opposite current-status)) rest))
+               (else (printf "status error"))))
+        (else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,current-status) (loop rest))))
        ])))
 
 (define (update-status status id)
@@ -183,8 +183,8 @@ efficient synthesis.
     [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
       . ,rest)
      (cond ((equal? process-id id)
-	    rest)
-	   (else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status) (remove-subprocess-from-box-aux id rest))))]))									  
+            rest)
+           (else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status) (remove-subprocess-from-box-aux id rest))))]))                                                                          
 (define (remove-subprocess-from-box id)
   (set-box! *synthesis-subprocesses-box* (remove-subprocess-from-box-aux id (unbox *synthesis-subprocesses-box*))))
 
@@ -205,10 +205,10 @@ efficient synthesis.
               (printf "FIXME do nothing ~s\n" msg))
              (else
               (pmatch msg
-		[(unexpected-eof)
-		 (printf "SCP receive unexpected EOF from subprocess\n")]
-		[(unknown-message-type ,msg)
-		 (printf "SCP receive error message ~s from subprocess\n" msg)]
+                [(unexpected-eof)
+                 (printf "SCP receive unexpected EOF from subprocess\n")]
+                [(unknown-message-type ,msg)
+                 (printf "SCP receive error message ~s from subprocess\n" msg)]
                 [,anything
                  (printf "FIXME do nothing ~s\n" msg)]))
              )))
@@ -222,29 +222,29 @@ efficient synthesis.
              (else
               (pmatch msg
                 [(synthesis-subprocess-ready)
-		 ; TODO?: what SCP should do after receiving this message?
-		 ; when subprocesses send this message?
-		 (update-status 'free process-id)
-	         ; (let ((expr '(* 3 4)))
+                 ; TODO?: what SCP should do after receiving this message?
+                 ; when subprocesses send this message?
+                 (update-status 'free process-id)
+                 ; (let ((expr '(* 3 4)))
                  ;   (write `(eval-expr ,expr) to-stdin)
-		 ;   (flush-output-port to-stdin))
-		 ]
-		[(stopped)
-		 (printf "SCP received stop message from ~s\n" process-id)
-	         ; remove this process-id from *synthesis-subprocesses-box*
-		 (remove-subprocess-from-box process-id)
-		 ]
-		[(synthesis-finished ,synthesis-id ,val ,statistics)
-		 (printf "SCP received synthesis-finished message from ~s\n" synthesis-id)
-		 ; Sent to MCP:
-		 (send-synthesis-finished-to-mcp synthesis-id val statistics)
-	         ; update the status and start working with the free subprocesses
-		 (update-status 'free process-id)
-		 (start-synthesis-with-free-subprocesses)
-		]
-		[(status ,stat)
-	         ; TODO?: what SCP should do after receiving this status message?
-		 (printf "SCP received status message ~s from ~s\n" stat process-id)]
+                 ;   (flush-output-port to-stdin))
+                 ]
+                [(stopped)
+                 (printf "SCP received stop message from ~s\n" process-id)
+                 ; remove this process-id from *synthesis-subprocesses-box*
+                 (remove-subprocess-from-box process-id)
+                 ]
+                [(synthesis-finished ,synthesis-id ,val ,statistics)
+                 (printf "SCP received synthesis-finished message from ~s\n" synthesis-id)
+                 ; Sent to MCP:
+                 (send-synthesis-finished-to-mcp synthesis-id val statistics)
+                 ; update the status and start working with the free subprocesses
+                 (update-status 'free process-id)
+                 (start-synthesis-with-free-subprocesses)
+                ]
+                [(status ,stat)
+                 ; TODO?: what SCP should do after receiving this status message?
+                 (printf "SCP received status message ~s from ~s\n" stat process-id)]
                 [,anything
                  (printf "FIXME do nothing ~s: anything\n" msg)]))
              )))
@@ -273,17 +273,17 @@ efficient synthesis.
      [(()) `(() ())]
      [(,a)
       (if (func a)
-	  `(((,a)) ())
-	  `(() (,a)))]
+          `(((,a)) ())
+          `(() (,a)))]
      [(,a . ,rest)
       (let ((result (partition func rest)))
        ; for debugging:
-	(printf "result: ~s\n" result)
-	(pmatch result
-	  [(,b . (,c))
-	   (if (func a)
-	       `(,(cons a b) ,c)
-	       `(,b ,(cons a c)))]))
+        (printf "result: ~s\n" result)
+        (pmatch result
+          [(,b . (,c))
+           (if (func a)
+               `(,(cons a b) ,c)
+               `(,b ,(cons a c)))]))
       ]))
 
 (define (searching-subprocess-out lst id)
@@ -292,8 +292,8 @@ efficient synthesis.
     [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
       . ,rest)
      (if (equal? id process-id)
-	   to-stdin
-	   (searching-subprocess-out rest id))]
+           to-stdin
+           (searching-subprocess-out rest id))]
     ))
 
 (define (stop-running-one-task id)
@@ -307,19 +307,19 @@ efficient synthesis.
        ; for debugging
        (printf "Partition: ~s\n" lst)
        (pmatch lst
-	 [(() . ,rest)
+         [(() . ,rest)
          ; the id is not found in the table
-	  (printf "stop-runnning-one-task: received id is not found in queue and task table\n")
-	  ]
-	 [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)). ,rest)
+          (printf "stop-runnning-one-task: received id is not found in queue and task table\n")
+          ]
+         [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)). ,rest)
           ; the id is found in the table
-	  (set! *synthesis-task-table* rest)
-	  (printf "ID ~s found!\n" subprocess-id)
-	  (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
-	    (write `(stop) out)
-	    (flush-output-port out)
-	    (printf "Sent stop to id ~s\n" subprocess-id)
-	    (set! *synthesis-task-table* rest))
+          (set! *synthesis-task-table* rest)
+          (printf "ID ~s found!\n" subprocess-id)
+          (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
+            (write `(stop) out)
+            (flush-output-port out)
+            (printf "Sent stop to id ~s\n" subprocess-id)
+            (set! *synthesis-task-table* rest))
        ; TODO?: shall we start another process?      
        ]))]))
 
@@ -340,9 +340,9 @@ efficient synthesis.
 (let ((start-tcp-proxy-command (format "exec ~a scp-tcp-proxy.rkt" RACKET-BINARY-PATH)))
   (printf "starting tcp proxy with command:\n~s\n" start-tcp-proxy-command)
   (let-values ([(to-stdin from-stdout from-stderr process-id)
-	        (open-process-ports start-tcp-proxy-command
-		                    (buffer-mode block)
-		                    (make-transcoder (utf-8-codec)))])
+                (open-process-ports start-tcp-proxy-command
+                                    (buffer-mode block)
+                                    (make-transcoder (utf-8-codec)))])
     (printf "started tcp proxy with process id ~s\n" process-id)
     (set-box! *mcp-out-port-box* to-stdin)
     (set-box! *mcp-in-port-box* from-stdout)
@@ -364,9 +364,9 @@ efficient synthesis.
             (format "exec ~a ~a synthesis.scm" CHEZ-BINARY-PATH CHEZ-FLAGS)))
        (printf "starting synthesis subprocess with command:\n~s\n" start-synthesis-subprocess-command)
        (let-values ([(to-stdin from-stdout from-stderr process-id)
-	             (open-process-ports start-synthesis-subprocess-command
-		                         (buffer-mode block)
-		                         (make-transcoder (utf-8-codec)))])
+                     (open-process-ports start-synthesis-subprocess-command
+                                         (buffer-mode block)
+                                         (make-transcoder (utf-8-codec)))])
          (printf "started synthesis subprocesses ~s with process id ~s\n" i process-id)
          (set-box! *synthesis-subprocesses-box*
                    (append (unbox *synthesis-subprocesses-box*)
@@ -383,5 +383,3 @@ efficient synthesis.
   (check-for-mcp-messages)
   (check-for-synthesis-subprocess-messages)
   (loop))
-
-
