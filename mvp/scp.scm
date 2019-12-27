@@ -14,8 +14,8 @@ efficient synthesis.
 |#
 
 
-(define RACKET-BINARY-PATH "/usr/local/bin/racket")
-;;(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
+;;(define RACKET-BINARY-PATH "/usr/local/bin/racket")
+(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
 
 (define CHEZ-BINARY-PATH "/usr/local/bin/scheme")
 (define CHEZ-FLAGS "-q")
@@ -124,9 +124,12 @@ efficient synthesis.
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free)
         . ,subprocess-rest)
        (pmatch *task-queue*
-         [() (printf "there is no more job in *task-queue*\n")]
+         [() (printf "there are no more jobs in *task-queue*\n")]
          [((,definitions ,inputs ,outputs ,synthesis-id) . ,rest)
-          (printf "there is at least one job\n")
+          (let ((num-jobs (length *task-queue*)))
+            (if (= num-jobs 1)
+                (printf "there is one job in *task-queue*\n")
+                (printf "there are ~s jobs in *task-queue*\n" num-jobs)))
           (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)
           (flush-output-port to-stdin)
           ;; update subprocess status to working
