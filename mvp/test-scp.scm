@@ -1,34 +1,34 @@
 (set! *task-queue* (let ((definitions '((define append
-                         (lambda (l s)
-                           (if (null? l)
-                               ,A
-                               (cons ,B ,C))))))
-        (inputs '((append '() '())
-                  (append '(,g1) '(,g2))
-                  (append '(,g3) '(,g4))
-                  (append '(,g5 ,g6) '(,g7 ,g8))))
-        (outputs '(()
-                   (,g1 ,g2)
-                   (,g3 ,g4)
-                   (,g5 ,g6 ,g7 ,g8)))
-        (synthesis-id 1))
-		     `((,definitions ,inputs ,outputs ,synthesis-id) . ())))
+                                          (lambda (l s)
+                                            (if (null? l)
+                                                ,A
+                                                (cons ,B ,C))))))
+                         (inputs '((append '() '())
+                                   (append '(,g1) '(,g2))
+                                   (append '(,g3) '(,g4))
+                                   (append '(,g5 ,g6) '(,g7 ,g8))))
+                         (outputs '(()
+                                    (,g1 ,g2)
+                                    (,g3 ,g4)
+                                    (,g5 ,g6 ,g7 ,g8)))
+                         (synthesis-id 1))
+                     `((,definitions ,inputs ,outputs ,synthesis-id) . ())))
 
 (set! *task-queue* (let ((definitions '((define append
-                         (lambda (k s)
-                           (if (null? k)
-                               s
-                               (cons (car k) (append (cdr k) s)))))))
-        (inputs '((append '() '())
-                  (append '(,g1) '(,g2))
-                  (append '(,g3) '(,g4))
-                  (append '(,g5 ,g6) '(,g7 ,g8))))
-        (outputs '(()
-                   (,g1 ,g2)
-                   (,g3 ,g4)
-                   (,g5 ,g6 ,g7 ,g8)))
-        (synthesis-id 1))
-	`((,definitions ,inputs ,outputs ,synthesis-id) . ,*task-queue*)))
+                                          (lambda (k s)
+                                            (if (null? k)
+                                                s
+                                                (cons (car k) (append (cdr k) s)))))))
+                         (inputs '((append '() '())
+                                   (append '(,g1) '(,g2))
+                                   (append '(,g3) '(,g4))
+                                   (append '(,g5 ,g6) '(,g7 ,g8))))
+                         (outputs '(()
+                                    (,g1 ,g2)
+                                    (,g3 ,g4)
+                                    (,g5 ,g6 ,g7 ,g8)))
+                         (synthesis-id 1))
+                     `((,definitions ,inputs ,outputs ,synthesis-id) . ,*task-queue*)))
 
 (start-synthesis-with-free-subprocesses)
 
@@ -50,4 +50,3 @@ send hello message to MCP from client
 - loop part ; there is a tentative definition after #!eof in scp.scm
 -- introducing thread
 - introducing semaphore
-
