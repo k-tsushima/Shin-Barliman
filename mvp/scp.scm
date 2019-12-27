@@ -29,6 +29,9 @@ efficient synthesis.
 (define *mcp-err-port-box* (box #f))
 (define *mcp-pid-port-box* (box #f))
 
+; TODO: adding semaphore
+; (define scp-semaphore )
+
 ; Currently this number is fixed
 (define number-of-synthesis-subprocesses 3)
 
@@ -97,6 +100,7 @@ efficient synthesis.
 	   [(synthesize ,def-inoutputs-synid)
 	    ; receive synthesize message from MCP
             ; add them to *task-queue* 
+	    ; UPDATE: *task-queue*
 	    (set! *task-queue* (append *task-queue* def-inoutputs-synid))
 	    ; and start synthesis if here are free subprocesses
 	    (start-synthesis-with-free-subprocesses)
@@ -104,6 +108,7 @@ efficient synthesis.
 	   [(stop-all-synthesis)
 	    ; receive stop-all-synthesis message from MCP
 	    ; empty *task-queue*
+	    ; UPDATE: *task-queue*
 	    (set! *task-queue* '())
 	    ; stop all subprocesses
 	    (stop-all-subprocess)]
@@ -134,7 +139,9 @@ efficient synthesis.
 	  (printf "Process-id ~s started working\n" process-id)
 	  ; for debugging: 				;
 	  ; (printf "~s\n" (unbox *synthesis-subprocesses-box*))
+	  ; UPDATE: *task-queue*
 	  (set! *task-queue* rest)
+	  ; UPDATE: *synthesis-task-table*
 	  (set! *synthesis-task-table* (cons `(,synthesis-id ,process-id ,definitions ,inputs ,outputs started) *synthesis-task-table*))
 	  (loop subprocess-rest)
 	  ])
@@ -172,6 +179,7 @@ efficient synthesis.
        ])))
 
 (define (update-status status id)
+  ; UPDATE: *synthesis-subprocesses-box*
   (set-box! *synthesis-subprocesses-box* (update-status-aux status id)))
 
 ; remove the given id from synthesis-subprocesses
@@ -186,6 +194,7 @@ efficient synthesis.
 	    rest)
 	   (else (cons `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status) (remove-subprocess-from-box-aux id rest))))]))									  
 (define (remove-subprocess-from-box id)
+  ; UPDATE: *synthesis-subprocesses-box*
   (set-box! *synthesis-subprocesses-box* (remove-subprocess-from-box-aux id (unbox *synthesis-subprocesses-box*))))
 
 
@@ -312,13 +321,14 @@ efficient synthesis.
 	  (printf "stop-runnning-one-task: received id is not found in queue and task table\n")
 	  ]
 	 [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)). ,rest)
-          ; the id is found in the table
-	  (set! *synthesis-task-table* rest)
+	  ; the id is found in the table
+
 	  (printf "ID ~s found!\n" subprocess-id)
 	  (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
 	    (write `(stop) out)
 	    (flush-output-port out)
 	    (printf "Sent stop to id ~s\n" subprocess-id)
+	    ; UPDATE: *synthesis-task-table*
 	    (set! *synthesis-task-table* rest))
        ; TODO?: shall we start another process?      
        ]))]))
@@ -333,6 +343,7 @@ efficient synthesis.
        ]
       [(,a . ,rest)
        ; the id is found in the queue
+       ; UPDATE: *task-queue*
        (set! *task-queue* rest)])))
 
 
@@ -368,13 +379,11 @@ efficient synthesis.
 		                         (buffer-mode block)
 		                         (make-transcoder (utf-8-codec)))])
          (printf "started synthesis subprocesses ~s with process id ~s\n" i process-id)
-         (set-box! *synthesis-subprocesses-box*
+	 ; UPDATE: *synthesis-subprocesses-box*
+	 (set-box! *synthesis-subprocesses-box*
                    (append (unbox *synthesis-subprocesses-box*)
                            (list `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free))))))
      (loop (add1 i)))))
-
-
-
 
 #!eof
 
