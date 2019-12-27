@@ -48,3 +48,5 @@ send hello message to MCP from client
 - Currently sending-stop-to-subprocess means quitting. Is this OK?
   When should we start new processes?
 - loop part ; there is a tentative definition after #!eof in scp.scm
+-- introducing thread
+- introducing semaphore
