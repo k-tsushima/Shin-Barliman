@@ -6,6 +6,7 @@
  (chez-binary-path . "/usr/local/bin/scheme")
  (tcp-ip-address . "localhost")
  (tcp-port . 8081)
+ (default-gui-language . "English")
 
  ;; Add configuration options as new association pairs.
  )

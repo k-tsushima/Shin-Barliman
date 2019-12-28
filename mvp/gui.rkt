@@ -43,6 +43,8 @@ TODO
 (define DEFAULT-TCP-IP-ADDRESS (config-ref 'tcp-ip-address))
 (define DEFAULT-TCP-PORT (config-ref 'tcp-port))
 
+(define DEFAULT-GUI-LANGUAGE (config-ref 'default-gui-language))
+
 (define MAJOR-VERSION-NUMBER 0)
 (define MINOR-VERSION-NUMBER 1)
 
@@ -157,7 +159,7 @@ TODO
 (define *synthesis-state-box* (box NOT-SYNTHESIZING))
 
 
-(define *GUI-language-box* (box (caar I18N-STRINGS)))
+(define *GUI-language-box* (box DEFAULT-GUI-LANGUAGE))
 
 (define *connect-str-box* (box #f))
 (define *disconnect-str-box* (box #f))
@@ -507,6 +509,7 @@ TODO
            (label "Language")
            (parent server-info-panel)
            (choices (map car I18N-STRINGS))
+           (selection (sub1 (length (member DEFAULT-GUI-LANGUAGE (reverse (map car I18N-STRINGS))))))
            (callback (lambda (self event)
                        (define lang (send self get-string-selection))
                        (printf "User selected language ~s\n" lang)
