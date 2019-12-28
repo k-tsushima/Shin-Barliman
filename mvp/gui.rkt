@@ -31,12 +31,17 @@ TODO
   racket/gui/base
   racket/tcp
   framework
-  ;racket/engine
-  ;(except-in racket/match ==)
+  "common.rkt"
   )
 
 (provide
   launch-gui)
+
+;; Loading will occur at first use if not explicitly forced like this.
+(load-config #t)
+
+(define DEFAULT-TCP-IP-ADDRESS (config-ref 'tcp-ip-address))
+(define DEFAULT-TCP-PORT (config-ref 'tcp-port))
 
 (define MAJOR-VERSION-NUMBER 0)
 (define MINOR-VERSION-NUMBER 1)
@@ -518,13 +523,13 @@ TODO
       (new text-field%
            (parent server-info-hor-draggable-panel)
            (label "Server")
-           (init-value "localhost")))
+           (init-value DEFAULT-TCP-IP-ADDRESS)))
 
     (define server-port-field
       (new text-field%
            (parent server-info-hor-draggable-panel)
            (label "Port")
-           (init-value "8080")))
+           (init-value (number->string DEFAULT-TCP-PORT))))
 
     (define server-connect-button
       (new button%
