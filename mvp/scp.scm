@@ -14,8 +14,8 @@ efficient synthesis.
 |#
 
 
-;;(define RACKET-BINARY-PATH "/usr/local/bin/racket")
-(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
+(define RACKET-BINARY-PATH "/usr/local/bin/racket")
+;;(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
 
 (define CHEZ-BINARY-PATH "/usr/local/bin/scheme")
 (define CHEZ-FLAGS "-q")
@@ -242,10 +242,12 @@ efficient synthesis.
                  ;;   (write `(eval-expr ,expr) to-stdin)
                  ;;   (flush-output-port to-stdin))
                  ]
-                [(stopped)
-                 (printf "SCP received stop message from ~s\n" process-id)
+                [(stopped-synthesis)
+                 (printf "SCP received stopped-synthesis message from ~s\n" process-id)
+                 ;; TODO double check this logic, please!
                  ;; remove this process-id from *synthesis-subprocesses-box*
-                 (remove-subprocess-from-box process-id)
+                 ;; (remove-subprocess-from-box process-id)
+                 (start-synthesis-with-free-subprocesses)
                  ]
                 [(synthesis-finished ,synthesis-id ,val ,statistics)
                  (printf "SCP received synthesis-finished message from ~s\n" synthesis-id)
@@ -270,7 +272,7 @@ efficient synthesis.
       [() (printf "stopped all synthesis subprocesses\n")]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
         . ,rest)
-       (write `(stop) to-stdin)
+       (write `(stop-synthesis) to-stdin)
        (flush-output-port to-stdin)
        (loop rest)])))
 
@@ -329,7 +331,7 @@ efficient synthesis.
           (set! *synthesis-task-table* rest)
           (printf "ID ~s found!\n" subprocess-id)
           (let ((out (searching-subprocess-out (unbox *synthesis-subprocesses-box*) id)))
-            (write `(stop) out)
+            (write `(stop-synthesis) out)
             (flush-output-port out)
             (printf "Sent stop to id ~s\n" subprocess-id)
            ;; UPDATE: *synthesis-task-table*

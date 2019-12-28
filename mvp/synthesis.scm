@@ -20,11 +20,13 @@
      (exit))
     (else
      (pmatch msg
-       [(stop)
-        (write `(stopped))
+       [(stop-synthesis)
+        (set-box! *engine-box* #f)
+        (set-box! *start-time* #f)
+        (write `(stopped-synthesis))
         (flush-output-port)
-        (exit)]
-       [(get-status)        
+        (loop (read))]
+       [(get-status)  
         (write `(status ,(if (unbox *engine-box*) 'synthesizing 'waiting)))
         (flush-output-port)
         (if (input-port-ready? (current-input-port))

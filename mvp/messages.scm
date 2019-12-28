@@ -86,7 +86,7 @@ Sent to MCP
 ;--------------------
 Received from Synthesis subprocess
 ;--------------------
-(stopped)
+(stopped-synthesis)
 (synthesis-finished ,synthesis-id ,val ,statistics)
 (status ,stat) ;; stat is either 'synthesizing or 'running
 ;; error messages sent to SCP (using error port):
@@ -96,7 +96,7 @@ Received from Synthesis subprocess
 ;--------------------
 Sent to Synthesis subprocess
 ;--------------------
-(stop)
+(stop-synthesis)
 (synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
 (get-status) ; when will we send this?
 
@@ -108,14 +108,14 @@ Synthesis subprocess
 ;--------------------
 Received from SCP
 ;--------------------
-(stop)
+(stop-synthesis)
 (synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
 (get-status)
 
 ;--------------------
 Sent to SCP
 ;--------------------
-(stopped)
+(stopped-synthesis)
 (synthesis-finished ,synthesis-id ,val ,statistics)
 (status ,stat) ;; stat is either 'synthesizing or 'running
 ;; error messages sent to SCP:
