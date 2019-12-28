@@ -1,23 +1,21 @@
 ;; Shin-Barliman Sub Controlling Process (SCP)
 
-(load "pmatch.scm")
-
 #|
 Description of the Sub Controlling Process.
 ----------------------------------------
-
-The MCP is responsible for coordinating communication between the
-user interface (UI) and the sub-processes responsible for synthesis.
-
-The MCP is also responsible for the policies and strategies used for
-efficient synthesis.
+TODO add description
 |#
 
+(load "pmatch.scm")
+(load "common.scm")
 
-(define RACKET-BINARY-PATH "/usr/local/bin/racket")
-;;(define RACKET-BINARY-PATH "/Applications/Racket\\ v7.5/bin/racket")
+;; Loading will occur at first use if not explicitly forced like this.
+(load-config #t)
 
-(define CHEZ-BINARY-PATH "/usr/local/bin/scheme")
+
+(define RACKET-BINARY-PATH (config-ref 'racket-binary-path))
+
+(define CHEZ-BINARY-PATH (config-ref 'chez-binary-path))
 (define CHEZ-FLAGS "-q")
 
 (define *program* (box #f))
