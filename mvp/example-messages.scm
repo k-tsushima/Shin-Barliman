@@ -1,5 +1,7 @@
 Scenario: MCP starts synthesis tasks, then tries to replace the tasks
 
+*** Seen from the perspective of SCP ***
+
 Start of scenario:
 
 MCP and SCP are already started
