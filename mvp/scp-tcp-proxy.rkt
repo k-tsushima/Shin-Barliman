@@ -2,11 +2,22 @@
 
 ; This is a code between mcp(client) and subprocess
 
+(require
+  racket/tcp
+  "common.rkt")
+
 (provide  
   (all-from-out racket/tcp)
   (all-defined-out))
 
-(require racket/tcp)
+
+(print-as-expression #f)
+
+;; Loading will occur at first use if not explicitly forced like this.
+(load-config #t)
+
+(define DEFAULT-TCP-IP-ADDRESS (config-ref 'tcp-ip-address))
+(define DEFAULT-TCP-PORT (config-ref 'tcp-port))
 
 ; (define *program* (box #f))
 ; (define *tests* (box #f))
@@ -14,8 +25,6 @@
 
 (define *data* (box #f))
 (define *tcp-out* #f)
-
-(print-as-expression #f)
 
 (define (handle-scp)
    (let loop ((msg (read (current-input-port))))
@@ -72,12 +81,7 @@
 
 )
 
-(connect "localhost" 8081)
+(connect DEFAULT-TCP-IP-ADDRESS DEFAULT-TCP-PORT)
 
-
-;; (connect "localhost" 8081)
-
-;; > (require scp-tcp-proxy.rkt")
+;; > (require "scp-tcp-proxy.rkt")
 ;; > (connect "localhost" 8080)
-
-
