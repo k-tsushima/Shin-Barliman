@@ -37,9 +37,9 @@
 
 (define (accept-and-handle listener)
   (define-values (in out) (tcp-accept listener))
-  (logf "mcp-ui-tcp-proxy accepted tcp connection")
+  (logf "mcp-ui-tcp-proxy accepted tcp connection\n")
   (handle in out)
-  (logf "mcp-ui-tcp-proxy closing tcp connection")
+  (logf "mcp-ui-tcp-proxy closing tcp connection\n")
   (close-input-port in)
   (close-output-port out))
 
@@ -74,9 +74,14 @@
 
 (define (handle in out)
   (logf "handle called for mcp-ui-tcp-proxy\n")
+  (logf "starting mcp-to-ui-thread\n")
   (define mcp-to-ui-thread (thread (forward-from-mcp-to-ui out)))
+  (logf "mcp-to-ui-thread started\n")
+  (logf "calling forward-from-ui-to-mcp\n")
   (forward-from-ui-to-mcp in)
   ;; perhaps should use a custodian for thread cleanup
-  (kill-thread mcp-to-ui-thread))
+  (logf "stopping mcp-to-ui-thread\n")
+  (kill-thread mcp-to-ui-thread)
+  (logf "stopped mcp-to-ui-thread\n"))
 
 (serve DEFAULT-TCP-PORT)
