@@ -73,8 +73,7 @@
       (logf "mcp-ui-tcp-proxy received message from mcp ~s\n" msg)
       (cond
         ((eof-object? msg)
-         ;; TODO
-         )
+         (logf "read eof from mcp--exiting forward-from-mcp-to-ui\n"))
         (else
          ;; forward message to UI
          (write msg out)
@@ -87,8 +86,7 @@
     (logf "mcp-ui-tcp-proxy received message from ui ~s\n" msg)
     (cond
       ((eof-object? msg)
-       ;; TODO
-       )
+       (logf "read eof from ui--exiting forward-from-ui-to-mcp\n"))
       (else
        ;; forward message to MCP
        (write msg)
