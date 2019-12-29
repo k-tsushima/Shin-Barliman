@@ -40,15 +40,16 @@
 
 (define (logf format-str . args)
   (when ENABLE-LOGGING
-    (semaphore-wait output-semaphore)
-    (unless (unbox LOG-FILE-OUTPUT-PORT-BOX)
-      (define output-port (open-output-file LOG-FILE-NAME
-                                            #:mode 'text
-                                            #:exists 'replace))
-      (set-box! LOG-FILE-OUTPUT-PORT-BOX output-port))
-    (apply fprintf (unbox LOG-FILE-OUTPUT-PORT-BOX) format-str args)
-    (flush-output-port (unbox LOG-FILE-OUTPUT-PORT-BOX))
-    (semaphore-post output-semaphore)))
+    (call-with-semaphore
+     output-semaphore
+     (lambda ()
+       (unless (unbox LOG-FILE-OUTPUT-PORT-BOX)
+         (define output-port (open-output-file LOG-FILE-NAME
+                                               #:mode 'text
+                                               #:exists 'replace))
+         (set-box! LOG-FILE-OUTPUT-PORT-BOX output-port))
+       (apply fprintf (unbox LOG-FILE-OUTPUT-PORT-BOX) format-str args)
+       (flush-output-port (unbox LOG-FILE-OUTPUT-PORT-BOX))))))
 
 
 (define (serve port-no)
