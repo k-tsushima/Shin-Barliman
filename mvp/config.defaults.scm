@@ -11,6 +11,8 @@
  (scp-tcp-ip-address . "localhost")
  (scp-tcp-port . 8082)
  ;;
+ (enable-proxy-logging . #f)
+ ;;
  (default-ui-language . "English")
 
  ;; Add configuration options as new association pairs.

@@ -26,7 +26,30 @@
 
 ;; MAX-CONNECTIONS is hard-coded, instead of user-configurable, since
 ;; the MVP currently only supports 1 UI connection at a time
-(define MAX-CONNECTIONS 1) 
+(define MAX-CONNECTIONS 1)
+
+(define ENABLE-LOGGING (config-ref 'enable-proxy-logging))
+
+(define LOG-FILE-NAME "mcp-ui-tcp-proxy.log")
+
+(define LOG-FILE-OUTPUT-PORT-BOX (box #f))
+
+;; semaphore code, to ensure logging is atomic, is adapted from
+;; https://docs.racket-lang.org/guide/concurrency.html?q=semaphore#%28part._.Semaphores%29
+(define output-semaphore (make-semaphore 1))
+
+(define (logf format-str . args)
+  (when ENABLE-LOGGING
+    (semaphore-wait output-semaphore)
+    (unless (unbox LOG-FILE-OUTPUT-PORT-BOX)
+      (define output-port (open-output-file LOG-FILE-NAME
+                                            #:mode 'text
+                                            #:exists 'replace))
+      (set-box! LOG-FILE-OUTPUT-PORT-BOX output-port))
+    (apply fprintf (unbox LOG-FILE-OUTPUT-PORT-BOX) format-str args)
+    (flush-output-port (unbox LOG-FILE-OUTPUT-PORT-BOX))
+    (semaphore-post output-semaphore)))
+
 
 (define (serve port-no)
   (define listener (tcp-listen port-no MAX-CONNECTIONS #t))
