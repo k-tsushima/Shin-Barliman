@@ -49,10 +49,12 @@
                                                #:exists 'replace))
          (set-box! LOG-FILE-OUTPUT-PORT-BOX output-port))
        (apply fprintf (unbox LOG-FILE-OUTPUT-PORT-BOX) format-str args)
-       (flush-output-port (unbox LOG-FILE-OUTPUT-PORT-BOX))))))
+       (flush-output (unbox LOG-FILE-OUTPUT-PORT-BOX))))))
 
+(logf "started mcp-ui-tcp-proxy\n")
 
 (define (serve port-no)
+  (logf "serve called\n")
   (define listener (tcp-listen port-no MAX-CONNECTIONS #t))
   (define (loop)
     (accept-and-handle listener)
@@ -77,7 +79,7 @@
         (else
          ;; forward message to UI
          (write msg out)
-         (flush-output-port out)
+         (flush-output out)
          (logf "mcp-ui-tcp-proxy forwarded message to ui ~s\n" msg)
          (loop (read)))))))
 
@@ -90,7 +92,7 @@
       (else
        ;; forward message to MCP
        (write msg)
-       (flush-output-port)
+       (flush-output (current-output-port))
        (logf "mcp-ui-tcp-proxy forwarded message to mcp ~s\n" msg)
        (loop (read in))))))
 
