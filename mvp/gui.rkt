@@ -319,8 +319,6 @@ TODO
            (void))
           (else
            (match msg
-             (`(goodbye)
-              (printf "wait-on-mcp-synthesis-results received goodbye from mcp!  Dun with fish\n"))
              (`(keep-going)
               (printf "wait-on-mcp-synthesis-results xoreceived keep-going from mcp!  Onward...\n")
               (loop (read in)))

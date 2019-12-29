@@ -48,9 +48,7 @@ efficient synthesis.
     (printf "mcp: received message ~s\n" msg)
     (cond
       ((eof-object? msg)
-       (write '(goodbye) out)
-       (flush-output out)
-       (printf "mcp: sent goodbye message\n"))
+       (printf "mcp: read eof object--done with 'handle' loop\n"))
       (else
        (match msg
          (`(synthesize (,definitions ,inputs ,outputs))
@@ -67,7 +65,7 @@ efficient synthesis.
 	       (loop (read in))))))))
 
 ;; > (require "tmp-mcp-client.rkt")
-;; > (define stop (serve 8080))
+;; > (define stop (serve 8081))
 ;; > (stop)
-;; > (define stop (serve 8080))
+;; > (define stop (serve 8081))
 ;; > (stop)

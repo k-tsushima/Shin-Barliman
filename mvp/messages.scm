@@ -13,7 +13,6 @@ Received from MCP
 ;--------------------
 (synthesizing)
 (stopped)
-(goodbye)
 
 ;--------------------
 Sent to MCP
@@ -37,7 +36,6 @@ Sent to UI
 ;--------------------
 (synthesizing)
 (stopped)
-(goodbye)
 
 ;--------------------
 Received from SCP
@@ -46,8 +44,8 @@ Received from SCP
 (num-processes ,number-of-synthesis-subprocesses ,scp-id)
 (synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
 ;; error messages sent to MCP (using error port):
-(unexpected-eof)
-(unknown-message-type ,msg)
+(unexpected-eof) ;; ??? do we really need this message for the mvp?
+(unknown-message-type ,msg) ;; ??? do we really need this message for the mvp?
 
 ;--------------------
 Sent to SCP
@@ -70,8 +68,8 @@ Received from MCP
 (stop-all-synthesis)
 (stop-one-task ,synthesis-id)
 ;; error messages sent to MCP (using error port):
-(unexpected-eof)
-(unknown-message-type ,msg)
+(unexpected-eof) ;; ??? do we really need this message for the mvp?
+(unknown-message-type ,msg) ;; ??? do we really need this message for the mvp?
 
 ;--------------------
 Sent to MCP
