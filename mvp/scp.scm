@@ -25,7 +25,7 @@ TODO add description
 (define *mcp-out-port-box* (box #f))
 (define *mcp-in-port-box* (box #f))
 (define *mcp-err-port-box* (box #f))
-(define *mcp-pid-port-box* (box #f))
+(define *mcp-pid-box* (box #f))
 
 ;; TODO: adding semaphore
 ;; (define scp-semaphore )
@@ -362,7 +362,7 @@ TODO add description
     (set-box! *mcp-out-port-box* to-stdin)
     (set-box! *mcp-in-port-box* from-stdout)
     (set-box! *mcp-err-port-box* from-stderr)
-    (set-box! *mcp-pid-port-box* process-id)))
+    (set-box! *mcp-pid-box* process-id)))
 
 
 (printf "synthesis-subprocesses list:\n~s\n" (unbox *synthesis-subprocesses-box*))
