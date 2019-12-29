@@ -28,14 +28,7 @@ efficient synthesis.
 (define CHEZ-FLAGS "-q")
 
 
-(define GUI-DEFAULT-TCP-IP-ADDRESS (config-ref 'gui-tcp-ip-address))
-(define GUI-DEFAULT-TCP-PORT (config-ref 'gui-tcp-port))
-
-(define SCP-DEFAULT-TCP-IP-ADDRESS (config-ref 'scp-tcp-ip-address))
-(define SCP-DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
-
-
-;; start 'mcp-gui-tcp-proxy.rkt' Racket subprocess for GUI TCP proxy
+;; start 'mcp-ui-tcp-proxy.rkt' Racket subprocess for UI TCP proxy
 
 ;; start 'mcp-scp-tcp-proxy.rkt' Racket subprocess for SCP TCP proxy
 

@@ -4,14 +4,14 @@
 ;; Adapted from https://github.com/webyrd/mediKanren/blob/master/biolink/config.defaults.scm
 ((racket-binary-path . "/usr/local/bin/racket")
  (chez-binary-path . "/usr/local/bin/scheme")
- ;; GUI-to-MCP connection
- (gui-tcp-ip-address . "localhost")
- (gui-tcp-port . 8081)
+ ;; UI-to-MCP connection
+ (ui-tcp-ip-address . "localhost")
+ (ui-tcp-port . 8081)
  ;; SCP-to-MCP connection
  (scp-tcp-ip-address . "localhost")
  (scp-tcp-port . 8082)
  ;;
- (default-gui-language . "English")
+ (default-ui-language . "English")
 
  ;; Add configuration options as new association pairs.
  )

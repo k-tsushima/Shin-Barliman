@@ -1,6 +1,6 @@
 #lang racket/base
 
-; Proxy started by MCP for TCP communication with one or more SCPs
+; Proxy started by MCP for TCP communication with UI
 
 (require
   racket/tcp
@@ -16,12 +16,12 @@
 ;; Loading will occur at first use if not explicitly forced like this.
 (load-config #t)
 
-(define DEFAULT-TCP-IP-ADDRESS (config-ref 'scp-tcp-ip-address))
-(define DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
+(define DEFAULT-TCP-IP-ADDRESS (config-ref 'ui-tcp-ip-address))
+(define DEFAULT-TCP-PORT (config-ref 'ui-tcp-port))
 
 ;; TODO add code here
 
 (connect DEFAULT-TCP-IP-ADDRESS DEFAULT-TCP-PORT)
 
-;; > (require "mcp-scp-tcp-proxy.rkt")
-;; > (connect "localhost" 8082)
+;; > (require "mcp-ui-tcp-proxy.rkt")
+;; > (connect "localhost" 8081)
