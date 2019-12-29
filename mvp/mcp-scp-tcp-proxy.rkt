@@ -23,5 +23,5 @@
 
 (connect DEFAULT-TCP-IP-ADDRESS DEFAULT-TCP-PORT)
 
-;; > (require "tcp-scp-proxy.rkt")
-;; > (connect "localhost" 8080)
+;; > (require "mcp-scp-tcp-proxy.rkt")
+;; > (connect "localhost" 8081)
