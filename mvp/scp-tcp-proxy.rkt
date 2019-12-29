@@ -16,8 +16,8 @@
 ;; Loading will occur at first use if not explicitly forced like this.
 (load-config #t)
 
-(define DEFAULT-TCP-IP-ADDRESS (config-ref 'tcp-ip-address))
-(define DEFAULT-TCP-PORT (config-ref 'tcp-port))
+(define DEFAULT-TCP-IP-ADDRESS (config-ref 'scp-tcp-ip-address))
+(define DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
 
 ; (define *program* (box #f))
 ; (define *tests* (box #f))

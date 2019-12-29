@@ -40,8 +40,8 @@ TODO
 ;; Loading will occur at first use if not explicitly forced like this.
 (load-config #t)
 
-(define DEFAULT-TCP-IP-ADDRESS (config-ref 'tcp-ip-address))
-(define DEFAULT-TCP-PORT (config-ref 'tcp-port))
+(define DEFAULT-TCP-IP-ADDRESS (config-ref 'gui-tcp-ip-address))
+(define DEFAULT-TCP-PORT (config-ref 'gui-tcp-port))
 
 (define DEFAULT-GUI-LANGUAGE (config-ref 'default-gui-language))
 
