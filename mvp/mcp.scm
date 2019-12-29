@@ -35,4 +35,6 @@ efficient synthesis.
 ;; start 'synthesis-task-compiler.scm' Scheme subprocess for
 ;; generating code to be sent to SCP for synthesis
 
-;; event loop: check GUI proxy for messages, then check SCP proxy for messages
+;; event loop: check GUI proxy for messages, then check SCP proxy for
+;; messages, updating internal tables and sending messages as
+;; necessary
