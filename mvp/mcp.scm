@@ -16,3 +16,7 @@ The MCP is also responsible for the policies and strategies used for
 efficient synthesis.
 |#
 
+
+;; start Racket subprocesses for GUI TCP proxy and for SCP TCP proxy
+
+;; event loop: check GUI proxy for messages, then check SCP proxy for messages
