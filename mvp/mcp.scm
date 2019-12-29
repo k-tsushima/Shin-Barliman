@@ -86,6 +86,15 @@ efficient synthesis.
     (set-box! *synthesis-task-compiler-err-port-box* from-stderr)
     (set-box! *synthesis-task-compiler-pid-box* process-id)))
 
+#!eof
+
 ;; event loop: check GUI proxy for messages, then check SCP proxy for
 ;; messages, updating internal tables and sending messages as
 ;; necessary
+
+;; process messages
+(let loop ()
+  (check-for-ui-messages)
+  (check-for-scp-messages)
+  (check-for-synthesis-task-compiler-subprocess-messages)
+  (loop))
