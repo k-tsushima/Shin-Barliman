@@ -18,12 +18,8 @@
 ;; Loading will occur at first use if not explicitly forced like this.
 (load-config #t)
 
-(define DEFAULT-TCP-IP-ADDRESS (config-ref 'scp-tcp-ip-address))
 (define DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
 
 ;; TODO add code here
 
-(connect DEFAULT-TCP-IP-ADDRESS DEFAULT-TCP-PORT)
-
-;; > (require "mcp-scp-tcp-proxy.rkt")
-;; > (connect "localhost" 8082)
+(serve DEFAULT-TCP-PORT)
