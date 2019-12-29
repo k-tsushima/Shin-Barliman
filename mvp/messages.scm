@@ -40,7 +40,7 @@ Sent to UI
 ;--------------------
 Received from SCP
 ;--------------------
-(hello)
+(hello) ;; ??? do we really need this message for the mvp?
 (num-processes ,number-of-synthesis-subprocesses ,scp-id)
 (synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
 ;; error messages sent to MCP (using error port):
@@ -74,7 +74,7 @@ Received from MCP
 ;--------------------
 Sent to MCP
 ;--------------------
-(hello)
+(hello) ;; ??? do we really need this message for the mvp?
 (num-processes ,number-of-synthesis-subprocesses ,scp-id)
 (synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
 ;; error messages sent to MCP (using error port):
