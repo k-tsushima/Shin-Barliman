@@ -1,6 +1,8 @@
 #lang racket/base
 
-; Proxy started by MCP for TCP communication with one or more SCPs
+;; Proxy started by MCP for TCP communication with one or more SCPs
+
+;; Adapted from https://docs.racket-lang.org/more/
 
 (require
   racket/tcp
