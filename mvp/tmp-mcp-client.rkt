@@ -53,7 +53,7 @@ efficient synthesis.
        (printf "mcp: sent goodbye message\n"))
       (else
        (match msg
-         (`(synthesize ((,definitions ,inputs ,outputs) ,synthesis-id))
+         (`(synthesize (,definitions ,inputs ,outputs))
           (write `(synthesizing) out)
           (flush-output out)
           (printf "mcp: sent synthesizing message\n")
