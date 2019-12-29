@@ -35,7 +35,9 @@ efficient synthesis.
 (define SCP-DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
 
 
-;; start Racket subprocesses for GUI TCP proxy and for SCP TCP proxy
+;; start 'mcp-gui-tcp-proxy.rkt' Racket subprocess for GUI TCP proxy
+
+;; start 'mcp-scp-tcp-proxy.rkt' Racket subprocess for SCP TCP proxy
 
 ;; start 'synthesis-task-compiler.scm' Scheme subprocess for
 ;; generating code to be sent to SCP for synthesis

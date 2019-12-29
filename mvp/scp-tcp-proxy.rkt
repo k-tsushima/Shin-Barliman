@@ -84,4 +84,4 @@
 (connect DEFAULT-TCP-IP-ADDRESS DEFAULT-TCP-PORT)
 
 ;; > (require "scp-tcp-proxy.rkt")
-;; > (connect "localhost" 8080)
+;; > (connect "localhost" 8082)
