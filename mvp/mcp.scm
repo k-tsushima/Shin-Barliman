@@ -37,6 +37,6 @@ efficient synthesis.
 
 ;; start Racket subprocesses for GUI TCP proxy and for SCP TCP proxy
 
-;; start Scheme subprocess for generating code to be synthesized
+;; start 'synthesis-task-compiler.scm' Scheme subprocess for generating code to be synthesized
 
 ;; event loop: check GUI proxy for messages, then check SCP proxy for messages
