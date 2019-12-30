@@ -28,9 +28,11 @@
 ;; the MVP currently only supports 1 UI connection at a time
 (define MAX-CONNECTIONS 1)
 
+(define PROGRAM-NAME "mcp-ui-tcp-proxy")
+
 #| begin logging infrastructure definitions (how to abstract this?) |#
 (define ENABLE-LOGGING (config-ref 'enable-proxy-logging))
-(define LOG-FILE-NAME "mcp-ui-tcp-proxy.log")
+(define LOG-FILE-NAME (format "~a.log" PROGRAM-NAME))
 (define LOG-FILE-OUTPUT-PORT-BOX (box #f))
 
 ;; semaphore code, to ensure logging is atomic, is adapted from
@@ -52,7 +54,7 @@
 #| end logging infrastructure definitions |#
 
 
-(logf "started mcp-ui-tcp-proxy\n")
+(logf "started ~a" PROGRAM-NAME)
 
 (define (serve port-no)
   (logf "serve called\n")
@@ -64,16 +66,16 @@
 
 (define (accept-and-handle listener)
   (define-values (in out) (tcp-accept listener))
-  (logf "mcp-ui-tcp-proxy accepted tcp connection\n")
+  (logf "~a accepted tcp connection\n" PROGRAM-NAME)
   (handle in out)
-  (logf "mcp-ui-tcp-proxy closing tcp connection\n")
+  (logf "~a closing tcp connection\n" PROGRAM-NAME)
   (close-input-port in)
   (close-output-port out))
 
 (define (forward-from-mcp-to-ui out)
   (lambda ()
     (let loop ((msg (read)))
-      (logf "mcp-ui-tcp-proxy received message from mcp ~s\n" msg)
+      (logf "~a received message from mcp ~s\n" PROGRAM-NAME msg)
       (cond
         ((eof-object? msg)
          (logf "read eof from mcp--exiting forward-from-mcp-to-ui\n"))
@@ -81,12 +83,12 @@
          ;; forward message to UI
          (write msg out)
          (flush-output out)
-         (logf "mcp-ui-tcp-proxy forwarded message to ui ~s\n" msg)
+         (logf "~a forwarded message to ui ~s\n" PROGRAM-NAME msg)
          (loop (read)))))))
 
 (define (forward-from-ui-to-mcp in)
   (let loop ((msg (read in)))
-    (logf "mcp-ui-tcp-proxy received message from ui ~s\n" msg)
+    (logf "~a received message from ui ~s\n" PROGRAM-NAME msg)
     (cond
       ((eof-object? msg)
        (logf "read eof from ui--exiting forward-from-ui-to-mcp\n"))
@@ -94,11 +96,11 @@
        ;; forward message to MCP
        (write msg)
        (flush-output (current-output-port))
-       (logf "mcp-ui-tcp-proxy forwarded message to mcp ~s\n" msg)
+       (logf "~a forwarded message to mcp ~s\n" PROGRAM-NAME msg)
        (loop (read in))))))
 
 (define (handle in out)
-  (logf "handle called for mcp-ui-tcp-proxy\n")
+  (logf "handle called for ~a\n" PROGRAM-NAME)
   (logf "starting mcp-to-ui-thread\n")
   (define mcp-to-ui-thread (thread (forward-from-mcp-to-ui out)))
   (logf "mcp-to-ui-thread started\n")

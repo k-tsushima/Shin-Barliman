@@ -22,10 +22,11 @@
 
 (define MAX-CONNECTIONS (config-ref 'max-simultaneous-mcp/scp-connections))
 
+(define PROGRAM-NAME "mcp-scp-tcp-proxy")
 
 #| begin logging infrastructure definitions (how to abstract this?) |#
 (define ENABLE-LOGGING (config-ref 'enable-proxy-logging))
-(define LOG-FILE-NAME "mcp-scp-tcp-proxy.log")
+(define LOG-FILE-NAME (format "~a.log" PROGRAM-NAME))
 (define LOG-FILE-OUTPUT-PORT-BOX (box #f))
 
 ;; semaphore code, to ensure logging is atomic, is adapted from
@@ -47,10 +48,34 @@
 #| end logging infrastructure definitions |#
 
 
-(logf "started mcp-scp-tcp-proxy\n")
+(logf "started ~a" PROGRAM-NAME)
 
+(define (serve port-no)
+  (logf "serve called\n")
+  (define listener (tcp-listen port-no 5 #t))
+  (define (loop)
+    (accept-and-handle listener)
+      (loop))
+  (define t (thread loop))
+  (lambda ()
+    (kill-thread t)
+    (tcp-close listener)))
 
+(define (accept-and-handle listener)
+  (define-values (in out) (tcp-accept listener))
+  (thread
+   (lambda ()
+     (logf "~a accepted tcp connection\n" PROGRAM-NAME)
+     ;; (sleep (random 10)) ; try uncommenting this
+     (handle in out)
+     (logf "~a closing tcp connection\n" PROGRAM-NAME)
+     (close-input-port in)
+     (close-output-port out))))
 
-;; TODO add code here
+(define (handle in out)
+  (logf "handle called for ~a\n" PROGRAM-NAME)
+  ;; TODO
+  )
+
 
 (serve DEFAULT-TCP-PORT)
