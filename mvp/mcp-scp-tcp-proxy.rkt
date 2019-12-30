@@ -34,7 +34,7 @@
 
 (define (atomic-write/flush val)
   (call-with-semaphore
-    stdin-semaphore
+    stdout-semaphore
     (lambda ()
       (write val)
       (flush-output (current-output-port)))))
