@@ -22,10 +22,10 @@
 
 (define MAX-CONNECTIONS (config-ref 'max-simultaneous-mcp/scp-connections))
 
+
+#| begin logging infrastructure definitions (how to abstract this?) |#
 (define ENABLE-LOGGING (config-ref 'enable-proxy-logging))
-
 (define LOG-FILE-NAME "mcp-scp-tcp-proxy.log")
-
 (define LOG-FILE-OUTPUT-PORT-BOX (box #f))
 
 ;; semaphore code, to ensure logging is atomic, is adapted from
@@ -44,6 +44,8 @@
          (set-box! LOG-FILE-OUTPUT-PORT-BOX output-port))
        (apply fprintf (unbox LOG-FILE-OUTPUT-PORT-BOX) format-str args)
        (flush-output (unbox LOG-FILE-OUTPUT-PORT-BOX))))))
+#| end logging infrastructure definitions |#
+
 
 (logf "started mcp-scp-tcp-proxy\n")
 
