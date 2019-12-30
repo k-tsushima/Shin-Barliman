@@ -20,8 +20,6 @@
 
 (define DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
 
-
-
 (define MAX-CONNECTIONS (config-ref 'max-simultaneous-mcp/scp-connections))
 
 (define ENABLE-LOGGING (config-ref 'enable-proxy-logging))
