@@ -37,12 +37,12 @@
 
 ;; semaphore code, to ensure logging is atomic, is adapted from
 ;; https://docs.racket-lang.org/guide/concurrency.html?q=semaphore#%28part._.Semaphores%29
-(define output-semaphore (make-semaphore 1))
+(define log-output-semaphore (make-semaphore 1))
 
 (define (logf format-str . args)
   (when ENABLE-LOGGING
     (call-with-semaphore
-     output-semaphore
+     log-output-semaphore
      (lambda ()
        (unless (unbox LOG-FILE-OUTPUT-PORT-BOX)
          (define output-port (open-output-file LOG-FILE-NAME
