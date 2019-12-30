@@ -10,6 +10,7 @@
  ;; SCP-to-MCP connection
  (scp-tcp-ip-address . "localhost")
  (scp-tcp-port . 8082)
+ (max-simultaneous-mcp/scp-connections . 5)
  ;;
  (enable-proxy-logging . #f)
  ;;
