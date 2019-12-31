@@ -13,6 +13,7 @@
  (max-simultaneous-mcp/scp-connections . 5)
  ;;
  (enable-proxy-logging . #f)
+ (enable-synthesis-subprocess-logging . #f)
  ;;
  (default-ui-language . "English")
 

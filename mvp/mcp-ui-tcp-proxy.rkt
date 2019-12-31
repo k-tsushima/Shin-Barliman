@@ -54,7 +54,7 @@
 #| end logging infrastructure definitions |#
 
 
-(logf "started ~a" PROGRAM-NAME)
+(logf "started ~a\n" PROGRAM-NAME)
 
 (define (serve port-no)
   (logf "serve called\n")
