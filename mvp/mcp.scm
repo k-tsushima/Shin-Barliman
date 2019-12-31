@@ -90,13 +90,24 @@ efficient synthesis.
   (define in-port (unbox *ui-in-port-box*))
   (when (input-port-ready? in-port)
     (let ((msg (read in-port)))
-      (printf "read message from ui: ~s\n" msg)))
+      (unless (eof-object? msg)
+        (printf "read message from ui: ~s\n" msg))))
   (void))
 
 (define (handle-scp-messages)
+  (define in-port (unbox *scp-in-port-box*))
+  (when (input-port-ready? in-port)
+    (let ((msg (read in-port)))
+      (unless (eof-object? msg)
+        (printf "read message from scp: ~s\n" msg))))
   (void))
 
 (define (handle-synthesis-task-compiler-subprocess-messages)
+  (define in-port (unbox *synthesis-task-compiler-in-port-box*))
+  (when (input-port-ready? in-port)
+    (let ((msg (read in-port)))
+      (unless (eof-object? msg)
+        (printf "read message from synthesis-task-compiler: ~s\n" msg))))  
   (void))
 
 ;; event loop: check GUI proxy for messages, then check SCP proxy for
