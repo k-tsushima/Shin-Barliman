@@ -21,6 +21,7 @@
 (define (simulate-ui address port)
   (define-values (in out) (tcp-connect address port))
   ;;
+  (define synthesis-id 0)
   (define definitions '((define append
                           (lambda (l s)
                             (if (null? l)
@@ -34,7 +35,7 @@
                     (,g1 ,g2)
                     (,g3 ,g4)
                     (,g5 ,g6 ,g7 ,g8)))
-  (define synthesize-msg `(synthesize (,definitions ,inputs ,outputs)))
+  (define synthesize-msg `(synthesize ,synthesis-id (,definitions ,inputs ,outputs)))
   (printf "fake ui writing synthesize message ~s\n" synthesize-msg)
   (write synthesize-msg out)
   (flush-output out)
@@ -50,7 +51,7 @@
   (printf "fake ui received message ~s\n" msg2)
 
   (match msg2
-    [`(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+    [`(synthesis-finished ,synthesis-id ,val ,statistics)
      (printf "synthesis finished!\n")]
     [else (printf "*** fake ui received unexpected message ~s--expected (synthesis-finished ...)\n" msg2)])
   

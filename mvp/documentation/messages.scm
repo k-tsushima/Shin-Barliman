@@ -12,12 +12,13 @@ UI
 Received from MCP
 ;--------------------
 (synthesizing)
+(synthesis-finished ,synthesis-id ,val ,statistics)
 (stopped)
 
 ;--------------------
 Sent to MCP
 ;--------------------
-(synthesize (,definitions ,inputs ,outputs))
+(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
 (stop)
 
 
@@ -28,13 +29,14 @@ MCP
 ;--------------------
 Received from UI
 ;--------------------
-(synthesize (,definitions ,inputs ,outputs))
+(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
 (stop)
 
 ;--------------------
 Sent to UI
 ;--------------------
 (synthesizing)
+(synthesis-finished ,synthesis-id ,val ,statistics)
 (stopped)
 
 ;--------------------
