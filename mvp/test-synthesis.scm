@@ -1,3 +1,5 @@
+;; Load this file in Chez Scheme to test 'synthesis.scm' by itself.
+
 (define (print-error-messages err-port)
   (let loop ()
     (when (input-port-ready? err-port)
