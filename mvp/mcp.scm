@@ -99,6 +99,9 @@ efficient synthesis.
          (pmatch msg
            [(stop)
             ;;
+            (write `(stop-all-synthesis) (unbox *scp-out-port-box*))
+            (flush-output-port (unbox *scp-out-port-box*))            
+            ;;
             (write `(stopped) out-port)
             (flush-output-port out-port)
             ;;
