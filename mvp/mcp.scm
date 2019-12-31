@@ -80,7 +80,7 @@ efficient synthesis.
                 (open-process-ports start-synthesis-task-compiler-subprocess-command
                                     (buffer-mode block)
                                     (make-transcoder (utf-8-codec)))])
-    (printf "started synthesis task compiler subprocesses ~s with process id ~s\n" i process-id)
+    (printf "started synthesis task compiler subprocess with process id ~s\n" process-id)
     (set-box! *synthesis-task-compiler-out-port-box* to-stdin)
     (set-box! *synthesis-task-compiler-in-port-box* from-stdout)
     (set-box! *synthesis-task-compiler-err-port-box* from-stderr)

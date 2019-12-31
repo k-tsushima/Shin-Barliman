@@ -19,7 +19,9 @@
 (define DEFAULT-TCP-PORT (config-ref 'ui-tcp-port))
 
 (define (simulate-ui address port)
+  (printf "fake ui connecting to mcp at ~s:~s...\n" address port)
   (define-values (in out) (tcp-connect address port))
+  (printf "fake ui connected to mcp at ~s:~s\n" address port)
   ;;
   (define synthesis-id 0)
   (define definitions '((define append
