@@ -14,6 +14,7 @@
  ;;
  (enable-proxy-logging . #f)
  (enable-synthesis-subprocess-logging . #f)
+ (enable-synthesis-task-compiler-logging . #f)
  ;;
  (default-ui-language . "English")
 
