@@ -117,16 +117,52 @@ efficient synthesis.
   (define in-port (unbox *scp-in-port-box*))
   (when (input-port-ready? in-port)
     (let ((msg (read in-port)))
-      (unless (eof-object? msg)
-        (printf "read message from scp: ~s\n" msg))))
+      (cond
+        ((eof-object? msg)
+         (void))
+        (else
+         (printf "read message from scp: ~s\n" msg)
+         (pmatch msg
+           [(stop)
+            ;;
+            (write `(stopped) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
+            ;;
+            (write `(synthesizing) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [,else
+            (printf "** unknown message type from scp: ~s\n" msg)])))))
   (void))
 
 (define (handle-synthesis-task-compiler-subprocess-messages)
   (define in-port (unbox *synthesis-task-compiler-in-port-box*))
   (when (input-port-ready? in-port)
     (let ((msg (read in-port)))
-      (unless (eof-object? msg)
-        (printf "read message from synthesis-task-compiler: ~s\n" msg))))  
+      (cond
+        ((eof-object? msg)
+         (void))
+        (else
+         (printf "read message from synthesis-task-compiler: ~s\n" msg)
+         (pmatch msg
+           [(stop)
+            ;;
+            (write `(stopped) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
+            ;;
+            (write `(synthesizing) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [,else
+            (printf "** unknown message type from synthesis-task-compiler: ~s\n" msg)])))))  
   (void))
 
 ;; event loop: check GUI proxy for messages, then check SCP proxy for
