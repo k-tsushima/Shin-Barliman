@@ -123,18 +123,7 @@ efficient synthesis.
         (else
          (printf "read message from scp: ~s\n" msg)
          (pmatch msg
-           [(stop)
-            ;;
-            (write `(stopped) out-port)
-            (flush-output-port out-port)
-            ;;
-            ]
-           [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
-            ;;
-            (write `(synthesizing) out-port)
-            (flush-output-port out-port)
-            ;;
-            ]
+           ;;
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)])))))
   (void))
@@ -149,18 +138,7 @@ efficient synthesis.
         (else
          (printf "read message from synthesis-task-compiler: ~s\n" msg)
          (pmatch msg
-           [(stop)
-            ;;
-            (write `(stopped) out-port)
-            (flush-output-port out-port)
-            ;;
-            ]
-           [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
-            ;;
-            (write `(synthesizing) out-port)
-            (flush-output-port out-port)
-            ;;
-            ]
+           ;;
            [,else
             (printf "** unknown message type from synthesis-task-compiler: ~s\n" msg)])))))  
   (void))
