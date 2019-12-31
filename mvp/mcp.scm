@@ -88,10 +88,29 @@ efficient synthesis.
 
 (define (handle-ui-messages)
   (define in-port (unbox *ui-in-port-box*))
+  (define out-port (unbox *ui-out-port-box*))
   (when (input-port-ready? in-port)
     (let ((msg (read in-port)))
-      (unless (eof-object? msg)
-        (printf "read message from ui: ~s\n" msg))))
+      (cond
+        ((eof-object? msg)
+         (void))
+        (else
+         (printf "read message from ui: ~s\n" msg)
+         (pmatch msg
+           [(stop)
+            ;;
+            (write `(stopped) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
+            ;;
+            (write `(synthesizing) out-port)
+            (flush-output-port out-port)
+            ;;
+            ]
+           [,else
+            (printf "** unknown message type from ui: ~s\n" msg)])))))
   (void))
 
 (define (handle-scp-messages)
