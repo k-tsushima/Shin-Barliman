@@ -87,6 +87,10 @@ efficient synthesis.
     (set-box! *synthesis-task-compiler-pid-box* process-id)))
 
 (define (handle-ui-messages)
+  (define in-port (unbox *ui-in-port-box*))
+  (when (input-port-ready? in-port)
+    (let ((msg (read in-port)))
+      (printf "read message from ui: ~s\n" msg)))
   (void))
 
 (define (handle-scp-messages)
