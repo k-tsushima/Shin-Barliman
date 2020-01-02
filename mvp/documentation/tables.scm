@@ -10,15 +10,15 @@ synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
 pending-synthesis-tasks
 ;; pending
-(synthesis-task-id (definitions inputs outputs))
+(,synthesis-task-id (,definitions ,inputs ,outputs))
 
 running-synthesis-tasks
 ;; running
-(synthesis-task-id scp-id (definitions inputs outputs))
+(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
 
 finished-synthesis-tasks
 ;; finished
-(synthesis-task-id scp-id (definitions inputs outputs) results statistics)
+(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 
 
 #|
