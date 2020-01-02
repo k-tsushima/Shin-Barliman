@@ -126,6 +126,15 @@ efficient synthesis.
         (else
          (printf "read message from scp: ~s\n" msg)
          (pmatch msg
+           [(hello)
+            ;;
+            (void)]
+           [(num-processes ,number-of-synthesis-subprocesses ,scp-id)
+            ;;
+            (void)]
+           [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+            ;;
+            (void)]
            ;;
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)])))))
