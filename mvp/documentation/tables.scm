@@ -32,6 +32,8 @@ finished-synthesis-tasks
 
 
 ;; This table is in mcp-scp-tcp-proxy.rkt
+;; Table is used to route messages from MCP to the correct SCP.
+;; Table update/reading protected by scp-connections-semaphore
 scp-connections
 (scp-id input-tcp-port output-tcp-port)
 
