@@ -4,9 +4,19 @@
 MCP
 ;===================
 
-*scp-id* ;; integer counter in mcp-scp-tcp-proxy, protected by scp-id-semaphore
+*scp-id* ;; integer counter in mcp-scp-tcp-proxy, protected by `scp-id-semaphore`
 
-synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
+
+SCP table:
+
+(,scp-id
+ ,num-processors
+ ;; list of running synthesis tasks (initially empty), kept in synch
+ ;; with `running-synthesis-tasks` table
+ (,synthesis-task-id ...))
+
+
+Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
 pending-synthesis-tasks
 ;; pending
@@ -23,7 +33,8 @@ finished-synthesis-tasks
 
 #|
 ;;; Due to the way the Racket proxies work (one thread per
-;;; connection), these tables probably are not needed:
+;;; connection), tables containing the input/output ports probably are
+not needed:
 
 ui-connections-table
 (ui-id input-tcp-port output-tcp-port)
