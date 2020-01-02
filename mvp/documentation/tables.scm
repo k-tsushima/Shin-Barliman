@@ -23,7 +23,7 @@ finished-synthesis-tasks
 
 #|
 ;;; Due to the way the Racket proxies work (one thread per
-;;; connection), I doubt these tables are actually needed:
+;;; connection), these tables probably are not needed:
 
 ui-connections-table
 (ui-id input-tcp-port output-tcp-port)
