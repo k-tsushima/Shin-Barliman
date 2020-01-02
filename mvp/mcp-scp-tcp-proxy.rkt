@@ -101,11 +101,18 @@
     (logf "incorrect handshake message!  expected (hello), received ~s\n" hello-msg))
   (define scp-id #f)
   (call-with-semaphore
-    scp-id-semaphore    
+    scp-id-semaphore
     (lambda ()
       (set! scp-id *scp-id*)
       (set! *scp-id* (add1 *scp-id*))))
   (logf "assigned scp-id ~s for newly connected SCP\n" scp-id)
+  (call-with-semaphore
+    scp-connections-semaphore
+    (lambda ()
+      (set! *scp-connections*
+            (cons `(,scp-id ,in ,out)
+                  *scp-connections*))
+      (logf "Updated *scp-connections* table: ~s" *scp-connections*)))
   (write `(scp-id ,scp-id) out)
   (flush-output out)
   (logf "mcp-to-scp handshake established\n"))
