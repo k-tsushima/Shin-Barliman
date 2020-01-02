@@ -152,8 +152,18 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            ;; `(hello) message is received, and `(scp-id ,scp-id)
            ;; message is sent, in mcp-scp-tcp-proxy.
            [(num-processes ,number-of-synthesis-subprocesses ,scp-id)
-            ;;
-            (void)]
+            ;; Add or update SCP/num-subprocesses info in the *scp-info* table
+            (let ((pr (assoc scp-id *scp-info*)))
+              (pmatch pr
+                [(,scp-id ,old-num-processors ,synthesis-task-id*)
+                 (set! *scp-info*
+                       (cons `(,scp-id ,number-of-synthesis-subprocesses ,synthesis-task-id*)
+                             (remove pr *scp-info*)))]
+                [#f
+                 (set! *scp-info*
+                       (cons `(,scp-id ,number-of-synthesis-subprocesses ())
+                             *scp-info*))]))
+            (printf "updated *scp-info* table: ~s\n" *scp-info*)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
             ;;
             (void)]
