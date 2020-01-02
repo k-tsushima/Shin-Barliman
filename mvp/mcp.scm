@@ -100,7 +100,7 @@ efficient synthesis.
            [(stop)
             ;;
             (write `(stop-all-synthesis) (unbox *scp-out-port-box*))
-            (flush-output-port (unbox *scp-out-port-box*))            
+            (flush-output-port (unbox *scp-out-port-box*))
             ;;
             (write `(stopped) out-port)
             (flush-output-port out-port)
@@ -126,9 +126,8 @@ efficient synthesis.
         (else
          (printf "read message from scp: ~s\n" msg)
          (pmatch msg
-           [(hello)
-            ;;
-            (void)]
+           ;; `(hello) message is received, and `(scp-id ,scp-id)
+           ;; message is sent, in mcp-scp-tcp-proxy.
            [(num-processes ,number-of-synthesis-subprocesses ,scp-id)
             ;;
             (void)]

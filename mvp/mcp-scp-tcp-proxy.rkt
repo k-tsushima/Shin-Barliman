@@ -24,6 +24,8 @@
 
 (define PROGRAM-NAME "mcp-scp-tcp-proxy")
 
+(define *scp-id* 0)
+(define scp-id-semaphore (make-semaphore 1))
 
 #| begin infrastructure for ensuring reads and writes from/to stdin/stdout are atomic |#
 (define stdin-semaphore (make-semaphore 1))
@@ -85,6 +87,23 @@
      (close-input-port in)
      (close-output-port out))))
 
+(define (establish-mcp-to-scp-handshake in out)
+  (logf "establishing mcp-to-scp handshake...\n")
+  (define hello-msg (read in))
+  (when (or (eof-object? hello-msg)
+            (not (equal? `(hello) hello-msg)))
+    (logf "incorrect handshake message!  expected (hello), received ~s\n" hello-msg))
+  (define scp-id #f)
+  (call-with-semaphore
+    scp-id-semaphore    
+    (lambda ()
+      (set! scp-id *scp-id*)
+      (set! *scp-id* (add1 *scp-id*))))
+  (logf "assigned scp-id ~s for newly connected SCP\n" scp-id)
+  (write `(scp-id ,scp-id) out)
+  (flush-output out)
+  (logf "mcp-to-scp handshake established\n"))
+
 (define (forward-from-mcp-to-scp out)
   (lambda ()
     (let loop ((msg (atomic-read)))
@@ -113,6 +132,9 @@
 
 (define (handle in out)
   (logf "handle called for ~a\n" PROGRAM-NAME)
+  (logf "establishing handshake...\n")
+  (establish-mcp-to-scp-handshake in out)
+  (logf "handshake established\n")
   (logf "starting mcp-to-ui-thread\n")
   (define mcp-to-ui-thread (thread (forward-from-mcp-to-ui out)))
   (logf "mcp-to-ui-thread started\n")
