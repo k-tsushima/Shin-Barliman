@@ -149,8 +149,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
         (else
          (printf "read message from scp: ~s\n" msg)
          (pmatch msg
-           ;; `(hello) message is received, and `(scp-id ,scp-id)
-           ;; message is sent, in mcp-scp-tcp-proxy.
+           #|
+           The `(hello) message is received, and the `(scp-id ,scp-id)
+           message is sent, in mcp-scp-tcp-proxy.
+           |#
            [(num-processes ,number-of-synthesis-subprocesses ,scp-id)
             ;; Add or update SCP/num-subprocesses info in the *scp-info* table
             (let ((pr (assoc scp-id *scp-info*)))
