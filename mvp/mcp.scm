@@ -125,6 +125,15 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             (write `(stop-all-synthesis) (unbox *scp-out-port-box*))
             (flush-output-port (unbox *scp-out-port-box*))
             ;;
+            (set! *scp-info* (map (lambda (info)
+                                    (pmatch info
+                                      [(,scp-id ,num-processors ,synthesis-task-id*)
+                                       `(,scp-id ,num-processors ())]))
+                                  *scp-info*))
+            ;;
+            (set! *pending-synthesis-tasks* '())
+            (set! *running-synthesis-tasks* '())
+            ;;
             (write `(stopped) out-port)
             (flush-output-port out-port)
             ;;
