@@ -27,6 +27,12 @@
 (define *scp-id* 0)
 (define scp-id-semaphore (make-semaphore 1))
 
+;; Table used to route messages from MCP to the correct SCP.
+;; (,scp-id ,input-tcp-port ,output-tcp-port)
+(define *scp-connections* '())
+(define scp-connections-semaphore (make-semaphore 1))
+
+
 #| begin infrastructure for ensuring reads and writes from/to stdin/stdout are atomic |#
 (define stdin-semaphore (make-semaphore 1))
 (define stdout-semaphore (make-semaphore 1))
