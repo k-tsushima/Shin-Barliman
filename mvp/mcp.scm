@@ -167,9 +167,22 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                              *scp-info*))]))
             (printf "updated *scp-info* table: ~s\n" *scp-info*)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
-            ;;
-            (void)]
-           ;;
+            (let ((pr (assoc scp-id *scp-info*)))
+              (pmatch pr
+                [(,scp-id ,num-processors ,synthesis-task-id*)
+                 (set! *scp-info*
+                       (cons `(,scp-id ,num-processors ,(remove synthesis-id synthesis-task-id*))
+                             (remove pr *scp-info*)))
+                 (printf "updated *scp-info* table: ~s\n" *scp-info*)]))
+            (let ((pr (assoc synthesis-id *running-synthesis-tasks*)))
+              (pmatch pr
+                [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                 (set! *finished-synthesis-tasks*
+                       (cons `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs) ,val ,statistics)
+                             *finished-synthesis-tasks*))
+                 (printf "updated *finished-synthesis-tasks* table: ~s\n" *finished-synthesis-tasks*)
+                 (set! *running-synthesis-tasks* (remove pr *running-synthesis-tasks*))
+                 (printf "updated *running-synthesis-tasks* table: ~s\n" *running-synthesis-tasks*)]))]
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)])))))
   (void))
