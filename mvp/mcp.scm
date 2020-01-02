@@ -42,6 +42,29 @@ efficient synthesis.
 (define *synthesis-task-compiler-err-port-box* (box #f))
 (define *synthesis-task-compiler-pid-box* (box #f))
 
+#|
+;; SCP info format:
+
+(,scp-id
+ ,num-processors
+ ;; list of running synthesis tasks (initially empty), kept in synch
+ ;; with `running-synthesis-tasks` table
+ (,synthesis-task-id ...))
+|#
+(define *scp-info* '())
+
+
+#|
+Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
+|#
+;; (,synthesis-task-id (,definitions ,inputs ,outputs))
+(define *pending-synthesis-tasks* '())
+
+;; (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
+(define *running-synthesis-tasks* '())
+
+;; (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
+(define *finished-synthesis-tasks* '())
 
 
 ;; start 'mcp-ui-tcp-proxy.rkt' Racket subprocess for UI TCP proxy
