@@ -31,17 +31,10 @@ finished-synthesis-tasks
 (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 
 
-#|
-;;; Due to the way the Racket proxies work (one thread per
-;;; connection), tables containing the input/output ports probably are
-not needed:
-
-ui-connections-table
-(ui-id input-tcp-port output-tcp-port)
-
+;; This table is in mcp-scp-tcp-proxy.rkt
 scp-connections-table
-(scp-id num-processors input-tcp-port output-tcp-port)
-|#
+(scp-id input-tcp-port output-tcp-port)
+
 
 
 ;===================
