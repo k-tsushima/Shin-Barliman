@@ -32,7 +32,7 @@ finished-synthesis-tasks
 
 
 ;; This table is in mcp-scp-tcp-proxy.rkt
-scp-connections-table
+scp-connections
 (scp-id input-tcp-port output-tcp-port)
 
 
