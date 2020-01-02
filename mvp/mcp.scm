@@ -182,7 +182,9 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                              *finished-synthesis-tasks*))
                  (printf "updated *finished-synthesis-tasks* table: ~s\n" *finished-synthesis-tasks*)
                  (set! *running-synthesis-tasks* (remove pr *running-synthesis-tasks*))
-                 (printf "updated *running-synthesis-tasks* table: ~s\n" *running-synthesis-tasks*)]))]
+                 (printf "updated *running-synthesis-tasks* table: ~s\n" *running-synthesis-tasks*)]))
+            (write `(synthesis-finished ,synthesis-id ,val ,statistics) (unbox *ui-out-port-box*))
+            (flush-output-port (unbox *ui-out-port-box*))]
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)]))))))
 
