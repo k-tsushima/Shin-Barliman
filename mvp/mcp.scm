@@ -184,8 +184,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                  (set! *running-synthesis-tasks* (remove pr *running-synthesis-tasks*))
                  (printf "updated *running-synthesis-tasks* table: ~s\n" *running-synthesis-tasks*)]))]
            [,else
-            (printf "** unknown message type from scp: ~s\n" msg)])))))
-  (void))
+            (printf "** unknown message type from scp: ~s\n" msg)]))))))
 
 (define (handle-synthesis-task-compiler-subprocess-messages)
   (define in-port (unbox *synthesis-task-compiler-in-port-box*))
