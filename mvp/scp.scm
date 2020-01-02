@@ -48,6 +48,8 @@ TODO add description
 ;; ((,definitions ,inputs ,outputs ,synthesis-id) ...)
 ;; This should be the same structure with the data that MCP sends.
 
+(define *stopping-list* '())
+
 ;; send number-of-synthesis-subprocesses to MCP
 (define (send-number-of-subprocess-to-mcp)
   (let ((out (unbox *mcp-out-port-box*)))
@@ -230,21 +232,29 @@ TODO add description
            (cond
              ((eof-object? msg)
               (printf "FIXME do nothing ~s\n" msg))
+             ((member process-id *stopping-list*)
+              (pmatch msg
+                [,anything
+                 (printf "SCP read message, but it is already sent to stop-synthesis.\n The ignored message is ~s\n" msg)]))
              (else
               (pmatch msg
                 [(synthesis-subprocess-ready)
                  ;; TODO?: what SCP should do after receiving this message?
                  ;; when subprocesses send this message?
-                 (update-status 'free process-id)
+                 ; The following update will change the state wrongly, if it receives some messages 
+                 ; (update-status 'free process-id)
                  ;; (let ((expr '(* 3 4)))
                  ;;   (write `(eval-expr ,expr) to-stdin)
                  ;;   (flush-output-port to-stdin))
+                 (void)
                  ]
                 [(stopped-synthesis)
                  (printf "SCP received stopped-synthesis message from ~s\n" process-id)
                  ;; TODO double check this logic, please!
                  ;; remove this process-id from *synthesis-subprocesses-box*
                  ;; (remove-subprocess-from-box process-id)
+                 (pmatch (partition (lambda (x) (equal? x process-id)) *stopping-list*)
+                   ((,process-ids . ,new-list) (set! *stopping-list* new-list))) 
                  (start-synthesis-with-free-subprocesses)
                  ]
                 [(synthesis-finished ,synthesis-id ,val ,statistics)
@@ -270,8 +280,10 @@ TODO add description
       [() (printf "stopped all synthesis subprocesses\n")]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
         . ,rest)
-       (write `(stop-synthesis) to-stdin)
-       (flush-output-port to-stdin)
+       (cond ((equal? status 'working)
+              (write `(stop-synthesis) to-stdin)
+              (flush-output-port to-stdin)
+              (set! *stopping-list* (cons process-id *stopping-list*))))
        (loop rest)])))
 
 ;; apply func to (each element of the lst) and
@@ -332,7 +344,8 @@ TODO add description
             (write `(stop-synthesis) out)
             (flush-output-port out)
             (printf "Sent stop to id ~s\n" subprocess-id)
-           ;; UPDATE: *synthesis-task-table*
+            ;; UPDATE: *synthesis-task-table*
+            (set! *stopping-list* (cons process-id *stopping-list*))
             (set! *synthesis-task-table* rest))
           ;; TODO?: shall we start another process?      
           ]))]))

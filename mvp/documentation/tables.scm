@@ -38,3 +38,6 @@ synthesis-task table ;; the running tasks
 
 task-queue ;; the next work to do
 ((,definitions ,inputs ,outputs ,synthesis-id) ...)
+
+stopping-list ;; the process-id of subprocesses which should be stopped
+(,process-id ...)
