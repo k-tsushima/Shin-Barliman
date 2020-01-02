@@ -216,6 +216,10 @@ TODO add description
            (cond
              ((eof-object? msg)
               (printf "FIXME do nothing ~s\n" msg))
+             ((member process-id *stopping-list*)
+              (pmatch msg
+                [,anything
+                 (printf "SCP read error message, but it is already sent to stop-synthesis.\n The ignored message is ~s\n" msg)]))
              (else
               (pmatch msg
                 [(unexpected-eof)
