@@ -110,10 +110,11 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     (set-box! *synthesis-task-compiler-pid-box* process-id)))
 
 (define (handle-ui-messages)
-  (define in-port (unbox *ui-in-port-box*))
-  (define out-port (unbox *ui-out-port-box*))
-  (when (input-port-ready? in-port)
-    (let ((msg (read in-port)))
+  (define ui-in-port (unbox *ui-in-port-box*))
+  (define ui-out-port (unbox *ui-out-port-box*))
+  (define scp-out-port (unbox *scp-out-port-box*))
+  (when (input-port-ready? ui-in-port)
+    (let ((msg (read ui-in-port)))
       (cond
         ((eof-object? msg)
          (void))
@@ -121,37 +122,81 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (printf "read message from ui: ~s\n" msg)
          (pmatch msg
            [(stop)
-            ;;
-            (write `(stop-all-synthesis) (unbox *scp-out-port-box*))
-            (flush-output-port (unbox *scp-out-port-box*))
-            ;;
+            (printf "writing stop-all-synthesis message\n")
+            (write `(stop-all-synthesis) scp-out-port)
+            (flush-output-port scp-out-port)
+            (printf "wrote stop-all-synthesis message\n")
+            (printf "removing all synthesis-task-ids from *scp-info* table\n")
             (set! *scp-info* (map (lambda (info)
                                     (pmatch info
                                       [(,scp-id ,num-processors ,synthesis-task-id*)
                                        `(,scp-id ,num-processors ())]))
                                   *scp-info*))
-            ;;
+            (printf "removed all synthesis-task-ids from *scp-info* table\n")
+            (printf "removing all tasks from *pending-synthesis-tasks* and *running-synthesis-tasks* tables\n")
             (set! *pending-synthesis-tasks* '())
             (set! *running-synthesis-tasks* '())
-            ;;
-            (write `(stopped) out-port)
-            (flush-output-port out-port)
-            ;;
-            ]
+            (printf "removed all tasks from *pending-synthesis-tasks* and *running-synthesis-tasks* tables\n")
+            (printf "writing stopped message to ui\n")
+            (write `(stopped) ui-out-port)
+            (flush-output-port ui-out-port)
+            (printf "wrote stopped message to ui\n")]
            [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
+            ;; TODO
             ;;
-            (write `(synthesizing) out-port)
-            (flush-output-port out-port)
+            ;; This is where the smarts go!
             ;;
-            ]
+            ;; Here is where the MCP generates multiple templates,
+            ;; determines which SCPs to send synthesis tasks to,
+            ;; updates the tables of running synthesis tasks, etc.
+            ;; Some of these tasks will require calling the
+            ;; synthesis-task-compiler, doing load-balancing, etc.  In
+            ;; general, handling a single 'synthesize' message from
+            ;; the UI might require creating/sending many 'synthesize'
+            ;; messages to multiple SCPs.
+            ;;
+            ;; To begin with, we will do the simplest thing possible,
+            ;; by sending a single synthesize message, with the
+            ;; orginal definitions, inputs, and outputs, to the first
+            ;; SCP in the table.  This will allow us to do simple
+            ;; end-to-end testing.
+            ;;
+            ;; The MCP actually constructs a special 'synthesize'
+            ;; message that is handled by the mcp-scp-tcp-proxy, which
+            ;; then strips out some of the info when forwarding the
+            ;; synthesize message to the SCP.
+            (pmatch *scp-info*
+              (()
+               (printf "no SCPs available!  Ignoring synthesize message\n"))
+              (((,scp-id ,num-processors ,synthesis-task-id*) . ,rest)
+
+               (printf "sending synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
+               (write `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
+               (flush-output-port scp-out-port)
+               (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
+               (printf "sending synthesizing message to ui\n")
+               (write `(synthesizing) ui-out-port)
+               (flush-output-port ui-out-port)
+               (printf "sent synthesizing message to ui\n")
+
+               (set! *scp-info*
+                     (cons (,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
+                           (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
+
+               (set! *running-synthesis-tasks*
+                     (cons `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                           *running-synthesis-tasks*))
+               
+               )
+              (,else (printf "unexpected *scp-info* table format: ~s\n" *scp-info*)))]
            [,else
-            (printf "** unknown message type from ui: ~s\n" msg)])))))
-  (void))
+            (printf "** unknown message type from ui: ~s\n" msg)]))))))
 
 (define (handle-scp-messages)
-  (define in-port (unbox *scp-in-port-box*))
-  (when (input-port-ready? in-port)
-    (let ((msg (read in-port)))
+  (define scp-in-port (unbox *scp-in-port-box*))
+  (define ui-out-port (unbox *ui-out-port-box*))
+  (when (input-port-ready? scp-in-port)
+    (let ((msg (read scp-in-port)))
       (cond
         ((eof-object? msg)
          (void))
@@ -192,8 +237,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                  (printf "updated *finished-synthesis-tasks* table: ~s\n" *finished-synthesis-tasks*)
                  (set! *running-synthesis-tasks* (remove pr *running-synthesis-tasks*))
                  (printf "updated *running-synthesis-tasks* table: ~s\n" *running-synthesis-tasks*)]))
-            (write `(synthesis-finished ,synthesis-id ,val ,statistics) (unbox *ui-out-port-box*))
-            (flush-output-port (unbox *ui-out-port-box*))]
+            (write `(synthesis-finished ,synthesis-id ,val ,statistics) ui-out-port)
+            (flush-output-port ui-out-port)]
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)]))))))
 

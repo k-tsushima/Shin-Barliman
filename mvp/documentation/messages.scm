@@ -42,7 +42,7 @@ Sent to UI
 ;--------------------
 Received from SCP
 ;--------------------
-(hello) ;; ??? do we really need this message for the mvp?
+(hello) ;; actually handled in mcp-scp-tcp-proxy, which sends the `(scp-id ,scp-id) message in response
 (num-processes ,number-of-synthesis-subprocesses ,scp-id)
 (synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
 ;; error messages sent to MCP (using error port):
@@ -52,10 +52,10 @@ Received from SCP
 ;--------------------
 Sent to SCP
 ;--------------------
-(scp-id ,scp-id) ;; scp-id is an integer
-(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
-(stop-all-synthesis)
-(stop-one-task ,synthesis-id)
+(scp-id ,scp-id) ;; scp-id is an integer    Message is actually sent by mcp-scp-tcp-proxy
+(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...)) ;; actually sent by mcp-scp-tcp-proxy
+(stop-all-synthesis) ;; Message is actually broadcast by mcp-scp-tcp-proxy
+(stop-one-task ,synthesis-id) ;; Currently unimplemented
 
 
 ;===================
