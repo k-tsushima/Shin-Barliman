@@ -37,6 +37,8 @@ TODO
 (provide
   launch-gui)
 
+(print-as-expression #f)
+
 ;; Loading will occur at first use if not explicitly forced like this.
 (load-config #t)
 
@@ -330,10 +332,33 @@ TODO
                 (loop (read in)))
                (`(synthesis-finished ,synthesis-id ,val ,statistics)
                 ;; TODO fix this up!
-                (for-each
-                  (lambda (e)
-                    (send result-text insert (format "~s" e)))
-                  (caar val))
+                ;;
+                ;; Pretty-print code
+                ;;
+                ;; Properly display side-conditions
+                ;;
+                ;; Code should be selectable with mouse
+                ;;
+                ;; Reset code when new synthesis task is started, or when synthesis is stopped
+                ;;
+                ;; Display statistics
+                ;;
+                ;; Once all that is working: stream answers
+                (send result-text select-all)
+                (send result-text clear)
+                (send result-text clear-undos)
+                ;;
+                (let ((first-answer (car val)))
+                  (let ((definitions (car first-answer))
+                        (side-conditions (cdr first-answer)))
+                    (for-each
+                      (lambda (e)
+                        (send result-text insert (pretty-format e)))
+                      definitions)
+                    (for-each
+                      (lambda (e)
+                        (send result-text insert (pretty-format e)))
+                      side-conditions)))
                 ;;
                 )
                (`(keep-going)
@@ -809,6 +834,7 @@ TODO
             synthesized-result-editor-canvas
             synthesized-result-status-message)))
     (send synthesized-result-text insert "")
+    (send synthesized-result-text auto-wrap #t)
     (send synthesized-result-editor-canvas set-editor synthesized-result-text)
 
 
