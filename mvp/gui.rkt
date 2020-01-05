@@ -244,6 +244,15 @@ TODO
     (list *test-6-value-exprs-box* (list VALUE 6))
     ))
 
+(define (user-editable-canvas? canvas)
+  (let loop ([b* *user-editable-canvases-boxes*])
+    (match b*
+      ['() #f]
+      [`((,b ,type) . ,rest)
+       (cond
+         ((eqv? b canvas) #t)
+         (else (loop rest)))])))
+
 (define (print-all-user-editable-canvases-boxes-values)
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
@@ -451,7 +460,7 @@ TODO
           
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('synthesized-result')
-          (when (send canvas is-enabled?)
+          (when (user-editable-canvas? canvas)
             (set-box! exprs-box exprs-in-list)            
             (when (list? exprs-in-list)
               (if (= (length exprs-in-list) 1)
@@ -711,7 +720,7 @@ TODO
                           
                           ;; send synthesis message to MCP
                           (if (all-user-canvas-boxes-have-legal-exprs?)
-                              (begin
+                              (begin                                
                                 (clear-all-text synthesized-result-text)
                                 (send-synthesize-message))
                               (error 'synthesize-button
@@ -827,7 +836,7 @@ TODO
            (parent left-bottom-panel)
            (label INITIAL-PLACEHOLDER-LABEL-STRING)
            (style '(hide-hscroll hide-vscroll))
-           (enabled #f)))
+           (enabled #t)))
     (define synthesized-result-text
       (new (make-smart-text%
             SYNTHESIZED-RESULT
