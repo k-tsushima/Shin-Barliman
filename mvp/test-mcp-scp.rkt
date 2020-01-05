@@ -33,24 +33,45 @@
   (printf "fake scp received message ~s\n" msg1)
   ;;
 
-  (define my-scp-id #f)
+  (define scp-id #f)
   
   (match msg1
-    [`(scp-id ,scp-id)
-     (printf "received scp-id ~s\n" scp-id)
-     (set! my-scp-id scp-id)]
+    [`(scp-id ,my-scp-id)
+     (set! scp-id my-scp-id)
+     (printf "received scp-id ~s\n" scp-id)]
     [else (printf "*** fake scp received unexpected message ~s--expected (scp-id ,scp-id)\n" msg1)])
+
+  (define number-of-synthesis-subprocesses 1)
+  (define num-processes-msg `(num-processes ,number-of-synthesis-subprocesses ,scp-id))
+  (printf "fake scp writing num-processes message ~s\n" num-processes-msg)
+  (write num-processes-msg out)
+  (flush-output out)
+  (printf "fake scp wrote num-processes message ~s\n" num-processes-msg)
+    
+  (define msg2 (read in))
+  (printf "fake scp received message ~s\n" msg2)
+
+  (define definitions #f)
+  (define inputs #f)
+  (define outputs #f)
+  (define synthesis-id #f)
   
-  ;; TODO respond to MCP messages, pretend to perform synthesis, and
-  ;; return a message with the synthesized program
-
-  ;; `(num-processes ,number-of-synthesis-subprocesses ,scp-id)
-
-  ;; `(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
+  (match msg2
+    [`(synthesize ((,my-definitions ,my-inputs ,my-outputs ,my-synthesis-id)))
+     (set! definitions my-definitions)
+     (set! inputs my-inputs)
+     (set! outputs my-outputs)
+     (set! synthesis-id my-synthesis-id)
+     (printf "fake scp received synthesize message with synthesis-id ~s\n" synthesis-id)]
+    [else (printf "*** fake scp received unexpected message ~s--expected synthesize msg\n" msg2)])
   
-  ;; `(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
-
-  ;; `(stop-all-synthesis)
+  (define val '((((define append (lambda (l s) (if (null? l) s (cons (car l) (append (cdr l) s)))))))))
+  (define statistics '(elapsed-time (seconds 0) (nanoseconds 127104000)))
+  (define synthesis-finished-msg `(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics))
+  (printf "fake scp writing synthesis-finished message ~s\n" synthesis-finished-msg)
+  (write synthesis-finished-msg out)
+  (flush-output out)
+  (printf "fake scp wrote synthesis-finished message ~s\n" synthesis-finished-msg)
   
   ;; cleanup
   (close-input-port in)

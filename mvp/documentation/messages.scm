@@ -11,7 +11,7 @@ UI
 ;--------------------
 Received from MCP
 ;--------------------
-(synthesizing)
+(synthesizing ,synthesis-id)
 (synthesis-finished ,synthesis-id ,val ,statistics)
 (stopped)
 
@@ -35,7 +35,7 @@ Received from UI
 ;--------------------
 Sent to UI
 ;--------------------
-(synthesizing)
+(synthesizing ,synthesis-id)
 (synthesis-finished ,synthesis-id ,val ,statistics)
 (stopped)
 

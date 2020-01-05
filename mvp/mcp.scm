@@ -175,7 +175,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                (flush-output-port scp-out-port)
                (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
                (printf "sending synthesizing message to ui\n")
-               (write `(synthesizing) ui-out-port)
+               (write `(synthesizing ,synthesis-id) ui-out-port)
                (flush-output-port ui-out-port)
                (printf "sent synthesizing message to ui\n")
 

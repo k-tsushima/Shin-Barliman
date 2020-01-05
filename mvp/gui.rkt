@@ -53,6 +53,9 @@ TODO
 (define GUI-VERSION-STRING
   (format "新-Barliman ~a.~a" MAJOR-VERSION-NUMBER MINOR-VERSION-NUMBER))
 
+(define *synthesis-id* 0)
+
+
 (printf "Starting ~a\n..." GUI-VERSION-STRING)
 
 ;;; Initial window size
@@ -280,8 +283,10 @@ TODO
       [`((,b ,type) . ,rest)
        (loop rest)])))
 
-(define (send-synthesize-message)  
+(define (send-synthesize-message)
   (when (all-user-canvas-boxes-have-legal-exprs?)
+    (define synthesis-id *synthesis-id*)
+    (set! *synthesis-id* (add1 *synthesis-id*))
     (define definitions
       (unbox *definitions-exprs-box*))
     (define inputs
@@ -289,7 +294,7 @@ TODO
     (define outputs
       (all-output-boxes-values))
     (define msg
-      `(synthesize (,definitions ,inputs ,outputs)))
+      `(synthesize ,synthesis-id (,definitions ,inputs ,outputs)))
     (send-message msg)))
 
 (define (send-stop-synthesis-message)
@@ -306,24 +311,36 @@ TODO
     (flush-output out)))
 
 (define wait-on-mcp-synthesis-results
-  (lambda ()
-    (printf "wait-on-mcp-synthesis-results starting up...\n")
-    (define in (unbox *input-port-from-server-box*))
-    (define out (unbox *output-port-to-server-box*))
-    (when (and in out)
-      (printf "wait-on-mcp-synthesis-results waiting for message...\n")
-      (let loop ((msg (read in)))
-        (printf "wait-on-mcp-synthesis-results received message ~s\n" msg)
-        (cond
-          ((eof-object? msg)
-           (void))
-          (else
-           (match msg
-             (`(keep-going)
-              (printf "wait-on-mcp-synthesis-results xoreceived keep-going from mcp!  Onward...\n")
-              (loop (read in)))
-             (else (error 'wait-on-mcp-synthesis-results
-                          (format "unknown message type: ~s" msg))))))))))
+  (lambda (result-text)
+    (lambda ()
+      (printf "wait-on-mcp-synthesis-results starting up...\n")
+      (define in (unbox *input-port-from-server-box*))
+      (define out (unbox *output-port-to-server-box*))
+      (when (and in out)
+        (printf "wait-on-mcp-synthesis-results waiting for message...\n")
+        (let loop ((msg (read in)))
+          (printf "wait-on-mcp-synthesis-results received message ~s\n" msg)
+          (cond
+            ((eof-object? msg)
+             (void))
+            (else
+             (match msg
+               (`(synthesizing ,synthesis-id)
+                ;; TODO is this message actually useful?  What should we do with this message?
+                (loop (read in)))
+               (`(synthesis-finished ,synthesis-id ,val ,statistics)
+                ;; TODO fix this up!
+                (for-each
+                  (lambda (e)
+                    (send result-text insert (format "~s" e)))
+                  (caar val))
+                ;;
+                )
+               (`(keep-going)
+                (printf "wait-on-mcp-synthesis-results received keep-going from mcp!  Onward...\n")
+                (loop (read in)))
+               (else (error 'wait-on-mcp-synthesis-results
+                            (format "unknown message type: ~s" msg)))))))))))
 
 (define smart-top-level-window%
  (class frame%
@@ -676,7 +693,8 @@ TODO
                                      "tried to send synthesis message with illegal exprs"))
                           
                           ;; start thread with loop waiting for MCP synthesis results/displaying synthesis results
-                          (set-box! *receive-mcp-messages-thread-box* (thread wait-on-mcp-synthesis-results)))
+                          (set-box! *receive-mcp-messages-thread-box*
+                                    (thread (wait-on-mcp-synthesis-results synthesized-result-text))))
                          ((equal? NOT-SYNTHESIZING new-synthesize-state)
                           (send-stop-synthesis-message)
 

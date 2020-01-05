@@ -46,8 +46,11 @@
   (define msg1 (read in))
   (printf "fake ui received message ~s\n" msg1)
   ;;
-  (unless (equal? '(synthesizing) msg1)
-    (printf "*** fake ui received unexpected message ~s--expected (synthesizing)\n" msg1))
+  (match msg1
+    [`(synthesizing ,syn-id)
+     (printf "fake ui received expected synthesizing message\n")]
+    [else (printf "*** fake ui received unexpected message ~s--expected (synthesis-finished ...)\n" msg1)])
+
   ;;
   (define msg2 (read in))
   (printf "fake ui received message ~s\n" msg2)
