@@ -17,7 +17,7 @@
 (print-as-expression #f)
 
 ;; Loading will occur at first use if not explicitly forced like this.
-(load-config #t)
+(load-config #f)
 
 (define DEFAULT-TCP-PORT (config-ref 'scp-tcp-port))
 
