@@ -340,13 +340,9 @@ TODO
                 ;; TODO is this message actually useful?  What should we do with this message?
                 (loop (read in)))
                (`(synthesis-finished ,synthesis-id ,val ,statistics)
-                ;; TODO fix this up!
+                ;; TODO
                 ;;
-                ;; Pretty-print code
-                ;;
-                ;; Properly display side-conditions
-                ;;
-                ;; Code should be selectable with mouse               
+                ;; Nicer pretty-printing of code and side-conditions
                 ;;
                 ;; Display statistics
                 ;;
@@ -358,10 +354,12 @@ TODO
                       (lambda (e)
                         (send result-text insert (pretty-format e)))
                       definitions)
-                    (for-each
-                      (lambda (e)
-                        (send result-text insert (pretty-format e)))
-                      side-conditions)))
+                    (when (not (null? side-conditions))
+                      (send result-text insert "\n\n\nSide conditions:\n")
+                      (for-each
+                        (lambda (e)
+                          (send result-text insert (pretty-format e)))
+                        side-conditions))))
                 ;;
                 )
                (`(keep-going)
