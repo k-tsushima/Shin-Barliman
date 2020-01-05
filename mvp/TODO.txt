@@ -1,3 +1,29 @@
+Overall/Project-wide
+====================
+
+Do we need separate notions of synthesis-id at the UI and MCP levels, to properly keep track of one synthesis problem from the GUI turning into multiple synthesis problems (involving different templates, for example)?
+
+Once the MVP is working, try to simplify!
+
+Document the working MVP, including the motivation/design decisions/rationale/alternatives.
+
+Check for and handle errors.
+
+Re-architect for security.
+
+Try to remove as many semaphores as possible from multi-threaded code.
+
+Abstract over boilerplate code.
+
+Remove mutation in code where it makes sense.
+
+Implement alternative UIs, including browser-based using WebSockets, CLI, traditional text-editor interface, Emacs mode, etc.
+
+UI experiment: give user feedback on answers being streamed by doing "demonic execution" (MDA's phrase) on multiple answers to find simple inputs that generate different outputs for the synthesized programs.  Show the user these examples, and ask the user which answer is correct (or whether none of the answers are correct, hopefully with a correct answer as well).  This idea came out of a synthesis discussion on 01/03/2020 between Michael D. Adams, Nada Amin, Michael Ballanyne, Will Byrd, David Moon, Cyrus Omar, and Greg Rosenblatt.
+
+
+
+
 ==
 UI
 ==
@@ -5,19 +31,32 @@ UI
 gui.rkt
 -------
 
+Fix code that displays the returned value from synthesis: pretty print, use the proper API calls, etc.  Reset the displayed synthesis result when starting a new synthesis problem.
+
+Display the statistics info.
+
+Stream results, and allow the user to select one of the generated results.
+
+Add the ability to test/interact with/try new tests with the proposed results.
+
 testing
 -------
+make sure all critical messages are handled properly by the UI and the MCP
 
+check all the states of stopping synthesis, disconnecting/reconnecting, starting a new syntrhesis problem, etc.
 
 ====
 MCP
 ====
+
+Update code to properly handle multiple synthesis tasks from one original UI synthesis request.
 
 mcp.scm
 -------
 
 synthesis-task-compiler.scm
 ---------------------------
+implement minimal template functionality
 
 mcp-scp-tcp-proxy.rkt
 ---------------------
@@ -27,6 +66,7 @@ mcp-ui-tcp-proxy.rkt
 
 testing
 -------
+test with multiple SCPs, and with SCPs connecting, disconnecting, and sometimes reconnecting
 
 
 ===
