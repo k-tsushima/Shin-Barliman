@@ -264,7 +264,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
   (handle-ui-messages)
   (handle-scp-messages)
   (handle-synthesis-task-compiler-subprocess-messages)
-  ;; sleep for 10 ms (10 million nanoseconds)
+  ;; Sleep for 10 ms (10 million nanoseconds) to avoid using 100% of
+  ;; the CPU time checking if a new message has arrived.
   (let ((millisecond (expt 10 6)))
     (sleep (make-time 'time-duration (* 10 millisecond) 0)))
   (loop))
