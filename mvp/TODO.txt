@@ -65,6 +65,8 @@ implement load-balancing, and properly send new synthesis tasks when an SCP fini
 
 make sure tables of synthesis tasks/SCP info are properly updated (this seems intricate to get right)
 
+Is there a better way to avoid burning up CPU time in the event processing loop, other than calling `sleep`?  At least in the Racket proxy code we can call blocking `read`.
+
 synthesis-task-compiler.scm
 ---------------------------
 implement minimal template functionality
