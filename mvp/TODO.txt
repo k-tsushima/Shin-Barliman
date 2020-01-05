@@ -11,13 +11,21 @@ Check for and handle errors.
 
 Re-architect for security.
 
+Be less naive about load balancing--not all cores/processes are equal
+
 Try to remove as many semaphores as possible from multi-threaded code.
 
 Abstract over boilerplate code.
 
 Remove mutation in code where it makes sense.
 
+Once MVP works, implement multi-level recursive SCP architecture, so we can run on a cluster or supercomputer of arbitrary size.
+
+Once MVP works, consider rearechitecting to allow for different search implementations, etc.
+
 Implement alternative UIs, including browser-based using WebSockets, CLI, traditional text-editor interface, Emacs mode, etc.
+
+Make the task compiler a compiler-compiler that takes a grammar, typing rules, operational sematics, and produces a compiler that takes a skeleton and examples/spec, and generates multiple optimized synthesis tasks.  See the 'whiteboard-december-11-2019' photos in 'documentation' for a rough sketch.
 
 UI experiment: give user feedback on answers being streamed by doing "demonic execution" (MDA's phrase) on multiple answers to find simple inputs that generate different outputs for the synthesized programs.  Show the user these examples, and ask the user which answer is correct (or whether none of the answers are correct, hopefully with a correct answer as well).  This idea came out of a synthesis discussion on 01/03/2020 between Michael D. Adams, Nada Amin, Michael Ballanyne, Will Byrd, David Moon, Cyrus Omar, and Greg Rosenblatt.
 
@@ -53,6 +61,7 @@ Update code to properly handle multiple synthesis tasks from one original UI syn
 
 mcp.scm
 -------
+implement load-balancing, and properly send new synthesis tasks when an SCP finishes a task
 
 synthesis-task-compiler.scm
 ---------------------------
@@ -67,6 +76,8 @@ mcp-ui-tcp-proxy.rkt
 testing
 -------
 test with multiple SCPs, and with SCPs connecting, disconnecting, and sometimes reconnecting
+
+test with multiple synthesis tasks produced by one UI synthesis request
 
 
 ===
