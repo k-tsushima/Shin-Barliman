@@ -33,8 +33,24 @@
   (printf "fake scp received message ~s\n" msg1)
   ;;
 
+  (define my-scp-id #f)
+  
+  (match msg1
+    [`(scp-id ,scp-id)
+     (printf "received scp-id ~s\n" scp-id)
+     (set! my-scp-id scp-id)]
+    [else (printf "*** fake scp received unexpected message ~s--expected (scp-id ,scp-id)\n" msg1)])
+  
   ;; TODO respond to MCP messages, pretend to perform synthesis, and
   ;; return a message with the synthesized program
+
+  ;; `(num-processes ,number-of-synthesis-subprocesses ,scp-id)
+
+  ;; `(synthesize ((,definitions ,inputs ,outputs ,synthesis-id) ...))
+  
+  ;; `(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+
+  ;; `(stop-all-synthesis)
   
   ;; cleanup
   (close-input-port in)
