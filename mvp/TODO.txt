@@ -63,6 +63,8 @@ mcp.scm
 -------
 implement load-balancing, and properly send new synthesis tasks when an SCP finishes a task
 
+make sure tables of synthesis tasks/SCP info are properly updated (this seems intricate to get right)
+
 synthesis-task-compiler.scm
 ---------------------------
 implement minimal template functionality
