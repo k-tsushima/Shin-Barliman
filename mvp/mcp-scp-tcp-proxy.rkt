@@ -5,6 +5,7 @@
 ;; Adapted from https://docs.racket-lang.org/more/
 
 (require
+ racket/match
   racket/tcp
   "common.rkt")
 
