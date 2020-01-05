@@ -412,4 +412,7 @@ TODO add description
 (let loop ()
   (check-for-mcp-messages)
   (check-for-synthesis-subprocess-messages)
+  ;; WEB -- see loop in mcp.scm to see how to sleep for a few
+  ;; milliseconds during each loop iteration, to avoid using 100% of
+  ;; the CPU time checking if a message has arrived.
   (loop))
