@@ -337,17 +337,11 @@ TODO
                 ;;
                 ;; Properly display side-conditions
                 ;;
-                ;; Code should be selectable with mouse
-                ;;
-                ;; Reset code when new synthesis task is started, or when synthesis is stopped
+                ;; Code should be selectable with mouse               
                 ;;
                 ;; Display statistics
                 ;;
                 ;; Once all that is working: stream answers
-                (send result-text select-all)
-                (send result-text clear)
-                (send result-text clear-undos)
-                ;;
                 (let ((first-answer (car val)))
                   (let ((definitions (car first-answer))
                         (side-conditions (cdr first-answer)))
@@ -501,6 +495,10 @@ TODO
      (printf "Hello\n"))
    (augment after-insert)))
 
+(define (clear-all-text text%)
+  (send text% select-all)
+  (send text% clear)
+  (send text% clear-undos))
 
 (define (launch-main-window)
   (let ((top-window (new smart-top-level-window%
@@ -713,7 +711,9 @@ TODO
                           
                           ;; send synthesis message to MCP
                           (if (all-user-canvas-boxes-have-legal-exprs?)
-                              (send-synthesize-message)
+                              (begin
+                                (clear-all-text synthesized-result-text)
+                                (send-synthesize-message))
                               (error 'synthesize-button
                                      "tried to send synthesis message with illegal exprs"))
                           
