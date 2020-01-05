@@ -39,7 +39,10 @@ UI
 gui.rkt
 -------
 
-Fix code that displays the returned value from synthesis: pretty print, use the proper API calls, etc.  Reset the displayed synthesis result when starting a new synthesis problem.
+GUI should clearly display when synthesis has completed, versus when
+synthesis is still running (and might stream additional answers)
+
+Improve pretty-printing of synthesized code
 
 Display the statistics info.
 
@@ -49,6 +52,8 @@ Add the ability to test/interact with/try new tests with the proposed results.
 
 testing
 -------
+test side-condition printing
+
 make sure all critical messages are handled properly by the UI and the MCP
 
 check all the states of stopping synthesis, disconnecting/reconnecting, starting a new syntrhesis problem, etc.
