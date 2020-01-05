@@ -180,7 +180,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                (printf "sent synthesizing message to ui\n")
 
                (set! *scp-info*
-                     (cons (,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
+                     (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
                            (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
 
                (set! *running-synthesis-tasks*
