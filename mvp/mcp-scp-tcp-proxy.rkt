@@ -173,7 +173,7 @@
       (set! *scp-connections*
             (cons `(,scp-id ,scp-in ,scp-out)
                   *scp-connections*))
-      (logf "Updated *scp-connections* table: ~s" *scp-connections*)))
+      (logf "Updated *scp-connections* table: ~s\n" *scp-connections*)))
   (write `(scp-id ,scp-id) scp-out)
   (flush-output scp-out)
   (logf "mcp-to-scp handshake established\n"))
