@@ -340,44 +340,41 @@ TODO
                 ;; TODO is this message actually useful?  What should we do with this message?
                 (loop (read in)))
                (`(synthesis-finished ,synthesis-id ,val ,statistics)
-                (match statistics
-                  [`(elapsed-time (seconds ,elapsed-seconds) (nanoseconds ,elapsed-nanoseconds))
-                   ;; TODO Display statistics
-                   (void)
-                   ]
-                  [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))])
                 ;;
                 ;; TODO stream answers coming in from multiple `synthesis-finished` messages
-                ;;
-                (if (null? val)
-                    (begin
-                      ;; no answers--synthesis failed!
-                      ;; TODO display failure message
-                      (void)
-                      )
-                    (begin
-                      ;; synthesis succeeded, with at least one answer
-                      ;;
-                      ;; TODO display succeeded message
-                      ;;
-                      ;; TODO handle multiple answers from a single `synthesis-finished` message
-                      ;;
-                      ;; TODO Nicer pretty-printing of synthesized code and side-conditions
-                      (let ((first-answer (car val)))
-                        (let ((definitions (car first-answer))
-                              (side-conditions (cdr first-answer)))
-                          (for-each
-                            (lambda (e)
-                              (send result-text insert (pretty-format e)))
-                            definitions)
-                          (when (not (null? side-conditions))
-                            (send result-text insert "\n\n\nSide conditions:\n")
-                            (for-each
-                              (lambda (e)
-                                (send result-text insert (pretty-format e)))
-                              side-conditions))))))                
-                ;;
-                )
+                ;;                
+                (match statistics
+                  [`(elapsed-time (seconds ,elapsed-seconds) (nanoseconds ,elapsed-nanoseconds))
+                   (if (null? val)
+                       (begin
+                         ;; no answers--synthesis failed!
+                         (send result-text
+                               insert
+                               (format "Synthesis failed after ~s seconds\n" elapsed-seconds)))
+                       (begin
+                         ;; synthesis succeeded, with at least one answer
+                         ;;
+                         ;; TODO handle multiple answers from a single `synthesis-finished` message
+                         ;;
+                         ;; TODO Nicer pretty-printing of synthesized code and side-conditions
+                         (let ((first-answer (car val)))
+                           (let ((definitions (car first-answer))
+                                 (side-conditions (cdr first-answer)))
+                             (for-each
+                               (lambda (e)
+                                 (send result-text insert (pretty-format e)))
+                               definitions)
+                             (when (not (null? side-conditions))
+                               (send result-text insert "\n\n\nSide conditions:\n")
+                               (for-each
+                                 (lambda (e)
+                                   (send result-text insert (pretty-format e)))
+                                 side-conditions))
+                             (send result-text
+                                   insert
+                                   (format "\n\n\nSynthesis succeeded after ~s seconds\n" elapsed-seconds))))))
+                   ]
+                  [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))]))
                (`(keep-going)
                 (printf "wait-on-mcp-synthesis-results received keep-going from mcp!  Onward...\n")
                 (loop (read in)))

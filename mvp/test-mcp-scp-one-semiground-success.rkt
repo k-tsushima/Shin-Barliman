@@ -68,8 +68,8 @@
      (printf "fake scp received synthesize message with synthesis-id ~s\n" synthesis-id)]
     [else (printf "*** fake scp received unexpected message ~s--expected synthesize msg\n" msg2)])
   
-  (define val '((((define append (lambda (_.0 _.1) (if (null? _.1) _.1 (quote (cat neko)))))) (=/= ((_.0 _.1)) ((_.0 if)) ((_.0 null?)) ((_.0 quote)) ((_.1 if)) ((_.1 null?)) ((_.1 quote))) (sym _.0 _.1))))
-  (define statistics '(elapsed-time (seconds 0) (nanoseconds 84391000)))
+  (define val '((((define append (lambda (_.0 _.1) (if (null? _.1) _.1 (quote (cat 猫)))))) (=/= ((_.0 _.1)) ((_.0 if)) ((_.0 null?)) ((_.0 quote)) ((_.1 if)) ((_.1 null?)) ((_.1 quote))) (sym _.0 _.1))))
+  (define statistics '(elapsed-time (seconds 0) (nanoseconds 92845000)))
   (define synthesis-finished-msg `(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics))
   (printf "fake scp writing synthesis-finished message ~s\n" synthesis-finished-msg)
   (write synthesis-finished-msg out)

@@ -27,9 +27,9 @@
                          (lambda ,B
                            ,C))))
         (inputs '((append '() '())
-                  (append '(cat) '(neko))))
+                  (append '(cat) '(猫))))
         (outputs '(()
-                   (cat neko)))
+                   (cat 猫)))
         (synthesis-id 1))
     (print-error-messages from-stderr)    
     (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)    
