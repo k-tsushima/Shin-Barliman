@@ -1,6 +1,9 @@
 #lang racket
 
 ;; Simulates an SCP interaction with the MCP, in order to test the MCP.
+;;
+;; `synthesis-finished-msg` that is eventually sent to the MCP contains one answer
+;; (all of `append`, ground, with no side-conditions)
 
 (provide
   (all-from-out racket/tcp)
