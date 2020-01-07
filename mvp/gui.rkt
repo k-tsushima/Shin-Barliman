@@ -322,7 +322,7 @@ TODO
     (flush-output out)))
 
 (define wait-on-mcp-synthesis-results
-  (lambda (result-text)
+  (lambda (result-text result-editor-canvas)
     (lambda ()
       (printf "wait-on-mcp-synthesis-results starting up...\n")
       (define in (unbox *input-port-from-server-box*))
@@ -374,7 +374,13 @@ TODO
                                    insert
                                    (string-append
                                      (format "\nSynthesis succeeded after ~s seconds\n" elapsed-seconds)
-                                     "-----------------------------------\n\n"))))))
+                                     "-----------------------------------\n\n"))
+
+                             ;; TODO scroll editor so that the first
+                             ;; line of text is displayed at the top
+                             ;; of the widget on the screen.
+
+                             ))))
                    ]
                   [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))]))
                (`(keep-going)
@@ -741,7 +747,9 @@ TODO
                           
                           ;; start thread with loop waiting for MCP synthesis results/displaying synthesis results
                           (set-box! *receive-mcp-messages-thread-box*
-                                    (thread (wait-on-mcp-synthesis-results synthesized-result-text))))
+                                    (thread (wait-on-mcp-synthesis-results
+                                             synthesized-result-text
+                                             synthesized-result-editor-canvas))))
                          ((equal? NOT-SYNTHESIZING new-synthesize-state)
                           (send-stop-synthesis-message)
 
@@ -800,7 +808,7 @@ TODO
       (new editor-canvas%
            (parent left-top-panel)
            (label INITIAL-PLACEHOLDER-LABEL-STRING)
-           (style '(hide-hscroll hide-vscroll))))
+           (style '(hide-hscroll auto-vscroll))))
     (define definitions-text
       (new (make-smart-text%
             DEFINITIONS
@@ -848,7 +856,7 @@ TODO
       (new editor-canvas%
            (parent left-bottom-panel)
            (label INITIAL-PLACEHOLDER-LABEL-STRING)
-           (style '(hide-hscroll hide-vscroll))
+           (style '(hide-hscroll auto-vscroll))
            (enabled #t)))
     (define synthesized-result-text
       (new (make-smart-text%
