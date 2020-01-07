@@ -4,6 +4,9 @@
 Description of the Sub Controlling Process.
 ----------------------------------------
 TODO add description
+
+Sub Controlling Process
+
 |#
 
 (load "pmatch.scm")
@@ -219,7 +222,7 @@ TODO add description
              ((member process-id *stopping-list*)
               (pmatch msg
                 [,anything
-                 (printf "SCP read error message, but it is already sent to stop-synthesis.\n The ignored message is ~s\n" msg)]))
+                 (printf "SCP read error message, but it is already sent to stop-synthesis.\nThe ignored message is ~s\n" msg)]))
              (else
               (pmatch msg
                 [(unexpected-eof)
@@ -298,11 +301,11 @@ TODO add description
   ;; for debugging:
   (printf "partition: ~s\n" lst)
   (pmatch lst
-    [() '()]
+    [() `(() ())]
     [(()) `(() ())]
     [(,a)
      (if (func a)
-         `(((,a)) ())
+         `((,a) ())
          `(() (,a)))]
     [(,a . ,rest)
      (let ((result (partition func rest)))
@@ -334,13 +337,13 @@ TODO add description
     [,else 
      (let ((lst (partition (lambda (x) (equal? id (car (cdr x)))) *synthesis-task-table*)))
        ;; for debugging
-       (printf "Partition: ~s\n" lst)
+       ;; (printf "Partition: ~s\n" lst)
        (pmatch lst
          [(() . ,rest)
           ;; the id is not found in the table
           (printf "stop-runnning-one-task: received id is not found in queue and task table\n")
           ]
-         [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)). ,rest)
+         [(((,synthesis-id ,subprocess-id ,definitions ,inputs ,outputs ,status)) . ,rest)
           ;; the id is found in the table
           (set! *synthesis-task-table* rest)
           (printf "ID ~s found!\n" subprocess-id)
@@ -349,7 +352,7 @@ TODO add description
             (flush-output-port out)
             (printf "Sent stop to id ~s\n" subprocess-id)
             ;; UPDATE: *synthesis-task-table*
-            (set! *stopping-list* (cons process-id *stopping-list*))
+            (set! *stopping-list* (cons subprocess-id *stopping-list*))
             (set! *synthesis-task-table* rest))
           ;; TODO?: shall we start another process?      
           ]))]))
@@ -358,7 +361,7 @@ TODO add description
   ;; in the case, that task is in the queue
   (let ((lst (partition (lambda (x) (equal? id (car (cdr (cdr (cdr x)))))) *task-queue*)))
     (pmatch lst
-      [()
+      [(() ())
        ;; the id is not found in the queue
        (stop-running-one-task id)
        ]

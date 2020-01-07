@@ -21,10 +21,6 @@
 
 (define PROGRAM-NAME "scp-tcp-proxy")
 
-; (define *program* (box #f))
-; (define *tests* (box #f))
-; (define *scm-files* (box #f))
-
 (define *data* (box #f))
 (define *tcp-out* #f)
 
