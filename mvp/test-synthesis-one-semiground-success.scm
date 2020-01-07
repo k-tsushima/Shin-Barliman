@@ -1,7 +1,7 @@
 ;; Load this file in Chez Scheme to test 'synthesis.scm' by itself.
 
-;; Here we synthesize all of `append`.  We expect the answer to be
-;; fully ground, with no fresh logic variables or side-conditions.
+;; Here we synthesize part of `append`.  We expect the answer to
+;; contain fresh logic variables and side-conditions.
 
 (define (print-error-messages err-port)
   (let loop ()
@@ -23,19 +23,13 @@
   (print-error-messages from-stderr)
   (printf "read msg: ~s\n" (read from-stdout))
   (print-error-messages from-stderr)
-  (let ((definitions '((define append
-                         (lambda (l s)
-                           (if (null? l)
-                               ,A
-                               (cons ,B ,C))))))
+  (let ((definitions '((define ,A
+                         (lambda ,B
+                           ,C))))
         (inputs '((append '() '())
-                  (append '(,g1) '(,g2))
-                  (append '(,g3) '(,g4))
-                  (append '(,g5 ,g6) '(,g7 ,g8))))
+                  (append '(cat) '(neko))))
         (outputs '(()
-                   (,g1 ,g2)
-                   (,g3 ,g4)
-                   (,g5 ,g6 ,g7 ,g8)))
+                   (cat neko)))
         (synthesis-id 1))
     (print-error-messages from-stderr)    
     (write `(synthesize (,definitions ,inputs ,outputs) ,synthesis-id) to-stdin)    
