@@ -340,26 +340,42 @@ TODO
                 ;; TODO is this message actually useful?  What should we do with this message?
                 (loop (read in)))
                (`(synthesis-finished ,synthesis-id ,val ,statistics)
-                ;; TODO
+                (match statistics
+                  [`(elapsed-time (seconds ,elapsed-seconds) (nanoseconds ,elapsed-nanoseconds))
+                   ;; TODO Display statistics
+                   (void)
+                   ]
+                  [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))])
                 ;;
-                ;; Nicer pretty-printing of code and side-conditions
+                ;; TODO stream answers coming in from multiple `synthesis-finished` messages
                 ;;
-                ;; Display statistics
-                ;;
-                ;; Once all that is working: stream answers
-                (let ((first-answer (car val)))
-                  (let ((definitions (car first-answer))
-                        (side-conditions (cdr first-answer)))
-                    (for-each
-                      (lambda (e)
-                        (send result-text insert (pretty-format e)))
-                      definitions)
-                    (when (not (null? side-conditions))
-                      (send result-text insert "\n\n\nSide conditions:\n")
-                      (for-each
-                        (lambda (e)
-                          (send result-text insert (pretty-format e)))
-                        side-conditions))))
+                (if (null? val)
+                    (begin
+                      ;; no answers--synthesis failed!
+                      ;; TODO display failure message
+                      (void)
+                      )
+                    (begin
+                      ;; synthesis succeeded, with at least one answer
+                      ;;
+                      ;; TODO display succeeded message
+                      ;;
+                      ;; TODO handle multiple answers from a single `synthesis-finished` message
+                      ;;
+                      ;; TODO Nicer pretty-printing of synthesized code and side-conditions
+                      (let ((first-answer (car val)))
+                        (let ((definitions (car first-answer))
+                              (side-conditions (cdr first-answer)))
+                          (for-each
+                            (lambda (e)
+                              (send result-text insert (pretty-format e)))
+                            definitions)
+                          (when (not (null? side-conditions))
+                            (send result-text insert "\n\n\nSide conditions:\n")
+                            (for-each
+                              (lambda (e)
+                                (send result-text insert (pretty-format e)))
+                              side-conditions))))))                
                 ;;
                 )
                (`(keep-going)
