@@ -1,7 +1,18 @@
 Overall/Project-wide
 ====================
 
+The messages for returning synthesized results to the GUI (and perhaps to the MCP) need work.  Does it really make sience for the `(synthesis-finished ,synthesis-id ,val ,statistics) message sent from the MCP to the GUI to contain multiple answers?  When would this actually be useful, versus sending multiple messages, each with one answer, since we still need to handle streaming of answers?  If we do allow a single message to contain multiple values, seems like statistics should be per-answer.
+
 Do we need separate notions of synthesis-id at the UI and MCP levels, to properly keep track of one synthesis problem from the GUI turning into multiple synthesis problems (involving different templates, for example)?
+
+For streaming to work, seems like GUI will need to keep a table of answers received.
+
+How can the GUI tell that synthesis has finished, as opposed to synthesis being ongoing, with more answers possibly streaming in later?  Do we need additional messages for this?
+
+MCP should be able to send message to GUI when something goes wrong for synthesis, such as no SCPs being available.
+
+
+
 
 Once the MVP is working, try to simplify!
 
