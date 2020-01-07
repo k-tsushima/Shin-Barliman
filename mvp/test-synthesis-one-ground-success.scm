@@ -1,5 +1,8 @@
 ;; Load this file in Chez Scheme to test 'synthesis.scm' by itself.
 
+;; Here we synthesize all of `append`.  We expect the answer to be
+;; fully ground, with no fresh logic variables or side-effects.
+
 (define (print-error-messages err-port)
   (let loop ()
     (when (input-port-ready? err-port)
