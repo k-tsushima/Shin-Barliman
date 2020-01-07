@@ -43,6 +43,10 @@ gui.rkt
 GUI should clearly display when synthesis has completed, versus when
 synthesis is still running (and might stream additional answers)
 
+GUI should display running status.
+
+GUI should display if synthesis can't run (for example, no SCPs are available)
+
 Improve pretty-printing of synthesized code
 
 Display the statistics info.
