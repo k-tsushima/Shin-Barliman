@@ -362,17 +362,19 @@ TODO
                                  (side-conditions (cdr first-answer)))
                              (for-each
                                (lambda (e)
-                                 (send result-text insert (pretty-format e)))
+                                 (send result-text insert (string-append (pretty-format e) "\n")))
                                definitions)
                              (when (not (null? side-conditions))
-                               (send result-text insert "\n\n\nSide conditions:\n")
+                               (send result-text insert "\nSide conditions:\n")
                                (for-each
                                  (lambda (e)
-                                   (send result-text insert (pretty-format e)))
+                                   (send result-text insert (string-append (pretty-format e) "\n")))
                                  side-conditions))
                              (send result-text
                                    insert
-                                   (format "\n\n\nSynthesis succeeded after ~s seconds\n" elapsed-seconds))))))
+                                   (string-append
+                                     (format "\nSynthesis succeeded after ~s seconds\n" elapsed-seconds)
+                                     "-----------------------------------\n\n"))))))
                    ]
                   [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))]))
                (`(keep-going)
