@@ -19,7 +19,7 @@
 
 #| begin logging infrastructure definitions (how to abstract this?) |#
 (define ENABLE-LOGGING (config-ref 'enable-synthesis-subprocess-logging))
-(define LOG-FILE-NAME (format "~a.log" PROGRAM-NAME))
+(define LOG-FILE-NAME (format "~a-pid-~s.log" PROGRAM-NAME (get-process-id)))
 (define LOG-FILE-OUTPUT-PORT-BOX (box #f))
 
 (define (logf format-str . args)
