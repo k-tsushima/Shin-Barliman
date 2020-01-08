@@ -69,12 +69,12 @@ Sub Controlling Process
 (define (check-for-mcp-messages)
   ;; (printf "SCP checking for messages from MCP...\n")
   (when (input-port-ready? (unbox *mcp-err-port-box*))
-    (let ((msg (read (unbox *mcp-err-port-box*))))
-      (printf "SCP read error message ~s from MCP\n" msg)
+    (let ((msg (read (unbox *mcp-err-port-box*))))      
       (cond
         ((eof-object? msg)
-         (printf "FIXME do nothing ~s\n" msg))
+         (void))
         (else
+         (printf "SCP read error message ~s from MCP\n" msg)
          (pmatch msg
            [(unexpected-eof)
             (printf "SCP receive unexpected EOF from MCP\n")
@@ -217,15 +217,16 @@ Sub Controlling Process
         . ,rest)
        (when (input-port-ready? from-stderr)
          (let ((msg (read from-stderr)))
-           (printf "SCP read error message ~s from synthesis subprocess ~s\n" msg i)
            (cond
              ((eof-object? msg)
-              (printf "FIXME do nothing ~s\n" msg))
+              (void))
              ((member process-id *stopping-list*)
+              (printf "SCP read error message ~s from synthesis subprocess ~s\n" msg i)
               (pmatch msg
                 [,anything
                  (printf "SCP read error message, but it is already sent to stop-synthesis.\nThe ignored message is ~s\n" msg)]))
              (else
+              (printf "SCP read error message ~s from synthesis subprocess ~s\n" msg i)
               (pmatch msg
                 [(unexpected-eof)
                  (printf "SCP receive unexpected EOF from subprocess\n")]

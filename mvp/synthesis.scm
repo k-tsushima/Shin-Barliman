@@ -90,10 +90,12 @@
                  (let ((elapsed-seconds (time-second elapsed-time))
                        (elapsed-nanoseconds (time-nanosecond elapsed-time)))
                    (let ((statistics `(elapsed-time (seconds ,elapsed-seconds) (nanoseconds ,elapsed-nanoseconds))))
-                     (write `(synthesis-finished ,synthesis-id ,val ,statistics))
-                     (set-box! *start-time* #f)               
-                     (flush-output-port)
-                     (loop (read)))))]
+                     (let ((msg `(synthesis-finished ,synthesis-id ,val ,statistics)))
+                       (write msg)
+                       (logf "wrote msg ~s\n" msg)
+                       (set-box! *start-time* #f)               
+                       (flush-output-port)
+                       (loop (read))))))]
               [(expired ,e)
                (set-box! *engine-box* e)])))        
         (if (input-port-ready? (current-input-port))

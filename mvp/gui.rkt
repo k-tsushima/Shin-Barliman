@@ -244,13 +244,13 @@ TODO
     (list *test-6-value-exprs-box* (list VALUE 6))
     ))
 
-(define (user-editable-canvas? canvas)
+(define (box-for-user-editable-canvas? box)
   (let loop ([b* *user-editable-canvases-boxes*])
     (match b*
       ['() #f]
       [`((,b ,type) . ,rest)
        (cond
-         ((eqv? b canvas) #t)
+         ((equal? b box) #t)
          (else (loop rest)))])))
 
 (define (print-all-user-editable-canvases-boxes-values)
@@ -295,18 +295,29 @@ TODO
        (loop rest)])))
 
 (define (send-synthesize-message)
-  (when (all-user-canvas-boxes-have-legal-exprs?)
-    (define synthesis-id *synthesis-id*)
-    (set! *synthesis-id* (add1 *synthesis-id*))
-    (define definitions
-      (unbox *definitions-exprs-box*))
-    (define inputs
-      (all-input-boxes-values))
-    (define outputs
-      (all-output-boxes-values))
-    (define msg
-      `(synthesize ,synthesis-id (,definitions ,inputs ,outputs)))
-    (send-message msg)))
+  (printf "send-synthesize-message called\n")
+  (if (all-user-canvas-boxes-have-legal-exprs?)
+      (let ()
+        (printf "all user canvas boxes have legal expressions\n")
+        (define synthesis-id *synthesis-id*)
+        (set! *synthesis-id* (add1 *synthesis-id*))
+        (printf "synthesis-id: ~s\n" synthesis-id)
+        (define definitions
+          (unbox *definitions-exprs-box*))
+        (printf "definitions: ~s\n" definitions)
+        (define inputs
+          (all-input-boxes-values))
+        (printf "inputs: ~s\n" inputs)
+        (define outputs
+          (all-output-boxes-values))
+        (printf "outputs: ~s\n" outputs)
+        (define msg
+          `(synthesize ,synthesis-id (,definitions ,inputs ,outputs)))
+        (printf "msg: ~s\n" msg)
+        (send-message msg)
+        (printf "send-synthesize-message sent message\n"))
+      (begin
+        (printf "send-synthesize-message called, but not all user canvas boxes have legal expressions\n"))))
 
 (define (send-stop-synthesis-message)
   (define msg
@@ -479,38 +490,43 @@ TODO
           
           ;; Ignore any canvas that isn't enabled/user editable
           ;; ('synthesized-result')
-          (when (user-editable-canvas? canvas)
-            (set-box! exprs-box exprs-in-list)            
-            (when (list? exprs-in-list)
-              (if (= (length exprs-in-list) 1)
-                  (printf "~s single raw expr: ~s\n" name (car exprs-in-list))
-                  (begin
-                    (printf "~s multiple raw exprs:\n" name)
-                    (for-each
-                      (lambda (expr)
-                        (printf "~s\n" expr))
-                      exprs-in-list))))
+          (if (box-for-user-editable-canvas? exprs-box)
+              (let ()
+                (printf "box-for-user-editable-canvas? returned #t\n")
+                (set-box! exprs-box exprs-in-list)
+                (printf "exprs-box has value ~s\n" exprs-box)
+                (when (list? exprs-in-list)
+                  (if (= (length exprs-in-list) 1)
+                      (printf "~s single raw expr: ~s\n" name (car exprs-in-list))
+                      (begin
+                        (printf "~s multiple raw exprs:\n" name)
+                        (for-each
+                          (lambda (expr)
+                            (printf "~s\n" expr))
+                          exprs-in-list))))
 
-            (let ((e (user-canvas-box-error exprs-box type)))
-              (if e
-                  (send status-message set-label e)
-                  (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
+                (let ((e (user-canvas-box-error exprs-box type)))
+                  (if e
+                      (send status-message set-label e)
+                      (send status-message set-label INITIAL-STATUS-MESSAGE-STRING)))
             
-            (printf "======================================\n")
-            (print-all-user-editable-canvases-boxes-values)            
-            (printf "======================================\n")                       
-            (if (all-user-canvas-boxes-have-legal-exprs?)
-                (begin
-                  (printf "all user canvas boxes have legal exprs!\n")
-                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
-                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
-                    (send (unbox *synthesize-button-box*) enable #t)))
-                (begin
-                  (printf "at least one canvas box contains an illegal expr!\n")
-                  (when (and (equal? (unbox *connection-state-box*) CONNECTED)
-                             (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
-                    (send (unbox *synthesize-button-box*) enable #f))))
-            (newline))
+                (printf "======================================\n")
+                (print-all-user-editable-canvases-boxes-values)            
+                (printf "======================================\n")                       
+                (if (all-user-canvas-boxes-have-legal-exprs?)
+                    (begin
+                      (printf "all user canvas boxes have legal exprs!\n")
+                      (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                                 (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                        (send (unbox *synthesize-button-box*) enable #t)))
+                    (begin
+                      (printf "at least one canvas box contains an illegal expr!\n")
+                      (when (and (equal? (unbox *connection-state-box*) CONNECTED)
+                                 (equal? (unbox *synthesis-state-box*) NOT-SYNTHESIZING))
+                        (send (unbox *synthesize-button-box*) enable #f))))
+                (newline))
+              (begin
+                (printf "box-for-user-editable-canvas? returned #f\n")))
           (void))
         (augment after-insert)
         (augment after-edit-sequence)))))
