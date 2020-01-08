@@ -64,7 +64,11 @@
             (loop `(no-message-to-read)))]
        [(synthesize (,definitions ,inputs ,outputs) ,synthesis-id)
         (logf "read message ~s from stdin\n" msg)
+        (logf "definitions:\n\n~s\n\n\n" definitions)
+        (logf "inputs:\n\n~s\n\n\n" inputs)
+        (logf "outputs:\n\n~s\n\n\n" outputs)
         (let ((expr (fill-in-template definitions inputs outputs)))
+          (logf "filled in template for synthesis:\n\n~s\n\n\n" expr)
           (let ((e (make-engine (lambda ()
                                   (list (eval expr) synthesis-id)))))
             (set-box! *engine-box* e)
