@@ -86,12 +86,15 @@
 ;       (loop (read tcp-in))))))
 
 (define (connect address port)
+  (logf "connect called with address ~s and port ~s\n" address port)
+  
   (define-values (tcp-in tcp-out) (tcp-connect address port))
-;  (printf "client writing hello message\n")
+  (logf "created tcp connection to MCP at address ~s and port ~s\n" address port)
+  ;; (printf "client writing hello message\n")
    (write '(hello) tcp-out)
    (set! *tcp-out* tcp-out)
    (flush-output tcp-out)
-;  (printf "client wrote hello message\n")
+   ;; (printf "client wrote hello message\n")
 
    (thread (handle-tcp tcp-in tcp-out))
    (handle-scp)

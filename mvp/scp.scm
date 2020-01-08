@@ -67,7 +67,7 @@ Sub Controlling Process
 
 ;; check messages from MCP
 (define (check-for-mcp-messages)
-  (printf "SCP checking for messages from MCP...\n")
+  ;; (printf "SCP checking for messages from MCP...\n")
   (when (input-port-ready? (unbox *mcp-err-port-box*))
     (let ((msg (read (unbox *mcp-err-port-box*))))
       (printf "SCP read error message ~s from MCP\n" msg)
@@ -88,13 +88,14 @@ Sub Controlling Process
   
   (when (input-port-ready? (unbox *mcp-in-port-box*))
     (let ((msg (read (unbox *mcp-in-port-box*))))
-      (printf "SCP read message ~s from MCP\n" msg)
       (cond
         ((eof-object? msg)
-         (printf "FIXME do nothing ~s\n" msg))
+         (void))
         (else
+         (printf "SCP read message ~s from MCP\n" msg)
          (pmatch msg
            [(scp-id ,scp-id)
+            (printf "SCP received scp-id ~s from MCP\n" scp-id)
             ;; receive scp-id from MCP, keep it in *scp-id* and 
             ;; send number-of-subprocess (Sent to MCP)
             (set! *scp-id* scp-id)
@@ -206,11 +207,12 @@ Sub Controlling Process
 
 
 (define (check-for-synthesis-subprocess-messages)
-  (printf "SCP checking for messages from synthesis subprocesses...\n")
+  ;; (printf "SCP checking for messages from synthesis subprocesses...\n")
   (let loop ((synthesis-subprocesses (unbox *synthesis-subprocesses-box*)))
     (pmatch synthesis-subprocesses
       [()
-       (printf "checked for all synthesis subprocesses messages\n")]
+       ;; (printf "checked for all synthesis subprocesses messages\n")
+       (void)]
       [((synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr ,status)
         . ,rest)
        (when (input-port-ready? from-stderr)
@@ -234,16 +236,17 @@ Sub Controlling Process
              )))
        
        (when (input-port-ready? from-stdout)
-         (let ((msg (read from-stdout)))
-           (printf "SCP read message ~s from synthesis subprocess ~s\n" msg i)
+         (let ((msg (read from-stdout)))           
            (cond
              ((eof-object? msg)
-              (printf "FIXME do nothing ~s\n" msg))
+              (void))
              ((member process-id *stopping-list*)
+              (printf "SCP read message ~s from synthesis subprocess ~s\n" msg i)
               (pmatch msg
                 [,anything
                  (printf "SCP read message, but it is already sent to stop-synthesis.\n The ignored message is ~s\n" msg)]))
              (else
+              (printf "SCP read message ~s from synthesis subprocess ~s\n" msg i)
               (pmatch msg
                 [(synthesis-subprocess-ready)
                  ;; TODO?: what SCP should do after receiving this message?
@@ -409,13 +412,12 @@ Sub Controlling Process
                            (list `(synthesis-subprocess ,i ,process-id ,to-stdin ,from-stdout ,from-stderr free))))))
      (loop (add1 i)))))
 
-#!eof
-
 ;; process messages
 (let loop ()
   (check-for-mcp-messages)
   (check-for-synthesis-subprocess-messages)
-  ;; WEB -- see loop in mcp.scm to see how to sleep for a few
-  ;; milliseconds during each loop iteration, to avoid using 100% of
-  ;; the CPU time checking if a message has arrived.
+  ;; Sleep for 10 ms (10 million nanoseconds) to avoid using 100% of
+  ;; the CPU time checking if a new message has arrived.
+  (let ((millisecond (expt 10 6)))
+    (sleep (make-time 'time-duration (* 10 millisecond) 0)))
   (loop))
