@@ -43,6 +43,20 @@ UI experiment: give user feedback on answers being streamed by doing "demonic ex
 Consider using `pmatch` in Racket code as well as Chez Scheme code, so we only have to deal with one pattern-matching syntax.
 
 
+---
+The asymmetry in how inputs and outputs are handled in `synthesis-template.scm`:
+
+(define (fill-in-template definitions inputs outputs)
+   (let ((definitions (cons 'quasiquote (list definitions)))
+         (inputs (cons 'quasiquote (list inputs)))
+         (outputs (cons 'list outputs)))
+     ...
+
+is why you need to use quotes in the input when using gensyms, such as (append '(,g1) '(,g2)),
+but must use quasiquotes in the outout, such as `(,g1 ,g2).  The original Barliman also has this issue.
+We should figure out how to avoid this inconsistency.
+---
+
 
 ==
 UI
