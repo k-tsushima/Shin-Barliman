@@ -3,7 +3,7 @@
 (define (fill-in-template definitions inputs outputs)
   (let ((definitions (cons 'quasiquote (list definitions)))
         (inputs (cons 'quasiquote (list inputs)))
-        (outputs (cons 'quasiquote (list outputs))))
+        (outputs (cons 'list outputs)))
     `(let ()
        (define (results)
          (run 1 (defns)
