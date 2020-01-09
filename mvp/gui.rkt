@@ -347,6 +347,10 @@ TODO
              (void))
             (else
              (match msg
+               (`(stopped)
+                ;; TODO how (and where) to best to handle this message?
+                (printf "received stopped message\n")
+                (loop (read in)))
                (`(synthesizing ,synthesis-id)
                 ;; TODO is this message actually useful?  What should we do with this message?
                 (loop (read in)))
@@ -393,7 +397,8 @@ TODO
 
                              ))))
                    ]
-                  [else (error 'wait-on-mcp-synthesis-results (format "unexpected statistics format: ~s" statistics))]))
+                  [else (error 'wait-on-mcp-synthesis-results
+                               (format "unexpected statistics format: ~s" statistics))]))
                (`(keep-going)
                 (printf "wait-on-mcp-synthesis-results received keep-going from mcp!  Onward...\n")
                 (loop (read in)))
