@@ -3,9 +3,12 @@
 #|
 Description of the Sub Controlling Process.
 ----------------------------------------
-TODO add description
 
-Sub Controlling Process
+The SCPs are responsible for coordinating communication between the MCP
+and the sub-processes.
+
+The SCPs decompose the work that is sent from the MCP 
+and send the decomposed work to each sub-processes.
 
 |#
 
