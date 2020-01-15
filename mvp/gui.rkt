@@ -396,6 +396,7 @@ TODO
                              ;; of the widget on the screen.
 
                              ))))
+                   (loop (read in))
                    ]
                   [else (error 'wait-on-mcp-synthesis-results
                                (format "unexpected statistics format: ~s" statistics))]))
