@@ -1,6 +1,15 @@
 Overall/Project-wide
 ====================
 
+GUI can now stream multiple results from multiple synthesis-finished message, but in an ugly way.  Clean up the messages!
+
+We added a terrible hack to the ((,scp-id ,num-processors ,synthesis-task-id*) . ,rest) case in MCP, in which we call the loop even after we found an SCP with a free processor.  This results in the synthesis task from the GUI being sent to a free process on each SCP, and also adds the synthesis task to the pending task table.  We should remove this call to (loop rest) and instead actually send different synthesis tasks (using different templates for example) to the different processes on different SCPs.
+
+When there is no connected SCP with a free processor, and a synthesis task arrives, we are adding that task to the pending task table of the MCP.  We should: 1) check for pending tasks when a new SCP connects to the MCP--if there are pending tasks, we should send them to the newly connected SCP; 2) when a processor that is part of an SCP finishes, and the SCP sends a synthesis-finished message to the MCP, the MCP should check if there are any pending tasks, and if so, send a task to the newly free processor for that SCP.
+
+
+
+
 The messages for returning synthesized results to the GUI (and perhaps to the MCP) need work.  Does it really make sience for the `(synthesis-finished ,synthesis-id ,val ,statistics) message sent from the MCP to the GUI to contain multiple answers?  When would this actually be useful, versus sending multiple messages, each with one answer, since we still need to handle streaming of answers?  If we do allow a single message to contain multiple values, seems like statistics should be per-answer.
 
 Do we need separate notions of synthesis-id at the UI and MCP levels, to properly keep track of one synthesis problem from the GUI turning into multiple synthesis problems (involving different templates, for example)?
