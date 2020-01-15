@@ -1,6 +1,8 @@
 Overall/Project-wide
 ====================
 
+Appears to be a race condition in the MCP handling of sending pending tasks to the SCP that just sent a synthesized-finished message.  Something with promoting pending to running, perhaps.
+
 GUI can now stream multiple results from multiple synthesis-finished message, but in an ugly way.  Clean up the messages!
 
 We added a terrible hack to the ((,scp-id ,num-processors ,synthesis-task-id*) . ,rest) case in MCP, in which we call the loop even after we found an SCP with a free processor.  This results in the synthesis task from the GUI being sent to a free process on each SCP, and also adds the synthesis task to the pending task table.  We should remove this call to (loop rest) and instead actually send different synthesis tasks (using different templates for example) to the different processes on different SCPs.
