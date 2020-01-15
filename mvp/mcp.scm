@@ -165,30 +165,46 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             ;; message that is handled by the mcp-scp-tcp-proxy, which
             ;; then strips out some of the info when forwarding the
             ;; synthesize message to the SCP.
-            (pmatch *scp-info*
-              (()
-               (printf "no SCPs available!  Ignoring synthesize message\n"))
-              (((,scp-id ,num-processors ,synthesis-task-id*) . ,rest)
+            (let loop ((scp-info *scp-info*))
+              (pmatch scp-info
+                (()
+                 (set! *pending-synthesis-tasks*
+                       (cons `(,synthesis-id (,definitions ,inputs ,outputs))
+                             *pending-synthesis-tasks*))
+                 (printf "no SCPs available!  Added task to *pending-synthesis-tasks* table:\n~s\n"
+                         *pending-synthesis-tasks*))
+                (((,scp-id ,num-processors ,synthesis-task-id*) . ,rest)
+                 (printf "scp ~s is using ~s of ~s processors\n"
+                         scp-id (length synthesis-task-id*) num-processors)
+                 (cond
+                   [(> num-processors (length synthesis-task-id*))
+                    (printf "found an scp with ~s free processors!\n"
+                            (- num-processors (length synthesis-task-id*)))
+                    (printf "sending synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
+                    (write `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
+                    (flush-output-port scp-out-port)
+                    (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
+                    (printf "sending synthesizing message to ui\n")
+                    (write `(synthesizing ,synthesis-id) ui-out-port)
+                    (flush-output-port ui-out-port)
+                    (printf "sent synthesizing message to ui\n")
 
-               (printf "sending synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
-               (write `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
-               (flush-output-port scp-out-port)
-               (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
-               (printf "sending synthesizing message to ui\n")
-               (write `(synthesizing ,synthesis-id) ui-out-port)
-               (flush-output-port ui-out-port)
-               (printf "sent synthesizing message to ui\n")
+                    (set! *scp-info*
+                          (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
+                                (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
 
-               (set! *scp-info*
-                     (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
-                           (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
+                    (set! *running-synthesis-tasks*
+                          (cons `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                                *running-synthesis-tasks*))
 
-               (set! *running-synthesis-tasks*
-                     (cons `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
-                           *running-synthesis-tasks*))
-               
-               )
-              (,else (printf "unexpected *scp-info* table format: ~s\n" *scp-info*)))]
+                    ;; TODO hack to test multiple SCPs! remove!!!
+                    (loop rest)
+                    ;; TODO end of hack
+                    ]
+                   [else
+                    (printf "no free processors for scp ~s--checking next scp\n" scp-id)
+                    (loop rest)]))
+                (,else (printf "unexpected *scp-info* table format: ~s\n" *scp-info*))))]
            [,else
             (printf "** unknown message type from ui: ~s\n" msg)]))))))
 
