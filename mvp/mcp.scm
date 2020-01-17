@@ -237,7 +237,12 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                  (set! *scp-info*
                        (cons `(,scp-id ,number-of-synthesis-subprocesses ())
                              *scp-info*))]))
-            (printf "updated *scp-info* table: ~s\n" *scp-info*)]
+            (printf "updated *scp-info* table: ~s\n" *scp-info*)
+
+            ;; TODO send pending tasks to the newly-connected SCP, up
+            ;; to the number of processes that SCP is running.
+            
+            ]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
             (let ((pr (assoc scp-id *scp-info*)))
               (pmatch pr
