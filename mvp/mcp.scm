@@ -27,6 +27,10 @@ efficient synthesis.
 (define CHEZ-BINARY-PATH (config-ref 'chez-binary-path))
 (define CHEZ-FLAGS "-q")
 
+(define MCP-UI-TCP-PROXY-FILE "mcp-ui-tcp-proxy.rkt")
+(define MCP-SCP-TCP-PROXY-FILE "mcp-scp-tcp-proxy.rkt")
+(define SYNTHESIS-TASK-COMPILER-FILE "synthesis-task-compiler.scm")
+
 (define *ui-out-port-box* (box #f))
 (define *ui-in-port-box* (box #f))
 (define *ui-err-port-box* (box #f))
@@ -99,47 +103,38 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
        (printf "removed all synthesis tasks from table ~s\n" 'table))]))
 
 
-;; start 'mcp-ui-tcp-proxy.rkt' Racket subprocess for UI TCP proxy
-(let ((start-ui-tcp-proxy-command (format "exec ~a mcp-ui-tcp-proxy.rkt" RACKET-BINARY-PATH)))
-  (printf "starting ui tcp proxy with command:\n~s\n" start-ui-tcp-proxy-command)
+(define (start-subprocess! command to-stdin-box from-stdout-box from-stderr-box process-id-box)
+  (printf "starting subprocess with command:\n~s\n" command)
   (let-values ([(to-stdin from-stdout from-stderr process-id)
-                (open-process-ports start-ui-tcp-proxy-command
+                (open-process-ports command
                                     (buffer-mode block)
                                     (make-transcoder (utf-8-codec)))])
-    (printf "started ui tcp proxy with process id ~s\n" process-id)
-    (set-box! *ui-out-port-box* to-stdin)
-    (set-box! *ui-in-port-box* from-stdout)
-    (set-box! *ui-err-port-box* from-stderr)
-    (set-box! *ui-pid-box* process-id)))
+    (printf "started subprocess with process id ~s\n" process-id)
+    (set-box! to-stdin-box to-stdin)
+    (set-box! from-stdout-box from-stdout)
+    (set-box! from-stderr-box from-stderr)
+    (set-box! process-id-box process-id)))
 
-;; start 'mcp-scp-tcp-proxy.rkt' Racket subprocess for SCP TCP proxy
-(let ((start-scp-tcp-proxy-command (format "exec ~a mcp-scp-tcp-proxy.rkt" RACKET-BINARY-PATH)))
-  (printf "starting scp tcp proxy with command:\n~s\n" start-scp-tcp-proxy-command)
-  (let-values ([(to-stdin from-stdout from-stderr process-id)
-                (open-process-ports start-scp-tcp-proxy-command
-                                    (buffer-mode block)
-                                    (make-transcoder (utf-8-codec)))])
-    (printf "started scp tcp proxy with process id ~s\n" process-id)
-    (set-box! *scp-out-port-box* to-stdin)
-    (set-box! *scp-in-port-box* from-stdout)
-    (set-box! *scp-err-port-box* from-stderr)
-    (set-box! *scp-pid-box* process-id)))
+(start-subprocess!
+  (format "exec ~a ~a" MCP-UI-TCP-PROXY-FILE RACKET-BINARY-PATH)
+  *ui-out-port-box*
+  *ui-in-port-box*
+  *ui-err-port-box*
+  *ui-pid-box*)
 
-;; start 'synthesis-task-compiler.scm' Chez Scheme subprocess for
-;; generating code to be sent to SCP for synthesis
-(let ((start-synthesis-task-compiler-subprocess-command
-       (format "exec ~a ~a synthesis-task-compiler.scm" CHEZ-BINARY-PATH CHEZ-FLAGS)))
-  (printf "starting synthesis task compiler subprocess with command:\n~s\n"
-          start-synthesis-task-compiler-subprocess-command)
-  (let-values ([(to-stdin from-stdout from-stderr process-id)
-                (open-process-ports start-synthesis-task-compiler-subprocess-command
-                                    (buffer-mode block)
-                                    (make-transcoder (utf-8-codec)))])
-    (printf "started synthesis task compiler subprocess with process id ~s\n" process-id)
-    (set-box! *synthesis-task-compiler-out-port-box* to-stdin)
-    (set-box! *synthesis-task-compiler-in-port-box* from-stdout)
-    (set-box! *synthesis-task-compiler-err-port-box* from-stderr)
-    (set-box! *synthesis-task-compiler-pid-box* process-id)))
+(start-subprocess!
+  (format "exec ~a ~a" MCP-SCP-TCP-PROXY-FILE RACKET-BINARY-PATH)
+  *scp-out-port-box*
+  *scp-in-port-box*
+  *scp-err-port-box*
+  *scp-pid-box*)
+
+(start-subprocess!
+  (format "exec ~a ~a ~a" CHEZ-BINARY-PATH CHEZ-FLAGS)
+  *synthesis-task-compiler-out-port-box*
+  *synthesis-task-compiler-in-port-box*
+  *synthesis-task-compiler-err-port-box*
+  *synthesis-task-compiler-pid-box*)
 
 (define (handle-ui-messages)
   (define ui-in-port (unbox *ui-in-port-box*))
