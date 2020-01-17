@@ -244,6 +244,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             
             ]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+            ;;
+            (printf "removing synthesis-id from the list of running tasks for scp-id in *scp-info* table\n")
             (let ((pr (assoc scp-id *scp-info*)))
               (pmatch pr
                 [(,scp-id ,num-processors ,synthesis-task-id*)
@@ -254,6 +256,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc scp-id *scp-info*): ~s ~s"
                                    scp-id *scp-info*))]))
+            ;;
+            (printf "moving synthesis-id task from *running-synthesis-tasks* to *finished-synthesis-tasks*\n")
             (let ((pr (assoc synthesis-id *running-synthesis-tasks*)))
               (pmatch pr
                 [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
@@ -266,18 +270,20 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc synthesis-id *running-synthesis-tasks*): ~s ~s"
                                    synthesis-id *running-synthesis-tasks*))]))
+            ;;
+            (printf "writing synthesis-finished message to ui\n")
             (write `(synthesis-finished ,synthesis-id ,val ,statistics) ui-out-port)
             (flush-output-port ui-out-port)
             (printf "wrote synthesis-finished message to ui\n")
-            
-            (printf "checking if there is a pending synthesis task for the newly free processor:\n~s\n"
+            ;;
+            (printf "send the first pending synthesis task, if there is one, to the newly free processor:\n~s\n"
                     *pending-synthesis-tasks*)
             (pmatch *pending-synthesis-tasks*
               [()
                (printf "no pending synthesis tasks\n")
                (void)]
               [((,synthesis-task-id (,definitions ,inputs ,outputs)) . ,rest)
-               (printf "pending synthesis task: ~s\n"
+               (printf "first pending synthesis task is: ~s\n"
                        `(,synthesis-task-id (,definitions ,inputs ,outputs)))
 
                (printf "moving task from pending to running...\n")
@@ -291,7 +297,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                      (cons `(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
                            *running-synthesis-tasks*))
                (printf "new *running-synthesis-tasks*:\n~s\n" *running-synthesis-tasks*)
-               
+
                (let ((msg `(synthesize ,scp-id ,synthesis-task-id (,definitions ,inputs ,outputs))))
                  (printf "sending message ~s to scp ~s\n" msg scp-id)
                  (write msg scp-out-port)
