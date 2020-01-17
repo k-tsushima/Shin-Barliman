@@ -67,20 +67,36 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 (define *finished-synthesis-tasks* '())
 
 
-(define (add-synthesis-task! task table)
-  (if (not (member task table))
-      (begin
-        (set! table (cons task table)))
-      (begin
-        (printf
-          "*** uh oh!  task ~s already exists in table ~s -- refusing to add duplicate entry!\n"
-          task table))))
+(define-syntax add-synthesis-task!
+  (syntax-rules ()
+    [(_ task table)
+     (if (not (member task table))
+         (begin
+           (set! table (cons task table))
+           (printf "added synthesis task ~s to table ~s to produce ~s\n" task 'table table))
+         (begin
+           (printf
+            "*** uh oh!  task ~s already exists in table ~s with entries ~s -- refusing to add duplicate entry!\n"
+            task 'table table)))]))
 
-(define (remove-synthesis-task! task table)
-  (set! table (remove task table)))
+(define-syntax remove-synthesis-task!
+  (syntax-rules ()
+    [(_ task table)
+     (if (member task table)
+         (begin
+           (set! table (remove task table))
+           (printf "removed synthesis task ~s from table ~s to produce ~s\n" task 'table table))
+         (begin
+           (printf
+            "*** uh oh!  task ~s doesn't exist in table ~s with entries ~s -- cannot remove entry!\n"
+            task 'table table)))]))
 
-(define (remove-all-synthesis-tasks! table)
-  (set! table '()))
+(define-syntax remove-all-synthesis-tasks!
+  (syntax-rules ()
+    [(_ table)
+     (begin
+       (set! table '())
+       (printf "removed all synthesis tasks from table ~s\n" 'table))]))
 
 
 ;; start 'mcp-ui-tcp-proxy.rkt' Racket subprocess for UI TCP proxy
