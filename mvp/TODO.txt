@@ -8,6 +8,11 @@ When a new SCP connects to MCP, MCP should send SCP pending tasks (up to the pro
 Test that GUI can send tasks to MCP, even if no SCP is connected, and that connecting one or more SCPs afterwards will "drain" the pending tasks.
 
 
+Security:
+* be able to restrict TCP connections to white-listed IP addresses (what about IP spoofing?)
+* add authenticated sessions and messages, and perhaps nonces to avoid replay attacks
+* be ultra careful with any generated Scheme code that is actually run; defense in depth, extreme paranoia
+* security audit by experts
 
 
 GUI can now stream multiple results from multiple synthesis-finished message, but in an ugly way.  Clean up the messages!
