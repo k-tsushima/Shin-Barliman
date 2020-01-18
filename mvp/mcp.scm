@@ -109,7 +109,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     (print-scp-info-table)
     (printf "\n\n")))
 
-(define add/update-num-processors-for-scp
+(define add/update-num-processors-for-scp-in-scp-table
   (lambda (scp-id num-processors)
     (let ((scp-info-entry (assoc scp-id *scp-info*)))
       (pmatch scp-info-entry
@@ -369,7 +369,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            message is sent, in mcp-scp-tcp-proxy.
            |#
            [(num-processes ,num-processors ,scp-id)
-            (add/update-num-processors-for-scp scp-id num-processors)]
+            (add/update-num-processors-for-scp-in-scp-table scp-id num-processors)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
             (let ((pr (assoc scp-id *scp-info*)))
               (pmatch pr
