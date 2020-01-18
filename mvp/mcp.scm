@@ -130,7 +130,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
   *scp-pid-box*)
 
 (start-subprocess!
-  (format "exec ~a ~a ~a" CHEZ-BINARY-PATH CHEZ-FLAGS)
+  (format "exec ~a ~a ~a" SYNTHESIS-TASK-COMPILER-FILE CHEZ-BINARY-PATH CHEZ-FLAGS)
   *synthesis-task-compiler-out-port-box*
   *synthesis-task-compiler-in-port-box*
   *synthesis-task-compiler-err-port-box*
