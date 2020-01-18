@@ -73,15 +73,82 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 ;; (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 (define *finished-synthesis-tasks* '())
 
+(define print-task
+  (lambda (task)
+    (pmatch task
+      [(,synthesis-task-id (,definitions ,inputs ,outputs))
+       (printf "(")
+       (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
+       (printf " (\n")
+       (printf "  ;; definitions:\n")
+       (printf "  ~s\n\n" definitions)
+       (printf "  ;; inputs:\n")
+       (printf "  ~s\n\n" inputs)
+       (printf "  ;; outputs:\n")
+       (printf "  ~s\n" outputs)
+       (printf " )\n")
+       (printf ")\n")
+       ]
+      [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
+       (printf "(")
+       (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
+       (printf " ~s ;; scp-id\n" scp-id)
+       (printf " (\n")
+       (printf "  ;; definitions:\n")
+       (printf "  ~s\n\n" definitions)
+       (printf "  ;; inputs:\n")
+       (printf "  ~s\n\n" inputs)
+       (printf "  ;; outputs:\n")
+       (printf "  ~s\n" outputs)
+       (printf " )\n")
+       (printf ")\n")
+       ]
+      [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
+       (printf "(")
+       (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
+       (printf " ~s ;; scp-id\n" scp-id)
+       (printf " (\n")
+       (printf "  ;; definitions:\n")
+       (printf "  ~s\n\n" definitions)
+       (printf "  ;; inputs:\n")
+       (printf "  ~s\n\n" inputs)
+       (printf "  ;; outputs:\n")
+       (printf "  ~s\n" outputs)
+       (printf " )\n")
+       (printf " ~s ;; results\n" results)
+       (printf " ~s ;; statistics\n" statistics)
+       (printf ")\n")
+       ]
+      [else
+       (printf "*** unexpected task format passed to print-task:\n\n~s\n\n" task)])))
+
+(define print-table
+  (lambda (table)
+    (printf "(\n")
+    (let loop ((e* table))
+      (pmatch e*
+        [()
+         (void)]
+        [(,e)
+         (printf "  ~s\n" e)]
+        [(,e . ,rest)
+         (printf "  ~s\n\n" e)
+         (loop rest)]))
+    (printf ")\n")))
+
 (define-syntax add-synthesis-task!
   (syntax-rules ()
     [(_ task table)
      (if (not (member task table))
          (begin
            (set! table (cons task table))
-           (printf "added synthesis task:\n~s\nto ~s to produce:\n~s\n\n" task 'table table))
+           (printf "added to ~s synthesis task:\n\n" 'table)
+           (print-task task)
+           (printf "\nto produce updated ~s table:\n\n" 'table)
+           (print-table table)
+           (printf "\n\n"))
          (begin
-           (printf "*** uh oh!  task:\n~s\nalready exists in ~s with entries:\n~s\n"
+           (printf "*** uh oh!  task:\n~s\nalready exists in table ~s with entries:\n~s\n"
                    task 'table table)
            (printf "*** refusing to add duplicate entry!\n\n")))]))
 
@@ -91,7 +158,11 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
      (if (member task table)
          (begin
            (set! table (remove task table))
-           (printf "removed synthesis task:\n~s\nfrom ~s to produce:\n~s\n\n" task 'table table))
+           (printf "removed from ~s synthesis task:\n\n" 'table)
+           (print-task task)
+           (printf "\nto produce updated ~s table:\n\n" 'table)
+           (print-table table)
+           (printf "\n\n"))
          (begin
            (printf
             "*** uh oh!  task:\n~s\ndoesn't exist in table ~s with entries:\n~s\n"
@@ -103,7 +174,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     [(_ table)
      (begin
        (set! table '())
-       (printf "removed all synthesis tasks from table:\n~s\n\n" 'table))]))
+       (printf "removed all synthesis tasks from table ~s\n\n" 'table))]))
 
 (define-syntax write/flush
   (syntax-rules ()
@@ -273,8 +344,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             (let ((pr (assoc synthesis-id *running-synthesis-tasks*)))
               (pmatch pr
                 [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
-                 (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs) ,val ,statistics) *finished-synthesis-tasks*)
-                 (remove-synthesis-task! pr *running-synthesis-tasks*)]
+                 (remove-synthesis-task! pr *running-synthesis-tasks*)
+                 (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs) ,val ,statistics) *finished-synthesis-tasks*)]
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc synthesis-id *running-synthesis-tasks*): ~s ~s"
                                    synthesis-id *running-synthesis-tasks*))]))
