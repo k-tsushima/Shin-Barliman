@@ -71,6 +71,15 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 (define *finished-synthesis-tasks* '())
 
 
+(define-syntax write/flush
+  (syntax-rules ()
+    [(_ msg out-port)
+     (begin
+       (write msg out-port)
+       (flush-output-port out-port)
+       (printf "wrote message ~s to ~s\n" msg 'out-port))]))
+
+
 (define (start-subprocess! command to-stdin-box from-stdout-box from-stderr-box process-id-box)
   (printf "starting subprocess with command:\n~s\n" command)
   (let-values ([(to-stdin from-stdout from-stderr process-id)
@@ -118,8 +127,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (pmatch msg
            [(stop)
             (printf "writing stop-all-synthesis message\n")
-            (write `(stop-all-synthesis) scp-out-port)
-            (flush-output-port scp-out-port)
+            (write/flush `(stop-all-synthesis) scp-out-port)
             (printf "wrote stop-all-synthesis message\n")
             (printf "removing all synthesis-task-ids from *scp-info* table\n")
             (set! *scp-info* (map (lambda (info)
@@ -133,8 +141,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             (set! *running-synthesis-tasks* '())
             (printf "removed all tasks from *pending-synthesis-tasks* and *running-synthesis-tasks* tables\n")
             (printf "writing stopped message to ui\n")
-            (write `(stopped) ui-out-port)
-            (flush-output-port ui-out-port)
+            (write/flush `(stopped) ui-out-port)
             (printf "wrote stopped message to ui\n")]
            [(synthesize ,synthesis-id (,definitions ,inputs ,outputs))
             ;; TODO
@@ -176,12 +183,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (printf "found an scp with ~s free processors!\n"
                             (- num-processors (length synthesis-task-id*)))
                     (printf "sending synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
-                    (write `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
-                    (flush-output-port scp-out-port)
+                    (write/flush `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
                     (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
                     (printf "sending synthesizing message to ui\n")
-                    (write `(synthesizing ,synthesis-id) ui-out-port)
-                    (flush-output-port ui-out-port)
+                    (write/flush `(synthesizing ,synthesis-id) ui-out-port)
                     (printf "sent synthesizing message to ui\n")
 
                     (set! *scp-info*
@@ -256,8 +261,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc synthesis-id *running-synthesis-tasks*): ~s ~s"
                                    synthesis-id *running-synthesis-tasks*))]))
-            (write `(synthesis-finished ,synthesis-id ,val ,statistics) ui-out-port)
-            (flush-output-port ui-out-port)
+            (write/flush `(synthesis-finished ,synthesis-id ,val ,statistics) ui-out-port)
             (printf "wrote synthesis-finished message to ui\n")
             
             (printf "checking if there is a pending synthesis task for the newly free processor:\n~s\n"
@@ -284,8 +288,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                
                (let ((msg `(synthesize ,scp-id ,synthesis-task-id (,definitions ,inputs ,outputs))))
                  (printf "sending message ~s to scp ~s\n" msg scp-id)
-                 (write msg scp-out-port)
-                 (flush-output-port scp-out-port)
+                 (write/flush msg scp-out-port)
                  (printf "sent message ~s to scp ~s\n" msg scp-id))])]
            [,else
             (printf "** unknown message type from scp: ~s\n" msg)]))))))
