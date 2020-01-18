@@ -201,7 +201,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
               (pmatch scp-info
                 (()
 
-                 (add-synthesis-task! `(,synthesis-id (,definitions ,inputs ,outputs)) *pending-synthesis-tasks*)
+                 (add-synthesis-task! `(,synthesis-id (,definitions ,inputs ,outputs))
+                                      *pending-synthesis-tasks*)
                  
                  (printf "no SCPs available!  Added task to *pending-synthesis-tasks* table:\n~s\n"
                          *pending-synthesis-tasks*))
@@ -213,7 +214,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (printf "found an scp with ~s free processors!\n"
                             (- num-processors (length synthesis-task-id*)))
                     (printf "sending synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
-                    (write/flush `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
+                    (write/flush `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs))
+                                 scp-out-port)
                     (printf "sent synthesize message for mcp-scp-tcp-proxy to forward to scp\n")
                     (printf "sending synthesizing message to ui\n")
                     (write/flush `(synthesizing ,synthesis-id) ui-out-port)
@@ -223,7 +225,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                           (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
                                 (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
 
-                    (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
+                    (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                                         *running-synthesis-tasks*)
 
                     ;; TODO hack to test multiple SCPs! remove!!!
                     (loop rest)
@@ -313,8 +316,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                (printf "first pending synthesis task is: ~s\n"
                        `(,synthesis-id (,definitions ,inputs ,outputs)))
                
-               (remove-synthesis-task! `(,synthesis-id (,definitions ,inputs ,outputs)) *pending-synthesis-tasks*)
-               (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
+               (remove-synthesis-task! `(,synthesis-id (,definitions ,inputs ,outputs))
+                                       *pending-synthesis-tasks*)
+               (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                                    *running-synthesis-tasks*)
 
                (let ((msg `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs))))
                  (printf "sending message ~s to scp ~s\n" msg scp-id)
