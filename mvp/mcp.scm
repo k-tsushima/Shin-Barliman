@@ -119,69 +119,67 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
 
 (define print-task
-  (lambda (task)
-    (pmatch task
-      [(,synthesis-task-id (,definitions ,inputs ,outputs))
-       (printf "(")
-       (printf "~s ;; synthesis-task-id\n\n" synthesis-task-id)
-       (printf " (\n")
-       (printf "  ;; definitions:\n")
-       (printf "  ~s\n\n" definitions)
-       (printf "  ;; inputs:\n")
-       (printf "  ~s\n\n" inputs)
-       (printf "  ;; outputs:\n")
-       (printf "  ~s\n" outputs)
-       (printf " )\n")
-       (printf ")\n")
-       ]
-      [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
-       (printf "(")
-       (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
-       (printf " ~s ;; scp-id\n\n" scp-id)
-       (printf " (\n")
-       (printf "  ;; definitions:\n")
-       (printf "  ~s\n\n" definitions)
-       (printf "  ;; inputs:\n")
-       (printf "  ~s\n\n" inputs)
-       (printf "  ;; outputs:\n")
-       (printf "  ~s\n" outputs)
-       (printf " )\n")
-       (printf ")\n")
-       ]
-      [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
-       (printf "(")
-       (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
-       (printf " ~s ;; scp-id\n\n" scp-id)
-       (printf " (\n")
-       (printf "  ;; definitions:\n")
-       (printf "  ~s\n\n" definitions)
-       (printf "  ;; inputs:\n")
-       (printf "  ~s\n\n" inputs)
-       (printf "  ;; outputs:\n")
-       (printf "  ~s\n" outputs)
-       (printf " )\n\n")
-       (printf " ;; results\n")
-       (printf " ~s\n\n" results)
-       (printf " ;; statistics\n")
-       (printf " ~s\n\n" statistics)
-       (printf ")\n")
-       ]
-      [else
-       (printf "*** unexpected task format passed to print-task:\n\n~s\n\n" task)])))
+  (lambda (task . args)
+    (let ((prefix-str (if (= (length args) 1) (car args) "")))
+      (pmatch task
+        [(,synthesis-task-id (,definitions ,inputs ,outputs))
+         (printf "~a(" prefix-str)
+         (printf "~s ;; synthesis-task-id\n\n" synthesis-task-id)
+         (printf "~a (\n" prefix-str)
+         (printf "~a  ;; definitions:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str definitions)
+         (printf "~a  ;; inputs:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str inputs)
+         (printf "~a  ;; outputs:\n" prefix-str)
+         (printf "~a  ~s\n" prefix-str outputs)
+         (printf "~a )\n" prefix-str)
+         (printf "~a)\n" prefix-str)
+         ]
+        [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
+         (printf "~a(" prefix-str)
+         (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
+         (printf "~a ~s ;; scp-id\n\n" prefix-str scp-id)
+         (printf "~a (\n" prefix-str)
+         (printf "~a  ;; definitions:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str definitions)
+         (printf "~a  ;; inputs:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str inputs)
+         (printf "~a  ;; outputs:\n" prefix-str)
+         (printf "~a  ~s\n" prefix-str outputs)
+         (printf "~a )\n" prefix-str)
+         (printf "~a)\n" prefix-str)
+         ]
+        [(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
+         (printf "~a(" prefix-str)
+         (printf "~s ;; synthesis-task-id\n" synthesis-task-id)
+         (printf "~a ~s ;; scp-id\n\n" prefix-str scp-id)
+         (printf "~a (\n" prefix-str)
+         (printf "~a  ;; definitions:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str definitions)
+         (printf "~a  ;; inputs:\n" prefix-str)
+         (printf "~a  ~s\n\n" prefix-str inputs)
+         (printf "~a  ;; outputs:\n" prefix-str)
+         (printf "~a  ~s\n" prefix-str outputs)
+         (printf "~a )\n\n" prefix-str)
+         (printf "~a ;; results\n" prefix-str)
+         (printf "~a ~s\n\n" prefix-str results)
+         (printf "~a ;; statistics\n" prefix-str)
+         (printf "~a ~s\n\n" prefix-str statistics)
+         (printf "~a)\n" prefix-str)
+         ]
+        [else
+         (printf "*** unexpected task format passed to print-task:\n\n~s\n\n" task)]))))
 
-(define print-table
+(define print-synthesis-task-table
   (lambda (table)
-    (printf "(\n")
-    (let loop ((e* table))
-      (pmatch e*
-        [()
-         (void)]
-        [(,e)
-         (printf "  ~s\n" e)]
-        [(,e . ,rest)
-         (printf "  ~s\n\n" e)
-         (loop rest)]))
+    (printf "(\n\n")
+    (for-each
+      (lambda (e)
+        (print-task e "  ")
+        (printf "\n"))
+      table)
     (printf ")\n")))
+
 
 (define-syntax add-synthesis-task!
   (syntax-rules ()
@@ -192,7 +190,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            (printf "added to ~s synthesis task:\n\n" 'table)
            (print-task task)
            (printf "\nto produce updated ~s table:\n\n" 'table)
-           (print-table table)
+           (print-synthesis-task-table table)
            (printf "\n\n"))
          (begin
            (printf "*** uh oh!  task:\n~s\nalready exists in table ~s with entries:\n~s\n"
@@ -208,7 +206,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            (printf "removed from ~s synthesis task:\n\n" 'table)
            (print-task task)
            (printf "\nto produce updated ~s table:\n\n" 'table)
-           (print-table table)
+           (print-synthesis-task-table table)
            (printf "\n\n"))
          (begin
            (printf
