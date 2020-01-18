@@ -199,7 +199,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (printf "updated *running-synthesis-tasks*:\n~s\n" *running-synthesis-tasks*)
 
                     ;; TODO hack to test multiple SCPs! remove!!!
-                    (loop rest)
+                    ;; (loop rest)
                     ;; TODO end of hack
                     ]
                    [else
