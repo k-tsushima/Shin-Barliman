@@ -73,6 +73,25 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 ;; (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 (define *finished-synthesis-tasks* '())
 
+(define add/update-num-processors-for-scp
+  (lambda (scp-id num-processors)
+    (let ((scp-info-entry (assoc scp-id *scp-info*)))
+      (pmatch scp-info-entry
+        [(,scp-id ,old-num-processors ,synthesis-task-id*)
+         (printf "updating scp info for scp-id ~s, from ~s processors to ~s processors\n\n"
+                 scp-id old-num-processors num-processors)
+         (set! *scp-info*
+               (cons `(,scp-id ,num-processors ,synthesis-task-id*)
+                     (remove scp-info-entry *scp-info*)))]
+        [#f
+         (printf "adding scp info for new scp-id ~s, with ~s processors\n\n"
+                 scp-id num-processors)
+         (set! *scp-info*
+               (cons `(,scp-id ,num-processors ())
+                     *scp-info*))])
+      (printf "updated *scp-info* table:\n~s\n\n" *scp-info*))))
+
+
 (define print-task
   (lambda (task)
     (pmatch task
@@ -319,19 +338,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            The `(hello) message is received, and the `(scp-id ,scp-id)
            message is sent, in mcp-scp-tcp-proxy.
            |#
-           [(num-processes ,number-of-synthesis-subprocesses ,scp-id)
-            ;; Add or update SCP/num-subprocesses info in the *scp-info* table
-            (let ((pr (assoc scp-id *scp-info*)))
-              (pmatch pr
-                [(,scp-id ,old-num-processors ,synthesis-task-id*)
-                 (set! *scp-info*
-                       (cons `(,scp-id ,number-of-synthesis-subprocesses ,synthesis-task-id*)
-                             (remove pr *scp-info*)))]
-                [#f
-                 (set! *scp-info*
-                       (cons `(,scp-id ,number-of-synthesis-subprocesses ())
-                             *scp-info*))]))
-            (printf "updated *scp-info* table: ~s\n\n" *scp-info*)]
+           [(num-processes ,num-processors ,scp-id)
+            (add/update-num-processors-for-scp scp-id num-processors)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
             (let ((pr (assoc scp-id *scp-info*)))
               (pmatch pr
