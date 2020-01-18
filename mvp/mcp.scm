@@ -19,13 +19,16 @@ efficient synthesis.
 (load "pmatch.scm")
 (load "common.scm")
 
-;; Loading will occur at first use if not explicitly forced like this.
+;; Loading configuration files will occur at first use if not
+;; explicitly forced like this.
 (load-config #t)
 
 (define RACKET-BINARY-PATH (config-ref 'racket-binary-path))
 
 (define CHEZ-BINARY-PATH (config-ref 'chez-binary-path))
-(define CHEZ-FLAGS "-q")
+(define CHEZ-FLAGS "-q") ;; '-q' (quiet) supresses the Chez startup
+                         ;; banner, which would otherwise appear as a
+                         ;; message sent from the subprocess
 
 (define MCP-UI-TCP-PROXY-FILE "mcp-ui-tcp-proxy.rkt")
 (define MCP-SCP-TCP-PROXY-FILE "mcp-scp-tcp-proxy.rkt")
