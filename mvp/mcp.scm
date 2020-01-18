@@ -97,6 +97,18 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     *scp-info*)
   (printf ")\n"))
 
+(define remove-all-synthesis-task-ids-from-scp-table
+  (lambda ()
+    (set! *scp-info* (map (lambda (info)
+                            (pmatch info
+                              [(,scp-id ,num-processors ,synthesis-task-id*)
+                               `(,scp-id ,num-processors ())]))
+                          *scp-info*))
+    (printf "removed all synthesis-task-ids from *scp-info* table\n")
+    (printf "updated *scp-info* table:\n")
+    (print-scp-info-table)
+    (printf "\n\n")))
+
 (define add/update-num-processors-for-scp
   (lambda (scp-id num-processors)
     (let ((scp-info-entry (assoc scp-id *scp-info*)))
@@ -279,13 +291,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (pmatch msg
            [(stop)
             (write/flush `(stop-all-synthesis) scp-out-port)
-            (printf "removing all synthesis-task-ids from *scp-info* table\n\n")
-            (set! *scp-info* (map (lambda (info)
-                                    (pmatch info
-                                      [(,scp-id ,num-processors ,synthesis-task-id*)
-                                       `(,scp-id ,num-processors ())]))
-                                  *scp-info*))
-            (printf "removed all synthesis-task-ids from *scp-info* table\n\n")
+            (remove-all-synthesis-task-ids-from-scp-table)
             (remove-all-synthesis-tasks! *pending-synthesis-tasks*)
             (remove-all-synthesis-tasks! *running-synthesis-tasks*)
             (write/flush `(stopped) ui-out-port)]
