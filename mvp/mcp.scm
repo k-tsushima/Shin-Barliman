@@ -73,6 +73,30 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 ;; (,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 (define *finished-synthesis-tasks* '())
 
+(define print-scp-info-entry
+  (lambda (scp-info-entry . args)
+    (let ((prefix-str (if (= (length args) 1) (car args) "")))
+      (pmatch scp-info-entry
+        [(,scp-id ,num-processors ,synthesis-task-id*)
+         (printf "~a(" prefix-str)
+         (printf "~s ;; scp-id\n" scp-id)
+         (printf "~a ~s ;; num-processors\n" prefix-str num-processors)
+         (printf "~a ;; synthesis-task-id*:\n" prefix-str)
+         (printf "~a ~s\n" prefix-str synthesis-task-id*)
+         (printf "~a)\n" prefix-str)
+         ]
+        [else
+         (printf "*** unexpected scp-info-entry passed to print-scp-info-entry:\n\n~s\n\n" scp-info-entry)]))))
+
+(define (print-scp-info-table)
+  (printf "(\n\n")
+  (for-each
+    (lambda (e)
+      (print-scp-info-entry e "  ")
+      (printf "\n"))
+    *scp-info*)
+  (printf ")\n"))
+
 (define add/update-num-processors-for-scp
   (lambda (scp-id num-processors)
     (let ((scp-info-entry (assoc scp-id *scp-info*)))
@@ -89,7 +113,9 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (set! *scp-info*
                (cons `(,scp-id ,num-processors ())
                      *scp-info*))])
-      (printf "updated *scp-info* table:\n~s\n\n" *scp-info*))))
+      (printf "updated *scp-info* table:\n")
+      (print-scp-info-table)
+      (printf "\n\n"))))
 
 
 (define print-task
