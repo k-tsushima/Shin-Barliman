@@ -199,6 +199,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             ;; message that is handled by the mcp-scp-tcp-proxy, which
             ;; then strips out some of the info when forwarding the
             ;; synthesize message to the SCP.
+            (printf "*scp-info*:\n~s\n" *scp-info*)
             (let loop ((scp-info *scp-info*))
               (pmatch scp-info
                 (()
@@ -229,7 +230,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                                          *running-synthesis-tasks*)
 
                     ;; TODO hack to test multiple SCPs! remove!!!
-                    (loop rest)
+                    ;;(loop rest)
                     ;; TODO end of hack
                     ]
                    [else
