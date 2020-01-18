@@ -77,7 +77,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
      (begin
        (write msg out-port)
        (flush-output-port out-port)
-       (printf "wrote message ~s to ~s\n" msg 'out-port))]))
+       (printf "wrote msg to ~s:\n~s\n" 'out-port msg))]))
 
 
 (define (start-subprocess! command to-stdin-box from-stdout-box from-stderr-box process-id-box)
