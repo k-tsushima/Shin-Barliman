@@ -371,6 +371,9 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            [(num-processes ,num-processors ,scp-id)
             (add/update-num-processors-for-scp-in-scp-table scp-id num-processors)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
+
+            (printf "removing synthesis-id ~s from synthesis-task-id* for scp ~s in scp-info table\n\n"
+                    synthesis-id scp-id)
             (let ((pr (assoc scp-id *scp-info*)))
               (pmatch pr
                 [(,scp-id ,num-processors ,synthesis-task-id*)
@@ -381,6 +384,9 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc scp-id *scp-info*): ~s ~s"
                                    scp-id *scp-info*))]))
+
+            (printf "moving synthesis task ~s from scp ~s running to finished...\n\n"
+                    synthesis-id scp-id)
             (let ((pr (assoc synthesis-id *running-synthesis-tasks*)))
               (pmatch pr
                 [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
