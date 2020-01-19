@@ -103,7 +103,7 @@
                  *scp-connections*)))
             (logf "broadcasted stop-all-synthesis message to each active SCP\n")
             (loop (read))]
-           [`(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs))
+           [`(synthesize ,scp-id (,ui-synthesis-id ,mcp-synthesis-id) (,definitions ,inputs ,outputs))
             (logf "sending synthesize message to SCP ~s\n" scp-id)
             (call-with-semaphore
              scp-connections-semaphore
@@ -113,7 +113,7 @@
                   (lambda (e)
                     (match e
                       [`(,scp-id ,input-tcp-port ,output-tcp-port)
-                       (let ((msg `(synthesize ((,definitions ,inputs ,outputs ,synthesis-id)))))
+                       (let ((msg `(synthesize ((,definitions ,inputs ,outputs (,ui-synthesis-id ,mcp-synthesis-id))))))
                          (if (port-closed? output-tcp-port)
                              (begin
                                (logf "output port for SCP ~s is closed--can't send synthesize message ~s!\n" scp-id msg))

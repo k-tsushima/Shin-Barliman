@@ -1,5 +1,5 @@
 (load "pmatch.scm")
-(load "common.scm")
+(load "common-chez.scm")
 (load "mk-chez.scm")
 (load "mk.scm")
 (load "interp.scm")

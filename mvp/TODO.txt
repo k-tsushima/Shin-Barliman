@@ -5,9 +5,9 @@ Overall/Project-wide
 
 *** Weird behavior
 
-If `mcp.scm contains a runtime error that crashes it, it seems that one or more of the Racket subprocesses may not be cleaned up properly.
+If `mcp.scm contains a runtime error that crashes it, it seems that one or more of the Racket or Scheme subprocesses may not be cleaned up properly.
 
-When this happens, the GUI will not receive a synthesized program from the MCP after clicking on the `Synthesize` button.
+When this happens, the GUI may not receive a synthesized program from the MCP after clicking on the `Synthesize` button.
 
 Also, SCPs that are started up afterwards will have `scp-ids` starting from a number greater than 0.
 
@@ -17,7 +17,7 @@ You can see this by running:
 
 `top -o pid`
 
-in the Terminal after quitting Shin-Barliman.  If you still see one or more Racket processes running, when you expected none to be running, you probably have a rogue subprocess still running.
+in the Terminal after quitting Shin-Barliman.  If you still see one or more Scheme or Racket processes running, when you expected none to be running, you probably have a rogue subprocess still running.
 
 You can get rid of the rogue subprocess using:
 
@@ -29,7 +29,7 @@ Actually, these PIDs are known, since the MCP prints out the PIDs of the subproc
 
 What is a more robust way to clean up the subprocesses?
 
-Could potentially have a 'self-desctruct' message that a newly-started MCP sends to any Racket processes that might still be connected to the TCP ports of interest, before starting new subprocesses.  Also, is there some way for the MCP to determine that the Racket message proxies are already running (when they shouldn't be)?  If nothing else, MCP could detect if the scp-ids don't start from 0 (although must beware of race condition, since the SCP assigned scp-id 0 might not be the first SCP to send the `num-processors` message to the MCP.
+Could potentially have a 'self-destruct' message that a newly-started MCP sends to any Racket or Scheme processes that might still be connected to the TCP ports of interest, before starting new subprocesses.  Also, is there some way for the MCP to determine that the Racket message proxies are already running (when they shouldn't be)?  If nothing else, MCP could detect if the scp-ids don't start from 0 (although must beware of race condition, since the SCP assigned scp-id 0 might not be the first SCP to send the `num-processors` message to the MCP.  Be careful, though, since sometimes Scheme processes are still running as well!
 
 ----
 
