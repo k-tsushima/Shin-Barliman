@@ -1,11 +1,43 @@
 Overall/Project-wide
 ====================
 
+----
+
+*** Weird behavior
+
+If `mcp.scm contains a runtime error that crashes it, it seems that one or more of the Racket subprocesses may not be cleaned up properly.
+
+When this happens, the GUI will not receive a synthesized program from the MCP after clicking on the `Synthesize` button.
+
+Also, SCPs that are started up afterwards will have `scp-ids` starting from a number greater than 0.
+
+This suggests that a rogue `mcp-scp-tcp-proxy.rkt` is still running from before, and intercepting messages.
+
+You can see this by running:
+
+`top -o pid`
+
+in the Terminal after quitting Shin-Barliman.  If you still see one or more Racket processes running, when you expected none to be running, you probably have a rogue subprocess still running.
+
+You can get rid of the rogue subprocess using:
+
+`kill -9 <pid>`
+
+where <pid> is the process id of the rogue process.
+
+Actually, these PIDs are known, since the MCP prints out the PIDs of the subprocesses it spawns.  We could write these PIDs to a file, and check that they aren't still running after we quit Shin-Barliman.
+
+What is a more robust way to clean up the subprocesses?
+
+----
+
+
 Appears to be a race condition in the MCP handling of sending pending tasks to the SCP that just sent a synthesized-finished message.  Something with promoting pending to running, perhaps.
 
 When a new SCP connects to MCP, MCP should send SCP pending tasks (up to the processor capacity).
 
 Test that GUI can send tasks to MCP, even if no SCP is connected, and that connecting one or more SCPs afterwards will "drain" the pending tasks.
+
 
 
 Security:
