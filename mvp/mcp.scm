@@ -215,13 +215,13 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
      (if (not (member task table))
          (begin
            (set! table (cons task table))
-           (printf "added to ~s synthesis task:\n\n" 'table)
+           (printf "added to the ~s table the synthesis task:\n\n" 'table)
            (print-task task)
-           (printf "\nto produce updated ~s table:\n\n" 'table)
+           (printf "\nto produce the updated ~s table:\n\n" 'table)
            (print-synthesis-task-table table)
            (printf "\n\n"))
          (begin
-           (printf "*** uh oh!  task:\n~s\nalready exists in table ~s with entries:\n~s\n"
+           (printf "*** uh oh!  synthesis task:\n~s\nalready exists in ~s table with entries:\n~s\n"
                    task 'table table)
            (printf "*** refusing to add duplicate entry!\n\n")))]))
 
@@ -231,14 +231,14 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
      (if (member task table)
          (begin
            (set! table (remove task table))
-           (printf "removed from ~s synthesis task:\n\n" 'table)
+           (printf "removed from the ~s table the synthesis task:\n\n" 'table)
            (print-task task)
-           (printf "\nto produce updated ~s table:\n\n" 'table)
+           (printf "\nto produce the updated ~s table:\n\n" 'table)
            (print-synthesis-task-table table)
            (printf "\n\n"))
          (begin
            (printf
-            "*** uh oh!  task:\n~s\ndoesn't exist in table ~s with entries:\n~s\n"
+            "*** uh oh!  synthesis task:\n~s\ndoesn't exist in ~s table with entries:\n~s\n"
             task 'table table)
            (printf "*** cannot remove entry!\n\n")))]))
 
@@ -247,7 +247,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     [(_ table)
      (begin
        (set! table '())
-       (printf "removed all synthesis tasks from table ~s\n\n" 'table))]))
+       (printf "removed all synthesis tasks from the ~s table\n\n" 'table))]))
 
 (define-syntax write/flush
   (syntax-rules ()
@@ -394,10 +394,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
             (printf "moving synthesis task ~s from scp ~s running to finished...\n\n"
                     synthesis-id scp-id)
-            (let ((pr (assoc synthesis-id *running-synthesis-tasks*)))
-              (pmatch pr
+            (let ((running-task (assoc synthesis-id *running-synthesis-tasks*)))
+              (pmatch running-task
                 [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
-                 (remove-synthesis-task! pr *running-synthesis-tasks*)
+                 (remove-synthesis-task! running-task *running-synthesis-tasks*)
                  (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs) ,val ,statistics) *finished-synthesis-tasks*)]
                 [#f (error 'synthesis-finished
                            (format "unexpected #f from (assoc synthesis-id *running-synthesis-tasks*): ~s ~s"
