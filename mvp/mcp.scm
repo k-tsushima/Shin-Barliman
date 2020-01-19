@@ -176,7 +176,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (printf "~a ;; results\n" prefix-str)
          (printf "~a ~s\n\n" prefix-str results)
          (printf "~a ;; statistics\n" prefix-str)
-         (printf "~a ~s\n\n" prefix-str statistics)
+         (printf "~a ~s\n" prefix-str statistics)
          (printf "~a)\n" prefix-str)
          ]
         [else
