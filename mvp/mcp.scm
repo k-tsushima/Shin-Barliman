@@ -104,8 +104,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                               [(,scp-id ,num-processors ,synthesis-task-id*)
                                `(,scp-id ,num-processors ())]))
                           *scp-info*))
-    (printf "removed all synthesis-task-ids from *scp-info* table\n")
-    (printf "updated *scp-info* table:\n")
+    (printf "removed all synthesis-task-ids from *scp-info* table\n\n")
+    (printf "updated *scp-info* table:\n\n")
     (print-scp-info-table)
     (printf "\n\n")))
 
@@ -119,7 +119,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                      (remove scp-info-entry *scp-info*)))
          (printf "removed synthesis-id ~s from synthesis-task-id* for scp ~s in *scp-info* table\n\n"
                  synthesis-id scp-id)
-         (printf "updated *scp-info* table:\n")
+         (printf "updated *scp-info* table:\n\n")
          (print-scp-info-table)
          (printf "\n\n")]
         [#f (printf "*** tried to remove synthesis-id ~s from scp-id ~s, but no entry for scp-id ~s found in *scp-info* table:\n~s"
@@ -141,7 +141,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
          (set! *scp-info*
                (cons `(,scp-id ,num-processors ())
                      *scp-info*))])
-      (printf "updated *scp-info* table:\n")
+      (printf "updated *scp-info* table:\n\n")
       (print-scp-info-table)
       (printf "\n\n"))))
 
@@ -255,7 +255,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
      (begin
        (write msg out-port)
        (flush-output-port out-port)
-       (printf "wrote msg to ~s:\n~s\n\n" 'out-port msg))]))
+       (printf "wrote msg to ~s:\n\n~s\n\n\n" 'out-port msg))]))
 
 
 (define (start-subprocess! command to-stdin-box from-stdout-box from-stderr-box process-id-box)
@@ -303,7 +303,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
         ((eof-object? msg)
          (void))
         (else
-         (printf "read message from ui:\n~s\n\n" msg)
+         (printf "read message from ui:\n\n~s\n\n\n" msg)
          (pmatch msg
            [(stop)
             (write/flush `(stop-all-synthesis) scp-out-port)
@@ -380,7 +380,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
         ((eof-object? msg)
          (void))
         (else
-         (printf "read message from scp:\n~s\n\n" msg)
+         (printf "read message from scp:\n\n~s\n\n\n" msg)
          (pmatch msg
            #|
            The `(hello) message is received, and the `(scp-id ,scp-id)
@@ -392,11 +392,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
             
             (remove-synthesis-id-for-scp-in-scp-table! synthesis-id scp-id)
 
-            (printf "moving synthesis task ~s from scp ~s running to finished...\n\n"
-                    synthesis-id scp-id)
             (let ((running-task (assoc synthesis-id *running-synthesis-tasks*)))
               (pmatch running-task
                 [(,synthesis-id ,scp-id (,definitions ,inputs ,outputs))
+                 (printf "moving running synthesis task:\n\n~s\n\nfrom running to finished...\n\n" running-task)
                  (remove-synthesis-task! running-task *running-synthesis-tasks*)
                  (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs) ,val ,statistics) *finished-synthesis-tasks*)]
                 [#f (error 'synthesis-finished
@@ -405,7 +404,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
             (write/flush `(synthesis-finished ,synthesis-id ,val ,statistics) ui-out-port)
             
-            (printf "checking if there is a pending synthesis task for the newly free processor:\n~s\n\n"
+            (printf "checking if there is a pending synthesis task for the newly free processor:\n\n~s\n\n"
                     *pending-synthesis-tasks*)
             (pmatch *pending-synthesis-tasks*
               [()
@@ -414,7 +413,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
               [(,pending-task . ,rest)
                (pmatch pending-task
                  [(,synthesis-task-id (,definitions ,inputs ,outputs))
-                  (printf "moving pending synthesis task: ~s\nfrom pending to running...\n\n" pending-task)
+                  (printf "moving pending synthesis task:\n\n~s\n\nfrom pending to running...\n\n" pending-task)
                   (remove-synthesis-task! pending-task *pending-synthesis-tasks*)
                   (add-synthesis-task! `(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
                   (let ((msg `(synthesize ,scp-id ,synthesis-task-id (,definitions ,inputs ,outputs))))
@@ -432,7 +431,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
         ((eof-object? msg)
          (void))
         (else
-         (printf "read message from synthesis-task-compiler:\n~s\n\n" msg)
+         (printf "read message from synthesis-task-compiler:\n\n~s\n\n\n" msg)
          (pmatch msg
            ;;
            [,else
