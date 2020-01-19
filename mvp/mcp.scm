@@ -109,6 +109,22 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
     (print-scp-info-table)
     (printf "\n\n")))
 
+(define remove-synthesis-id-for-scp-in-scp-table
+  (lambda (synthesis-id scp-id)
+    (let ((scp-info-entry (assoc scp-id *scp-info*)))
+      (pmatch scp-info-entry
+        [(,scp-id ,num-processors ,synthesis-task-id*)
+         (set! *scp-info*
+               (cons `(,scp-id ,num-processors ,(remove synthesis-id synthesis-task-id*))
+                     (remove scp-info-entry *scp-info*)))
+         (printf "removed synthesis-id ~s from synthesis-task-id* for scp ~s in *scp-info* table\n\n"
+                 synthesis-id scp-id)
+         (printf "updated *scp-info* table:\n")
+         (print-scp-info-table)
+         (printf "\n\n")]
+        [#f (printf "*** tried to remove synthesis-id ~s from scp-id ~s, but no entry for scp-id ~s found in *scp-info* table:\n~s"
+                    synthesis-id scp-id scp-id *scp-info*)]))))
+
 (define add/update-num-processors-for-scp-in-scp-table
   (lambda (scp-id num-processors)
     (let ((scp-info-entry (assoc scp-id *scp-info*)))
@@ -335,7 +351,7 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (write/flush `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
                     (write/flush `(synthesizing ,synthesis-id) ui-out-port)
 
-                    (printf "adding synthesis-id ~s to synthesis-task-id* for ~s in scp-info table\n\n"
+                    (printf "adding synthesis-id ~s to synthesis-task-id* for ~s in *scp-info* table\n\n"
                             synthesis-id scp-id)
                     (set! *scp-info*
                           (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
@@ -373,19 +389,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
            [(num-processes ,num-processors ,scp-id)
             (add/update-num-processors-for-scp-in-scp-table scp-id num-processors)]
            [(synthesis-finished ,scp-id ,synthesis-id ,val ,statistics)
-
-            (printf "removing synthesis-id ~s from synthesis-task-id* for scp ~s in scp-info table\n\n"
-                    synthesis-id scp-id)
-            (let ((pr (assoc scp-id *scp-info*)))
-              (pmatch pr
-                [(,scp-id ,num-processors ,synthesis-task-id*)
-                 (set! *scp-info*
-                       (cons `(,scp-id ,num-processors ,(remove synthesis-id synthesis-task-id*))
-                             (remove pr *scp-info*)))
-                 (printf "updated *scp-info* table: ~s\n\n" *scp-info*)]
-                [#f (error 'synthesis-finished
-                           (format "unexpected #f from (assoc scp-id *scp-info*): ~s ~s"
-                                   scp-id *scp-info*))]))
+            
+            (remove-synthesis-id-for-scp-in-scp-table synthesis-id scp-id)
 
             (printf "moving synthesis task ~s from scp ~s running to finished...\n\n"
                     synthesis-id scp-id)
