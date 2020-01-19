@@ -335,6 +335,8 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (write/flush `(synthesize ,scp-id ,synthesis-id (,definitions ,inputs ,outputs)) scp-out-port)
                     (write/flush `(synthesizing ,synthesis-id) ui-out-port)
 
+                    (printf "adding synthesis-id ~s to synthesis-task-id* for ~s in scp-info table\n\n"
+                            synthesis-id scp-id)
                     (set! *scp-info*
                           (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
                                 (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
