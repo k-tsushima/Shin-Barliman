@@ -29,6 +29,8 @@ Actually, these PIDs are known, since the MCP prints out the PIDs of the subproc
 
 What is a more robust way to clean up the subprocesses?
 
+Could potentially have a 'self-desctruct' message that a newly-started MCP sends to any Racket processes that might still be connected to the TCP ports of interest, before starting new subprocesses.  Also, is there some way for the MCP to determine that the Racket message proxies are already running (when they shouldn't be)?  If nothing else, MCP could detect if the scp-ids don't start from 0 (although must beware of race condition, since the SCP assigned scp-id 0 might not be the first SCP to send the `num-processors` message to the MCP.
+
 ----
 
 
