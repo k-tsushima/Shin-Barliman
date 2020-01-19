@@ -33,22 +33,6 @@ Could potentially have a 'self-destruct' message that a newly-started MCP sends 
 
 ----
 
-Probably should do the following:
-
-1) a new synthesis task should get added to the *pending-tasks* table
-
-2) once per MCP loop checking for messages, the MCP should check if there are any pending tasks in the *pending-tasks* table.  If so, it should check if there is an SCP with a free processor.  If so, it should send a `synthesize` message to that SCP, and promote the task from pending to running.
-
-----
-
-Appears to be a race condition in the MCP handling of sending pending tasks to the SCP that just sent a `synthesis-finished` message.  Something with promoting synthesis tasks from 'pending' status to 'running' status, perhaps.
-
-When a new SCP connects to MCP, MCP should send SCP pending tasks (up to the processor capacity).
-
-Test that GUI can send tasks to MCP, even if no SCP is connected, and that connecting one or more SCPs afterwards will "drain" the pending tasks.
-
-----
-
 Security:
 * be able to restrict TCP connections to white-listed IP addresses (what about IP spoofing?)
 * add authenticated sessions and messages, and perhaps nonces to avoid replay attacks
