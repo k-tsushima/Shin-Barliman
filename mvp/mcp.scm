@@ -58,7 +58,7 @@ efficient synthesis.
  ,num-processors
  ;; list of running synthesis tasks (initially empty), kept in synch
  ;; with `running-synthesis-tasks` table
- ((,ui-synthesis-task-id mcp-synthesis-task-id) ...))
+ ((,ui-synthesis-task-id ,mcp-synthesis-task-id) ...))
 |#
 (define *scp-info* '())
 

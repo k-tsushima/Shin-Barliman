@@ -4,6 +4,8 @@
 MCP
 ;===================
 
+*mcp-synthesis-id-counter* ;; integer counter in mcp.scm
+
 *scp-id* ;; integer counter in mcp-scp-tcp-proxy, protected by `scp-id-semaphore`
 
 
@@ -12,30 +14,30 @@ SCP table:
 (,scp-id
  ,num-processors
  ;; list of running synthesis tasks (initially empty), kept in synch
- ;; with `running-synthesis-tasks` table
- (,synthesis-task-id ...))
+ ;; with `*running-synthesis-tasks*` table
+ ((,ui-synthesis-task-id ,mcp-synthesis-task-id) ...))
 
 
 Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
-pending-synthesis-tasks
+*pending-synthesis-tasks*
 ;; pending
-(,synthesis-task-id (,definitions ,inputs ,outputs))
+((,ui-synthesis-task-id ,mcp-synthesis-task-id) (,definitions ,inputs ,outputs))
 
-running-synthesis-tasks
+*running-synthesis-tasks*
 ;; running
-(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs))
+((,ui-synthesis-task-id ,mcp-synthesis-task-id) ,scp-id (,definitions ,inputs ,outputs))
 
-finished-synthesis-tasks
+*finished-synthesis-tasks*
 ;; finished
-(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
+((,ui-synthesis-task-id ,mcp-synthesis-task-id) ,scp-id (,definitions ,inputs ,outputs) ,results ,statistics)
 
 
 ;; This table is in mcp-scp-tcp-proxy.rkt
 ;; Table is used to route messages from MCP to the correct SCP.
 ;; Table update/reading protected by scp-connections-semaphore
-scp-connections
-(scp-id input-tcp-port output-tcp-port)
+*scp-connections*
+(,scp-id ,input-tcp-port ,output-tcp-port)
 
 
 
