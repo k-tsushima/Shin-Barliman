@@ -356,6 +356,9 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                     (set! *scp-info*
                           (cons `(,scp-id ,num-processors ,(cons synthesis-id synthesis-task-id*))
                                 (remove `(,scp-id ,num-processors ,synthesis-task-id*) *scp-info*)))
+                    (printf "updated *scp-info* table:\n\n")
+                    (print-scp-info-table)
+                    (printf "\n\n")
 
                     (add-synthesis-task! `(,synthesis-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
 
