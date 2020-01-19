@@ -411,16 +411,16 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
               [()
                (printf "no pending synthesis tasks\n\n")
                (void)]
-              [((,synthesis-task-id (,definitions ,inputs ,outputs)) . ,rest)
-               (printf "pending synthesis task: ~s\n\n"
-                       `(,synthesis-task-id (,definitions ,inputs ,outputs)))
-
-               (printf "moving task from pending to running...\n\n")
-               (remove-synthesis-task! `(,synthesis-task-id (,definitions ,inputs ,outputs)) *pending-synthesis-tasks*)
-               (add-synthesis-task! `(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
-               
-               (let ((msg `(synthesize ,scp-id ,synthesis-task-id (,definitions ,inputs ,outputs))))
-                 (write/flush msg scp-out-port))])]
+              [(,pending-task . ,rest)
+               (pmatch pending-task
+                 [(,synthesis-task-id (,definitions ,inputs ,outputs))
+                  (printf "moving pending synthesis task: ~s\nfrom pending to running...\n\n" pending-task)
+                  (remove-synthesis-task! pending-task *pending-synthesis-tasks*)
+                  (add-synthesis-task! `(,synthesis-task-id ,scp-id (,definitions ,inputs ,outputs)) *running-synthesis-tasks*)
+                  (let ((msg `(synthesize ,scp-id ,synthesis-task-id (,definitions ,inputs ,outputs))))
+                    (write/flush msg scp-out-port))]
+                 [,else
+                  (printf "** unknown pending task format: ~s\n\n" pending-task)])])]
            [,else
             (printf "** unknown message type from scp: ~s\n\n" msg)]))))))
 
