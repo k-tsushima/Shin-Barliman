@@ -429,8 +429,10 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
                 (pmatch definitions/inputs/outputs
                   [(,definitions ,inputs ,outputs)
                    (let ((mcp-synthesis-id *mcp-synthesis-id-counter*))
-                     (add-synthesis-task! `((,ui-synthesis-id ,mcp-synthesis-id) (,definitions ,inputs ,outputs))
-                                          *pending-synthesis-tasks*)
+                     (add-synthesis-task!
+                       `((,ui-synthesis-id ,mcp-synthesis-id)
+                         (,definitions ,inputs ,outputs))
+                       *pending-synthesis-tasks*)
                      (increment-mcp-synthesis-id-counter!))]
                   [,else
                    (printf "** unexpected definitions/inputs/outputs format:\n~s\n\n" definitions/inputs/outputs)]))
