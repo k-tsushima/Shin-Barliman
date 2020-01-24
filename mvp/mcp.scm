@@ -389,7 +389,36 @@ Synthesis task queues (promote tasks from 'pending' to 'running' to 'finished'):
 
             (pmatch ui/mcp-synthesis-id
               [(,ui-synthesis-task-id ,mcp-synthesis-task-id)
-               (write/flush `(synthesis-finished ,ui-synthesis-task-id ,val ,statistics) ui-out-port)]
+
+               ;; Check if *finished-synthesis-tasks* table already
+               ;; contains an entry with the same `result`, the same
+               ;; `ui-synthesis-task-id`, and a different
+               ;; `mcp-synthesis-task-id`.  If so, we have a duplicate
+               ;; result, so do not sent to the UI.
+
+               (let loop ((finished *finished-synthesis-tasks*))
+                 (pmatch finished
+                   [()
+                    ;; the new result is not a duplicate, so send it to the UI
+                    (write/flush `(synthesis-finished ,ui-synthesis-task-id ,val ,statistics) ui-out-port)]
+                   [(((,old-ui-synthesis-task-id ,old-mcp-synthesis-task-id)
+                      ,old--scp-id
+                      (,old-definitions ,old-inputs ,old-outputs) ,old-results ,old-statistics)
+                     . ,rest)
+                    (cond
+                      [(and (equal? ui-synthesis-task-id old-ui-synthesis-task-id)
+                            (not (equal? mcp-synthesis-task-id old-mcp-synthesis-task-id))
+                            (equal? val old-results))
+                       ;; the new result is already in the table from
+                       ;; a previous synthesis task, so don't send the
+                       ;; duplicate result to the UI
+                       (printf "ignoring duplicate result for ui-synthesis-task ~s:\n\n~s\n\n"
+                               ui-synthesis-task-id
+                               val)
+                       (void)]
+                      [else (loop rest)])]
+                   [,else
+                    (printf "*** unexpected *finished-synthesis-tasks* format:\n\n~s\n\n" finished)]))]
               [,else (printf "*** unexpected ui/mcp-synthesis-id format:\n\n~s\n\n" ui/mcp-synthesis-id)])
             
             (printf "checking if there is a pending synthesis task for the newly free processor:\n\n~s\n\n"
