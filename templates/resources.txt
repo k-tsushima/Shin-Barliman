@@ -1,0 +1,23 @@
+Template-related resources (thanks for Youyou Cong for pointers to Systematic Program Design and Beginning Student Tables):
+
+Systematic Program Design (SPD)
+https://github.com/GregorKiczales/spd
+
+https://gregorulm.com/review-introduction-to-systematic-program-design-part-1-coursera/
+
+https://www.youtube.com/watch?v=f-r4azTypm0
+https://www.youtube.com/watch?v=_hheU_P1dYg
+
+https://www.youtube.com/user/gregorkiczales/videos
+
+
+HtDP2
+
+https://htdp.org/2019-02-24/part_two.html#%28counter._%28figure._fig~3atemplate-q%29%29
+https://htdp.org/2019-02-24/part_two.html#%28counter._%28figure._fig~3adata-def-arrows%29%29
+https://htdp.org/2019-02-24/part_two.html#%28part._sec~3alist-produce%29
+
+
+Beginning Student Tables
+
+https://www.youtube.com/watch?v=tF0dymuU5WE
