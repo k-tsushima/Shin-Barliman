@@ -1,6 +1,11 @@
 Overall/Project-wide
 ====================
 
+Implement streaming of answers from running synthesis processes, rather than using a hard-coded `run 1` or `run 2`, or whatever.
+
+Currently our code makes assumptions that the value/result in a synthesis-finished message is a single answer, rather than a list of answers.  Be careful!
+
+
 ----
 
 *** Weird behavior
