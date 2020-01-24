@@ -369,33 +369,36 @@ TODO
                        (begin
                          ;; synthesis succeeded, with at least one answer
                          ;;
-                         ;; TODO handle multiple answers from a single `synthesis-finished` message
-                         ;;
                          ;; TODO Nicer pretty-printing of synthesized code and side-conditions
-                         (let ((first-answer (car val)))
-                           (let ((definitions (car first-answer))
-                                 (side-conditions (cdr first-answer)))
-                             (for-each
-                               (lambda (e)
-                                 (send result-text insert (string-append (pretty-format e) "\n")))
-                               definitions)
-                             (when (not (null? side-conditions))
-                               (send result-text insert "\nSide conditions:\n")
+
+                         (for-each
+                           (lambda (v)
+                             (let ((definitions (car v))
+                                   (side-conditions (cdr v)))
                                (for-each
                                  (lambda (e)
                                    (send result-text insert (string-append (pretty-format e) "\n")))
-                                 side-conditions))
-                             (send result-text
-                                   insert
-                                   (string-append
-                                     (format "\nSynthesis succeeded after ~s seconds\n" elapsed-seconds)
-                                     "-----------------------------------\n\n"))
+                                 definitions)
+                               (when (not (null? side-conditions))
+                                 (send result-text insert "\nSide conditions:\n")
+                                 (for-each
+                                   (lambda (e)
+                                     (send result-text insert (string-append (pretty-format e) "\n")))
+                                   side-conditions))
+                               (send result-text
+                                     insert
+                                     (string-append
+                                      (format "\nSynthesis succeeded after ~s seconds\n" elapsed-seconds)
+                                      "-----------------------------------\n\n"))
 
-                             ;; TODO scroll editor so that the first
-                             ;; line of text is displayed at the top
-                             ;; of the widget on the screen.
+                               ;; TODO scroll editor so that the first
+                               ;; line of text is displayed at the top
+                               ;; of the widget on the screen.
 
-                             ))))
+                               ))
+                           val)
+                         
+                         ))
                    (loop (read in))
                    ]
                   [else (error 'wait-on-mcp-synthesis-results
